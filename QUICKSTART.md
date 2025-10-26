@@ -92,13 +92,13 @@ gist-cache-rs run data_analysis.py python3 input.csv --output result.json
 
 ```bash
 # ~/.bashrc に追加
-echo 'alias gcurs="gist-cache-rs update"' >> ~/.bashrc
-echo 'alias grcrs="gist-cache-rs run"' >> ~/.bashrc
+echo 'alias gcrsu="gist-cache-rs update"' >> ~/.bashrc
+echo 'alias gcrsr="gist-cache-rs run"' >> ~/.bashrc
 source ~/.bashrc
 
 # これで短縮形で使用可能
-gcurs                # キャッシュ更新
-grcrs backup bash    # Gist実行
+gcrsu                # キャッシュ更新
+gcrsr backup bash    # Gist実行
 ```
 
 ## 📚 よく使うコマンド

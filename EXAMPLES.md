@@ -313,16 +313,16 @@ $ gist-cache-rs run --id [your_gist_id] uv input.csv
 
 ```bash
 # ~/.bashrc または ~/.zshrc に追加
-alias gcurs='gist-cache-rs update'
-alias grcrs='gist-cache-rs run'
-alias grcrs-p='gist-cache-rs run -p'
-alias grcrs-i='gist-cache-rs run -i'
+alias gcrsu='gist-cache-rs update'
+alias gcrsr='gist-cache-rs run'
+alias gcrsr-p='gist-cache-rs run -p'
+alias gcrsr-i='gist-cache-rs run -i'
 
 # 使用例
-gcurs                        # キャッシュ更新
-grcrs-p data                 # プレビュー
-grcrs-i setup                # 対話モード実行
-grcrs backup bash /src /dst  # 引数付き実行
+gcrsu                        # キャッシュ更新
+gcrsr-p data                 # プレビュー
+gcrsr-i setup                # 対話モード実行
+gcrsr backup bash /src /dst  # 引数付き実行
 ```
 
 ---
@@ -358,7 +358,7 @@ $ gist-cache-rs run -p script-name
 
 ```bash
 # 頻繁に使うスクリプトはエイリアス化
-alias analyze='grcrs data_analysis uv'
+alias analyze='gcrsr data_analysis uv'
 
 # 使用例
 analyze mydata.csv

@@ -139,13 +139,13 @@ gist-cache-rs update --verbose
 インストール時に対話的に設定：
 
 ```bash
-推奨エイリアス名（gcurs, grcrs）を使用しますか？ [Y/n]: y
+推奨エイリアス名（gcrsu, gcrsr）を使用しますか？ [Y/n]: y
 ```
 
 または
 
 ```bash
-推奨エイリアス名（gcurs, grcrs）を使用しますか？ [Y/n]: n
+推奨エイリアス名（gcrsu, gcrsr）を使用しますか？ [Y/n]: n
 gist-cache-rs update 用のエイリアス名: gcu
 gist-cache-rs run 用のエイリアス名: gcr
 ```
@@ -154,8 +154,8 @@ gist-cache-rs run 用のエイリアス名: gcr
 
 ```bash
 # ~/.bashrc または ~/.zshrc に追加
-alias gcurs='gist-cache-rs update'
-alias grcrs='gist-cache-rs run'
+alias gcrsu='gist-cache-rs update'
+alias gcrsr='gist-cache-rs run'
 
 # 反映
 source ~/.bashrc
@@ -295,8 +295,8 @@ rm -rf ~/.cache/gist-cache/
 
 # エイリアスを削除（~/.bashrc または ~/.zshrc から該当行を削除）
 # 例:
-# alias gcurs='gist-cache-rs update'
-# alias grcrs='gist-cache-rs run'
+# alias gcrsu='gist-cache-rs update'
+# alias gcrsr='gist-cache-rs run'
 ```
 
 ## ➡️ 次のステップ

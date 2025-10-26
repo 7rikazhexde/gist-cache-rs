@@ -19,9 +19,7 @@ Windowsは将来対応予定です。
 - Rust toolchain (1.75以降)
 - GitHub CLI (`gh`) - 認証済み
 
-詳細は [INSTALL.md](INSTALL.md) を参照してください。
-
-## 🔧 インストール
+## 🔧 [インストール](INSTALL.md)
 
 ### セットアップスクリプト（推奨）
 
@@ -49,9 +47,9 @@ cargo build --release
 cargo install --path .
 ```
 
-詳細は [QUICKSTART.md](QUICKSTART.md) を参照してください。
+## 🚀 [クイックスタート](QUICKSTART.md)
 
-## 🚀 クイックスタート
+実際の使用例については [EXAMPLES.md](EXAMPLES.md) にもまとめています。
 
 ```bash
 # 初回キャッシュ作成
@@ -63,13 +61,6 @@ gist-cache-rs run backup bash
 # Python スクリプトを実行
 gist-cache-rs run data_analysis.py python3 input.csv
 ```
-
-実際の使用例については [EXAMPLES.md](EXAMPLES.md) を参照してください：
-
-- 🐚 Bashスクリプトの対話モード実行例
-- 🐍 Python + uvでの依存関係自動管理例
-- 🔍 高度な検索テクニック
-- 🛠️ 実践的なワークフロー
 
 ## 🔄 キャッシュの更新
 
@@ -161,15 +152,15 @@ gist-cache-rs run -p data-analysis
 ### 自動設定（setup.sh使用時）
 
 インストール時に対話的に設定：
-- 推奨エイリアス（`gcurs`, `grcrs`）
+- 推奨エイリアス（`gcrsu`, `gcrsr`）
 - カスタムエイリアス名
 
 ### 手動設定
 
 ```bash
 # ~/.bashrc または ~/.zshrc に追加
-alias gcurs='gist-cache-rs update'
-alias grcrs='gist-cache-rs run'
+alias gcrsu='gist-cache-rs update'
+alias gcrsr='gist-cache-rs run'
 
 # 反映
 source ~/.bashrc
@@ -178,10 +169,10 @@ source ~/.bashrc
 使用例：
 
 ```bash
-gcurs  # キャッシュ更新
-grcrs backup bash /src /dst  # Gist実行
-grcrs -p script  # プレビュー
-grcrs -i interactive-script  # 対話モード
+gcrsu  # キャッシュ更新
+gcrsr backup bash /src /dst  # Gist実行
+gcrsr -p script  # プレビュー
+gcrsr -i interactive-script  # 対話モード
 ```
 
 ## 🗑️ アンインストール

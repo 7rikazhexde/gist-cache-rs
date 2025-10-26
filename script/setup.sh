@@ -33,14 +33,14 @@ fi
 # GIST_CACHE_SKIP_CACHE: true/false (default: false)
 # GIST_CACHE_SKIP_ALIAS: true/false (default: false)
 # GIST_CACHE_AUTO_ALIAS: true/false (default: false) - 非対話モードでエイリアス自動設定
-# GIST_CACHE_ALIAS_UPDATE: alias name for update (default: gcurs)
-# GIST_CACHE_ALIAS_RUN: alias name for run (default: grcrs)
+# GIST_CACHE_ALIAS_UPDATE: alias name for update (default: gcrsu)
+# GIST_CACHE_ALIAS_RUN: alias name for run (default: gcrsr)
 INSTALL_METHOD="${GIST_CACHE_INSTALL_METHOD:-1}"
 SKIP_CACHE_UPDATE="${GIST_CACHE_SKIP_CACHE:-false}"
 SKIP_ALIAS="${GIST_CACHE_SKIP_ALIAS:-false}"
 AUTO_ALIAS="${GIST_CACHE_AUTO_ALIAS:-false}"
-ALIAS_UPDATE="${GIST_CACHE_ALIAS_UPDATE:-gcurs}"
-ALIAS_RUN="${GIST_CACHE_ALIAS_RUN:-grcrs}"
+ALIAS_UPDATE="${GIST_CACHE_ALIAS_UPDATE:-gcrsu}"
+ALIAS_RUN="${GIST_CACHE_ALIAS_RUN:-gcrsr}"
 
 # Functions
 print_usage() {
@@ -75,8 +75,8 @@ COMMAND:
   GIST_CACHE_SKIP_CACHE      キャッシュ更新をスキップ (true/false, デフォルト: false)
   GIST_CACHE_SKIP_ALIAS      エイリアス設定をスキップ (true/false, デフォルト: false)
   GIST_CACHE_AUTO_ALIAS      非対話モードでエイリアス自動設定 (true/false, デフォルト: false)
-  GIST_CACHE_ALIAS_UPDATE    updateコマンドのエイリアス名 (デフォルト: gcurs)
-  GIST_CACHE_ALIAS_RUN       runコマンドのエイリアス名 (デフォルト: grcrs)
+  GIST_CACHE_ALIAS_UPDATE    updateコマンドのエイリアス名 (デフォルト: gcrsu)
+  GIST_CACHE_ALIAS_RUN       runコマンドのエイリアス名 (デフォルト: gcrsr)
 
 EOF
 }
@@ -820,8 +820,8 @@ else
             # 自動設定しない場合は手動設定を案内
             print_info "非対話モード: エイリアス設定をスキップします"
             print_info "手動で設定する場合:"
-            echo -e "  ${CYAN}alias gcurs='gist-cache-rs update'${NC}"
-            echo -e "  ${CYAN}alias grcrs='gist-cache-rs run'${NC}"
+            echo -e "  ${CYAN}alias gcrsu='gist-cache-rs update'${NC}"
+            echo -e "  ${CYAN}alias gcrsr='gist-cache-rs run'${NC}"
             echo ""
             print_info "または、環境変数で自動設定:"
             echo -e "  ${CYAN}GIST_CACHE_AUTO_ALIAS=true${NC}"
@@ -829,8 +829,8 @@ else
     elif confirm "便利なエイリアスを設定しますか？" "y"; then
         echo ""
         echo "推奨エイリアス:"
-        echo -e "  ${CYAN}alias gcurs='gist-cache-rs update'${NC}"
-        echo -e "  ${CYAN}alias grcrs='gist-cache-rs run'${NC}"
+        echo -e "  ${CYAN}alias gcrsu='gist-cache-rs update'${NC}"
+        echo -e "  ${CYAN}alias gcrsr='gist-cache-rs run'${NC}"
         echo ""
         
         # シェルの検出
@@ -846,9 +846,9 @@ else
         echo ""
         
         # 推奨エイリアスを使うか確認
-        if confirm "推奨エイリアス名（gcurs, grcrs）を使用しますか？" "y"; then
-            ALIAS_UPDATE="gcurs"
-            ALIAS_RUN="grcrs"
+        if confirm "推奨エイリアス名（gcrsu, gcrsr）を使用しますか？" "y"; then
+            ALIAS_UPDATE="gcrsu"
+            ALIAS_RUN="gcrsr"
         else
             # カスタムエイリアス名を入力
             echo ""
@@ -857,14 +857,14 @@ else
             
             read -r -p "$(echo -e "${YELLOW}gist-cache-rs update 用のエイリアス名: ${NC}")" ALIAS_UPDATE
             if [ -z "$ALIAS_UPDATE" ]; then
-                ALIAS_UPDATE="gcurs"
-                print_warning "入力がないため、デフォルト名 'gcurs' を使用します"
+                ALIAS_UPDATE="gcrsu"
+                print_warning "入力がないため、デフォルト名 'gcrsu' を使用します"
             fi
             
             read -r -p "$(echo -e "${YELLOW}gist-cache-rs run 用のエイリアス名: ${NC}")" ALIAS_RUN
             if [ -z "$ALIAS_RUN" ]; then
-                ALIAS_RUN="grcrs"
-                print_warning "入力がないため、デフォルト名 'grcrs' を使用します"
+                ALIAS_RUN="gcrsr"
+                print_warning "入力がないため、デフォルト名 'gcrsr' を使用します"
             fi
             
             echo ""
