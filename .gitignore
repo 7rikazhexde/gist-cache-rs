@@ -1,0 +1,40 @@
+# Rust build
+/target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Cache / Temp files
+.cache/
+*.log
+test-cache/
+tmp/
+dist/
+build/
+
+# OS-specific
+Thumbs.db
+
+# Binary outputs
+*.exe
+*.out
+*.dll
+*.dylib
+*.so
+
+# Documentation artifacts
+*.html
+*.pdf
+*.md.bak
+
+# Tools
+.env
+.env.local
