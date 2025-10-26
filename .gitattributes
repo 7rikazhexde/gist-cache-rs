@@ -1,0 +1,6 @@
+# Rustコードを検出対象に
+src/* linguist-detectable=true
+
+# シェルスクリプトを除外
+*.sh linguist-detectable=false
+scripts/* linguist-detectable=false
