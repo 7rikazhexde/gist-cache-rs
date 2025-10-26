@@ -822,7 +822,7 @@ else
             print_info "手動で設定する場合:"
             echo -e "  ${CYAN}alias gcurs='gist-cache-rs update'${NC}"
             echo -e "  ${CYAN}alias grcrs='gist-cache-rs run'${NC}"
-            print_info ""
+            echo ""
             print_info "または、環境変数で自動設定:"
             echo -e "  ${CYAN}GIST_CACHE_AUTO_ALIAS=true${NC}"
         fi
