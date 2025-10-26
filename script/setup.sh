@@ -32,9 +32,15 @@ fi
 # GIST_CACHE_INSTALL_METHOD: 1-5 (default: 1 = cargo install)
 # GIST_CACHE_SKIP_CACHE: true/false (default: false)
 # GIST_CACHE_SKIP_ALIAS: true/false (default: false)
+# GIST_CACHE_AUTO_ALIAS: true/false (default: false) - 非対話モードでエイリアス自動設定
+# GIST_CACHE_ALIAS_UPDATE: alias name for update (default: gcurs)
+# GIST_CACHE_ALIAS_RUN: alias name for run (default: grcrs)
 INSTALL_METHOD="${GIST_CACHE_INSTALL_METHOD:-1}"
 SKIP_CACHE_UPDATE="${GIST_CACHE_SKIP_CACHE:-false}"
 SKIP_ALIAS="${GIST_CACHE_SKIP_ALIAS:-false}"
+AUTO_ALIAS="${GIST_CACHE_AUTO_ALIAS:-false}"
+ALIAS_UPDATE="${GIST_CACHE_ALIAS_UPDATE:-gcurs}"
+ALIAS_RUN="${GIST_CACHE_ALIAS_RUN:-grcrs}"
 
 # Functions
 print_usage() {
@@ -68,6 +74,9 @@ COMMAND:
     5: スキップ
   GIST_CACHE_SKIP_CACHE      キャッシュ更新をスキップ (true/false, デフォルト: false)
   GIST_CACHE_SKIP_ALIAS      エイリアス設定をスキップ (true/false, デフォルト: false)
+  GIST_CACHE_AUTO_ALIAS      非対話モードでエイリアス自動設定 (true/false, デフォルト: false)
+  GIST_CACHE_ALIAS_UPDATE    updateコマンドのエイリアス名 (デフォルト: gcurs)
+  GIST_CACHE_ALIAS_RUN       runコマンドのエイリアス名 (デフォルト: grcrs)
 
 EOF
 }
@@ -736,10 +745,87 @@ if [ "$SKIP_ALIAS" = "true" ]; then
     print_info "環境変数により、エイリアス設定をスキップします"
 else
     if [ "$IS_INTERACTIVE" = false ]; then
-        print_info "非対話モード: エイリアス設定をスキップします"
-        print_info "手動で設定する場合:"
-        echo -e "  ${CYAN}alias gcurs='gist-cache-rs update'${NC}"
-        echo -e "  ${CYAN}alias grcrs='gist-cache-rs run'${NC}"
+        # 非対話モード
+        if [ "$AUTO_ALIAS" = "true" ]; then
+            # 自動設定を実行
+            print_info "非対話モード: エイリアス自動設定を実行します"
+            echo ""
+            
+            # シェルの検出（環境変数SHELLから判定）
+            if [[ "$SHELL" == *"zsh"* ]]; then
+                SHELL_RC="$HOME/.zshrc"
+            elif [[ "$SHELL" == *"bash"* ]]; then
+                SHELL_RC="$HOME/.bashrc"
+            else
+                SHELL_RC="$HOME/.bashrc"
+            fi
+            
+            print_info "設定ファイル: $SHELL_RC"
+            print_info "設定するエイリアス:"
+            echo -e "  ${CYAN}alias ${ALIAS_UPDATE}='gist-cache-rs update'${NC}"
+            echo -e "  ${CYAN}alias ${ALIAS_RUN}='gist-cache-rs run'${NC}"
+            echo ""
+            
+            # 既存のエイリアスをチェック
+            UPDATE_EXISTS=false
+            RUN_EXISTS=false
+            
+            if [ -f "$SHELL_RC" ]; then
+                if grep -q "^[[:space:]]*alias[[:space:]]\+${ALIAS_UPDATE}=" "$SHELL_RC"; then
+                    UPDATE_EXISTS=true
+                fi
+                if grep -q "^[[:space:]]*alias[[:space:]]\+${ALIAS_RUN}=" "$SHELL_RC"; then
+                    RUN_EXISTS=true
+                fi
+            fi
+            
+            # エイリアスを追加（既存のものはスキップ）
+            ADDED=false
+            SKIPPED=false
+            
+            # マーカーコメントを追加（新規追加がある場合のみ）
+            if [ "$UPDATE_EXISTS" = false ] || [ "$RUN_EXISTS" = false ]; then
+                echo "" >> "$SHELL_RC"
+                echo "# gist-cache-rs aliases: ${ALIAS_UPDATE}, ${ALIAS_RUN} (added on $(date +%Y-%m-%d))" >> "$SHELL_RC"
+            fi
+            
+            # update エイリアスを追加
+            if [ "$UPDATE_EXISTS" = true ]; then
+                print_warning "エイリアス '${ALIAS_UPDATE}' は既に存在します（スキップ）"
+                SKIPPED=true
+            else
+                echo "alias ${ALIAS_UPDATE}='gist-cache-rs update'" >> "$SHELL_RC"
+                ADDED=true
+            fi
+            
+            # run エイリアスを追加
+            if [ "$RUN_EXISTS" = true ]; then
+                print_warning "エイリアス '${ALIAS_RUN}' は既に存在します（スキップ）"
+                SKIPPED=true
+            else
+                echo "alias ${ALIAS_RUN}='gist-cache-rs run'" >> "$SHELL_RC"
+                ADDED=true
+            fi
+            
+            # 結果を表示
+            if [ "$ADDED" = true ]; then
+                print_success "エイリアスを追加しました"
+                print_info "反映するには以下を実行してください:"
+                echo -e "  ${CYAN}source $SHELL_RC${NC}"
+            fi
+            if [ "$SKIPPED" = true ]; then
+                print_info "既存のエイリアスは保持されました"
+            fi
+        else
+            # 自動設定しない場合は手動設定を案内
+            print_info "非対話モード: エイリアス設定をスキップします"
+            print_info "手動で設定する場合:"
+            echo -e "  ${CYAN}alias gcurs='gist-cache-rs update'${NC}"
+            echo -e "  ${CYAN}alias grcrs='gist-cache-rs run'${NC}"
+            print_info ""
+            print_info "または、環境変数で自動設定:"
+            echo -e "  ${CYAN}GIST_CACHE_AUTO_ALIAS=true${NC}"
+        fi
     elif confirm "便利なエイリアスを設定しますか？" "y"; then
         echo ""
         echo "推奨エイリアス:"
