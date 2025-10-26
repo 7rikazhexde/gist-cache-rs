@@ -115,7 +115,7 @@ fn print_run_help() {
     println!("      --description  説明文で検索");
     println!("  -h, --help         Print help");
     println!();
-    println!("{}","サポートされているインタープリタ:".green().bold());
+    println!("{}", "サポートされているインタープリタ:".green().bold());
     println!("  bash, sh, zsh      - シェルスクリプト");
     println!("  python3, python    - Python");
     println!("  uv                 - Python (PEP 723対応)");
@@ -178,7 +178,8 @@ fn run_gist(config: Config, args: RunArgs) -> Result<()> {
     };
 
     // Parse interpreter and execution mode
-    let (interpreter, run_command, is_shell, force_file_based) = parse_interpreter(args.interpreter.as_deref())?;
+    let (interpreter, run_command, is_shell, force_file_based) =
+        parse_interpreter(args.interpreter.as_deref())?;
 
     // Create and run script runner
     let runner = ScriptRunner::new(
@@ -211,23 +212,24 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
         }
         Some("uv") => {
             // uvは必ずファイルベースで実行（PEP 723対応のため）
-            Ok(("python3".to_string(), Some("uv run".to_string()), false, true))
+            Ok((
+                "python3".to_string(),
+                Some("uv run".to_string()),
+                false,
+                true,
+            ))
         }
         Some("poetry") => {
             println!(
                 "{}",
-                "警告: PoetryはPEP 723をサポートしていません。python3で実行します。"
-                    .yellow()
+                "警告: PoetryはPEP 723をサポートしていません。python3で実行します。".yellow()
             );
             Ok(("python3".to_string(), None, false, false))
         }
         None => Ok(("bash".to_string(), None, true, false)),
         Some(custom) => {
             // Check if the custom interpreter exists
-            if let Ok(output) = std::process::Command::new("which")
-                .arg(custom)
-                .output()
-            {
+            if let Ok(output) = std::process::Command::new("which").arg(custom).output() {
                 if !output.status.success() {
                     //eprintln!(
                     //    "{}",

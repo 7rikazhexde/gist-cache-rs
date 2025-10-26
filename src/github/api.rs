@@ -38,9 +38,7 @@ impl GitHubApi {
 
     /// Check rate limit
     pub fn check_rate_limit() -> Result<i64> {
-        let output = Command::new("gh")
-            .args(&["api", "rate_limit"])
-            .output()?;
+        let output = Command::new("gh").args(&["api", "rate_limit"]).output()?;
 
         if !output.status.success() {
             return Err(GistCacheError::GitHubApi(

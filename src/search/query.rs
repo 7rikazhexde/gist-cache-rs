@@ -52,9 +52,11 @@ impl SearchQuery {
         let results: Vec<&GistInfo> = gists
             .iter()
             .filter(|g| {
-                g.files
-                    .iter()
-                    .any(|f| f.filename.to_lowercase().contains(&self.query.to_lowercase()))
+                g.files.iter().any(|f| {
+                    f.filename
+                        .to_lowercase()
+                        .contains(&self.query.to_lowercase())
+                })
             })
             .collect();
         Ok(results)
@@ -110,19 +112,11 @@ pub fn select_from_results<'a>(results: &[&'a GistInfo]) -> Result<&'a GistInfo>
     println!("\n複数のGistが見つかりました:\n");
 
     let default_desc = "No description".to_string();
-    
+
     for (i, gist) in results.iter().enumerate() {
-        let desc = gist
-            .description
-            .as_ref()
-            .unwrap_or(&default_desc);
+        let desc = gist.description.as_ref().unwrap_or(&default_desc);
         let files: Vec<_> = gist.files.iter().map(|f| f.filename.as_str()).collect();
-        println!(
-            " {}. {} | {}",
-            i + 1,
-            desc,
-            files.join(", ")
-        );
+        println!(" {}. {} | {}", i + 1, desc, files.join(", "));
     }
 
     print!("\n番号を選択してください (1-{}): ", results.len());

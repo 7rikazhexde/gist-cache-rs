@@ -1,317 +1,306 @@
-# 📥 インストールガイド
-
-gist-cache-rsのインストール方法を詳しく説明します。
+# インストールガイド
 
 ## 📋 前提条件
 
-### 1. 🦀 Rust Toolchain
+### 必須
+
+- **Rust toolchain** (1.75以降)
+
+  ```bash
+  rustc --version  # 確認
+  ```
+  
+  インストール方法:
+
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  ```
+
+- **GitHub CLI** (`gh`) - 認証済み
+
+  ```bash
+  gh --version     # 確認
+  gh auth status   # 認証状態確認
+  ```
+  
+  認証方法:
+
+  ```bash
+  gh auth login
+  ```
+
+### 推奨
+
+- Git (リポジトリクローン用)
+
+## 🔧 インストール方法
+
+### 方法1: 自動セットアップ（推奨）
+
+対話的にすべてのステップを実行します。
 
 ```bash
-# Rustupを使用したインストール
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# リポジトリをクローン
+git clone https://github.com/7rikazhexde/gist-cache-rs.git
+cd gist-cache-rs
 
-# インストール後、シェルを再起動するか以下を実行
-source $HOME/.cargo/env
-
-# バージョン確認
-rustc --version
-cargo --version
+# セットアップスクリプトを実行
+./script/setup.sh install
 ```
 
-**期待される出力:**
+**実行される処理:**
+1. ✅ 前提条件の確認
+2. 📁 プロジェクトディレクトリの検出
+3. 🔨 リリースビルド
+4. 📦 インストール方法の選択
+5. ⚙️ インストール実行
+6. 🔄 初回キャッシュ作成
+7. ⌨️ エイリアス設定（オプション）
 
-```text
-rustc 1.75.0 (またはそれ以降)
-cargo 1.75.0 (またはそれ以降)
-```
-
-### 2. 🐙 GitHub CLI (gh)
-
-#### Ubuntu/Debian
+### 方法2: cargo install
 
 ```bash
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-sudo apt update
-sudo apt install gh
-```
-
-#### macOS (Homebrew)
-
-```bash
-brew install gh
-```
-
-#### 🔐 認証
-
-```bash
-# GitHub CLIで認証
-gh auth login
-
-# 認証状態の確認
-gh auth status
-```
-
-## 🚀 インストール方法
-
-### 方法1: ⚙️ cargoを使用したインストール（推奨）
-
-```bash
-# プロジェクトディレクトリに移動
-cd ~/dev/rust/gist-cache-rs
-
-# インストール（~/.cargo/binにバイナリが配置されます）
+cargo build --release
 cargo install --path .
-
-# インストール確認
-which gist-cache-rs
-gist-cache-rs --version
 ```
 
-**~/.cargo/bin がPATHに含まれていることを確認:**
+**インストール先:** `~/.cargo/bin/gist-cache-rs`
+
+**PATH設定:**
+通常は自動設定済み。未設定の場合：
 
 ```bash
-echo $PATH | grep ".cargo/bin"
-
-# 含まれていない場合は追加
-echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+# ~/.bashrc または ~/.zshrc に追加
+export PATH="$HOME/.cargo/bin:$PATH"
 source ~/.bashrc
 ```
 
-### 方法2: 📦 手動ビルドとコピー
+### 方法3: システムディレクトリ
 
 ```bash
-# リリースビルド
 cargo build --release
-
-# システムにコピー
 sudo cp target/release/gist-cache-rs /usr/local/bin/
+```
 
-# または、ユーザーローカルにコピー
+**インストール先:** `/usr/local/bin/gist-cache-rs`  
+**特徴:** 全ユーザーで共有、sudo権限が必要
+
+### 方法4: ユーザーディレクトリ
+
+```bash
+cargo build --release
 mkdir -p ~/bin
 cp target/release/gist-cache-rs ~/bin/
+```
 
-# ~/binがPATHに含まれていることを確認
-echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+**インストール先:** `~/bin/gist-cache-rs`
+
+**PATH設定:**
+
+```bash
+# ~/.bashrc または ~/.zshrc に追加
+export PATH="$HOME/bin:$PATH"
 source ~/.bashrc
 ```
 
-### 方法3: 🔗 シンボリックリンク（開発者向け）
+### 方法5: シンボリックリンク（開発者向け）
 
 ```bash
-# リリースビルド
 cargo build --release
 
-# シンボリックリンク作成
-sudo ln -s $(pwd)/target/release/gist-cache-rs /usr/local/bin/gist-cache-rs
+# /usr/local/bin にリンク（要sudo）
+sudo ln -sf "$(pwd)/target/release/gist-cache-rs" /usr/local/bin/gist-cache-rs
 
-# または
+# または ~/bin にリンク
 mkdir -p ~/bin
-ln -s $(pwd)/target/release/gist-cache-rs ~/bin/gist-cache-rs
+ln -sf "$(pwd)/target/release/gist-cache-rs" ~/bin/gist-cache-rs
 ```
 
-## ⚙️ 初期設定
+**特徴:** ビルド後に自動反映、開発時に便利
 
-### 1. 🔐 GitHub認証確認
+## ⚙️ インストール後の設定
+
+### 1. 初回キャッシュ作成
 
 ```bash
-# 認証状態の確認
-gh auth status
-
-# 未認証の場合
-gh auth login
-# ブラウザまたはトークンで認証を完了
+gist-cache-rs update
 ```
 
-### 2. 💾 キャッシュディレクトリの確認
-
-キャッシュは以下のディレクトリに保存されます（初回更新時に自動作成）：
+詳細表示:
 
 ```bash
-~/.cache/gist-cache/
-```
-
-### 3. 🔄 初回キャッシュ更新
-
-```bash
-# キャッシュを作成（詳細表示付き）
 gist-cache-rs update --verbose
 ```
 
-**成功すると以下のように表示されます:**
+### 2. エイリアス設定（オプション）
+
+#### 自動設定（setup.sh使用時）
+
+インストール時に対話的に設定：
 
 ```bash
-Gistキャッシュを更新しています...
-モード: 強制全件更新
-レートリミット残量: 4999
-GitHubユーザー: your-username
-GitHub APIからGist情報を取得中...
-取得したGist数: 42
-新規/更新: 42件
-キャッシュ更新が完了しました
-総Gist数: 42
+推奨エイリアス名（gcurs, grcrs）を使用しますか？ [Y/n]: y
 ```
 
-## ⚡ エイリアス設定（オプション）
-
-より便利に使用するため、エイリアスを設定できます。
-
-### Bash
-
-`~/.bashrc` に追加:
+または
 
 ```bash
-# Gist Cache エイリアス
+推奨エイリアス名（gcurs, grcrs）を使用しますか？ [Y/n]: n
+gist-cache-rs update 用のエイリアス名: gcu
+gist-cache-rs run 用のエイリアス名: gcr
+```
+
+#### 手動設定
+
+```bash
+# ~/.bashrc または ~/.zshrc に追加
 alias gcurs='gist-cache-rs update'
 alias grcrs='gist-cache-rs run'
-```
 
-反映:
-
-```bash
+# 反映
 source ~/.bashrc
 ```
 
-### Zsh
-
-`~/.zshrc` に追加:
+## ✅ インストール確認
 
 ```bash
-# Gist Cache エイリアス
-alias gcurs='gist-cache-rs update'
-alias grcrs='gist-cache-rs run'
-```
-
-反映:
-
-```bash
-source ~/.zshrc
-```
-
-### Fish
-
-`~/.config/fish/config.fish` に追加:
-
-```fish
-# Gist Cache エイリアス
-alias gcurs='gist-cache-rs update'
-alias grcrs='gist-cache-rs run'
-```
-
-反映:
-
-```fish
-source ~/.config/fish/config.fish
-```
-
-## ✅ 動作確認
-
-### 1. 🔍 コマンドの確認
-
-```bash
-# バージョン表示
+# バージョン確認
 gist-cache-rs --version
 
 # ヘルプ表示
 gist-cache-rs --help
-gist-cache-rs update --help
-gist-cache-rs run --help
+
+# キャッシュ状態確認
+gist-cache-rs update --verbose
 ```
 
-### 2. 🔄 キャッシュ更新テスト
+## 🔍 トラブルシューティング
+
+### command not found: gist-cache-rs
+
+**原因:** PATHが設定されていない
+
+**解決方法:**
 
 ```bash
-# 詳細モードで更新
-gist-cache-rs update -v
+# インストール場所を確認
+which gist-cache-rs
+
+# PATHを確認
+echo $PATH
+
+# ~/.cargo/bin の場合
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# ~/bin の場合
+export PATH="$HOME/bin:$PATH"
+
+# 設定を反映
+source ~/.bashrc
 ```
 
-### 3. 🔎 検索テスト
+### 権限エラー
+
+**原因:** 実行権限がない
+
+**解決方法:**
 
 ```bash
-# プレビューモードで検索（実行はしない）
-gist-cache-rs run --preview "keyword"
+# 実行権限を付与
+chmod +x ~/.cargo/bin/gist-cache-rs
+# または
+chmod +x /usr/local/bin/gist-cache-rs
+# または
+chmod +x ~/bin/gist-cache-rs
 ```
+
+### ビルドエラー
+
+**原因:** Rustのバージョンが古い、依存関係の問題
+
+**解決方法:**
+
+```bash
+# Rustを最新化
+rustup update
+
+# 依存関係を更新
+cargo update
+
+# クリーンビルド
+cargo clean
+cargo build --release
+```
+
+### GitHub CLI認証エラー
+
+**エラー:** `GitHub CLI (gh) is not authenticated`
+
+**解決方法:**
+
+```bash
+gh auth login
+```
+
+### キャッシュが作成されない
+
+**エラー:** `Cache file not found`
+
+**解決方法:**
+
+```bash
+# 初回キャッシュ作成
+gist-cache-rs update
+
+# 詳細情報を表示
+gist-cache-rs update --verbose
+```
+
+### レートリミットエラー
+
+**警告:** `レートリミット残量が低いです`
+
+**解決方法:**
+- しばらく待ってから再試行
+- `--force` オプションを避ける
+- 差分更新を使用
 
 ## 🗑️ アンインストール
 
-### cargoでインストールした場合
+### 自動アンインストール
 
 ```bash
-cargo uninstall gist-cache-rs
+./script/setup.sh uninstall
 ```
 
-### 手動でコピーした場合
+対話的に以下を選択：
+- バイナリ削除
+- キャッシュディレクトリ削除
+- エイリアス削除
+
+### 手動アンインストール
 
 ```bash
-# システムインストールの場合
+# cargo でインストールした場合
+cargo uninstall gist-cache-rs
+
+# システムディレクトリにインストールした場合
 sudo rm /usr/local/bin/gist-cache-rs
 
-# ユーザーローカルの場合
+# ユーザーディレクトリにインストールした場合
 rm ~/bin/gist-cache-rs
+
+# キャッシュディレクトリを削除
+rm -rf ~/.cache/gist-cache/
+
+# エイリアスを削除（~/.bashrc または ~/.zshrc から該当行を削除）
+# 例:
+# alias gcurs='gist-cache-rs update'
+# alias grcrs='gist-cache-rs run'
 ```
 
-### キャッシュディレクトリの削除
+## ➡️ 次のステップ
 
-```bash
-rm -rf ~/.cache/gist-cache
-```
-
-## 🔧 トラブルシューティング
-
-### ❌ ビルドエラー
-
-```bash
-# 依存関係の問題
-cargo clean
-cargo build --release
-
-# Rustのバージョンアップ
-rustup update
-```
-
-### 🚫 gh コマンドが見つからない
-
-```bash
-# GitHub CLIのインストール確認
-which gh
-
-# インストールされていない場合は「前提条件」セクションを参照
-```
-
-### 🛣️ パスが通らない
-
-```bash
-# 現在のPATH確認
-echo $PATH
-
-# .bashrc/.zshrcを確認
-cat ~/.bashrc | grep PATH
-
-# 手動でPATHに追加
-export PATH="$HOME/.cargo/bin:$PATH"
-```
-
-### 🔒 権限エラー
-
-```bash
-# バイナリに実行権限を付与
-chmod +x target/release/gist-cache-rs
-
-# またはインストール先に適切な権限を設定
-sudo chmod +x /usr/local/bin/gist-cache-rs
-```
-
-### 🌐 ネットワークエラー（ビルド時）
-
-依存関係のダウンロードでネットワークエラーが発生する場合：
-
-```bash
-# プロキシ設定が必要な場合
-export https_proxy=your-proxy-url
-
-# または .cargo/config.toml に設定
-```
-
-## 🎯 次のステップ
-
-インストールが完了したら、[QUICKSTART.md](QUICKSTART.md) を参照して、実際の使い方を学んでください。
+- [QUICKSTART.md](QUICKSTART.md) - クイックスタートガイド
+- [EXAMPLES.md](EXAMPLES.md) - 実用例
+- [README.md](README.md) - プロジェクト概要

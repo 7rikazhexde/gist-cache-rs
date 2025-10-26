@@ -53,12 +53,19 @@ impl CacheUpdater {
                 println!("{}", "既存のキャッシュを検出しました".green());
                 println!(
                     "{}",
-                    format!("GitHubユーザー（キャッシュ再利用）: {}", cache.metadata.github_user)
-                        .green()
+                    format!(
+                        "GitHubユーザー（キャッシュ再利用）: {}",
+                        cache.metadata.github_user
+                    )
+                    .green()
                 );
                 println!(
                     "{}",
-                    format!("最終更新日時: {}", cache.metadata.last_updated.format("%Y-%m-%dT%H:%M:%SZ")).green()
+                    format!(
+                        "最終更新日時: {}",
+                        cache.metadata.last_updated.format("%Y-%m-%dT%H:%M:%SZ")
+                    )
+                    .green()
                 );
             }
             (
@@ -84,10 +91,7 @@ impl CacheUpdater {
         let fetched_count = fetched_gists.len();
 
         if self.verbose {
-            println!(
-                "{}",
-                format!("取得したGist数: {}", fetched_count).green()
-            );
+            println!("{}", format!("取得したGist数: {}", fetched_count).green());
         }
 
         // Merge with existing cache if doing differential update
@@ -97,10 +101,8 @@ impl CacheUpdater {
                 old
             } else {
                 // Merge by ID, keeping the latest version
-                let mut gist_map: HashMap<String, GistInfo> = old
-                    .drain(..)
-                    .map(|g| (g.id.clone(), g))
-                    .collect();
+                let mut gist_map: HashMap<String, GistInfo> =
+                    old.drain(..).map(|g| (g.id.clone(), g)).collect();
 
                 let old_count = gist_map.len();
 
@@ -110,7 +112,7 @@ impl CacheUpdater {
                 }
 
                 let mut merged: Vec<GistInfo> = gist_map.into_values().collect();
-                
+
                 // Sort by updated_at descending (most recent first)
                 merged.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
 
@@ -137,10 +139,7 @@ impl CacheUpdater {
             }
         } else {
             // Force update or first time
-            let mut gists: Vec<GistInfo> = fetched_gists
-                .into_iter()
-                .map(GistInfo::from)
-                .collect();
+            let mut gists: Vec<GistInfo> = fetched_gists.into_iter().map(GistInfo::from).collect();
 
             // Sort by updated_at descending
             gists.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
