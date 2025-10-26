@@ -160,9 +160,14 @@ EOF
     print_warning "このスクリプトは gist-cache-rs をアンインストールします"
     echo ""
 
-    if ! confirm "アンインストールを開始しますか？" "n"; then
-        echo "アンインストールを中止しました"
-        exit 0
+    # 非対話モードでは確認をスキップ
+    if [ "$IS_INTERACTIVE" = true ]; then
+        if ! confirm "アンインストールを開始しますか？" "n"; then
+            echo "アンインストールを中止しました"
+            exit 0
+        fi
+    else
+        print_info "非対話モード: アンインストールを開始します"
     fi
 
     print_header "アンインストール処理"
@@ -212,7 +217,17 @@ EOF
     echo ""
     if [ -d "$CACHE_DIR" ]; then
         print_info "キャッシュディレクトリを検出: $CACHE_DIR"
-        if confirm "キャッシュディレクトリを削除しますか？" "n"; then
+        
+        SHOULD_DELETE_CACHE=false
+        if [ "$IS_INTERACTIVE" = false ]; then
+            # 非対話モードでは削除
+            print_info "非対話モード: キャッシュディレクトリを削除します"
+            SHOULD_DELETE_CACHE=true
+        elif confirm "キャッシュディレクトリを削除しますか？" "n"; then
+            SHOULD_DELETE_CACHE=true
+        fi
+        
+        if [ "$SHOULD_DELETE_CACHE" = true ]; then
             if rm -rf "$CACHE_DIR"; then
                 print_success "キャッシュディレクトリを削除しました"
             else
@@ -268,7 +283,16 @@ EOF
             done
             echo ""
             
-            if confirm "$rcfile からエイリアスを削除しますか？" "n"; then
+            SHOULD_DELETE_ALIAS=false
+            if [ "$IS_INTERACTIVE" = false ]; then
+                # 非対話モードでは削除
+                print_info "非対話モード: エイリアスを削除します"
+                SHOULD_DELETE_ALIAS=true
+            elif confirm "$rcfile からエイリアスを削除しますか？" "n"; then
+                SHOULD_DELETE_ALIAS=true
+            fi
+            
+            if [ "$SHOULD_DELETE_ALIAS" = true ]; then
                 # Create backup
                 BACKUP_FILE="${rcfile}.backup.$(date +%Y%m%d%H%M%S)"
                 cp "$rcfile" "$BACKUP_FILE"
