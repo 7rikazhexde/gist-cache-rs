@@ -372,7 +372,9 @@ mod tests {
 
         // いくつかのファイルを書き込み
         cache.write("gist1", "file1.sh", "content1").unwrap();
-        cache.write("gist2", "file2.py", "longer content 2").unwrap();
+        cache
+            .write("gist2", "file2.py", "longer content 2")
+            .unwrap();
 
         // サイズが増加していることを確認
         let size = cache.total_size().unwrap();

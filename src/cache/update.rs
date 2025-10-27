@@ -1,5 +1,5 @@
-use crate::cache::types::{CacheMetadata, GistCache, GistInfo};
 use crate::cache::ContentCache;
+use crate::cache::types::{CacheMetadata, GistCache, GistInfo};
 use crate::config::Config;
 use crate::error::Result;
 use crate::github::GitHubApi;
@@ -142,8 +142,11 @@ impl CacheUpdater {
                             Err(e) => {
                                 eprintln!(
                                     "{}",
-                                    format!("  警告: キャッシュ削除に失敗: {} - {}", new_gist.id, e)
-                                        .yellow()
+                                    format!(
+                                        "  警告: キャッシュ削除に失敗: {} - {}",
+                                        new_gist.id, e
+                                    )
+                                    .yellow()
                                 );
                             }
                         }

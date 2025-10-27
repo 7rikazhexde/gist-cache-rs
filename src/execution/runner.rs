@@ -1,5 +1,5 @@
-use crate::cache::types::GistInfo;
 use crate::cache::ContentCache;
+use crate::cache::types::GistInfo;
 use crate::config::Config;
 use crate::error::{GistCacheError, Result};
 use crate::github::GitHubApi;
@@ -85,10 +85,10 @@ impl ScriptRunner {
 
         for file in &self.gist.files {
             println!("\n{}", format!("--- {} ---", file.filename).yellow().bold());
-            
+
             // キャッシュチェック
             let content_cache = ContentCache::new(self.config.contents_dir.clone());
-            
+
             let content = if content_cache.exists(&self.gist.id, &file.filename) {
                 // キャッシュから読み込み
                 match content_cache.read(&self.gist.id, &file.filename) {
@@ -102,7 +102,7 @@ impl ScriptRunner {
                 // APIから取得
                 GitHubApi::fetch_gist_content(&self.gist.id, &file.filename)?
             };
-            
+
             println!("{}", content);
         }
 
@@ -120,7 +120,7 @@ impl ScriptRunner {
 
         // キャッシュチェックと本文取得
         let content_cache = ContentCache::new(self.config.contents_dir.clone());
-        
+
         let content = if content_cache.exists(&self.gist.id, &main_file.filename) {
             // キャッシュから読み込み
             match content_cache.read(&self.gist.id, &main_file.filename) {
@@ -137,11 +137,12 @@ impl ScriptRunner {
                         format!("  警告: キャッシュ読み込み失敗、APIから取得します: {}", e)
                             .yellow()
                     );
-                    let fetched = GitHubApi::fetch_gist_content(&self.gist.id, &main_file.filename)?;
-                    
+                    let fetched =
+                        GitHubApi::fetch_gist_content(&self.gist.id, &main_file.filename)?;
+
                     // 取得に成功したらキャッシュに保存を試みる
                     let _ = content_cache.write(&self.gist.id, &main_file.filename, &fetched);
-                    
+
                     fetched
                 }
             }
@@ -187,7 +188,10 @@ impl ScriptRunner {
                     }
                     Err(e) => {
                         // キャッシュ保存失敗は警告のみ（実行は成功しているため）
-                        eprintln!("{}", format!("  警告: キャッシュ保存に失敗: {}", e).yellow());
+                        eprintln!(
+                            "{}",
+                            format!("  警告: キャッシュ保存に失敗: {}", e).yellow()
+                        );
                     }
                 }
             }
