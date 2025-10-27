@@ -191,6 +191,7 @@ fn run_gist(config: Config, args: RunArgs) -> Result<()> {
         args.preview,
         force_file_based,
         args.script_args,
+        config,
     );
 
     runner.run()?;
@@ -231,12 +232,6 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
             // Check if the custom interpreter exists
             if let Ok(output) = std::process::Command::new("which").arg(custom).output() {
                 if !output.status.success() {
-                    //eprintln!(
-                    //    "{}",
-                    //    format!("エラー: インタープリタ '{}' が見つかりません", custom)
-                    //        .red()
-                    //        .bold()
-                    //);
                     eprintln!();
                     eprintln!("{}", "サポートされているインタープリタ:".green());
                     eprintln!("  bash, sh, zsh, python3, python, uv, ruby, node, perl, php");

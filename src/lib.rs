@@ -5,7 +5,7 @@ pub mod execution;
 pub mod github;
 pub mod search;
 
-pub use cache::{CacheUpdater, GistCache, GistInfo};
+pub use cache::{CacheUpdater, ContentCache, GistCache, GistInfo};
 pub use config::Config;
 pub use error::{GistCacheError, Result};
 pub use execution::ScriptRunner;

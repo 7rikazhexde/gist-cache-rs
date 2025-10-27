@@ -40,6 +40,18 @@ pub enum GistCacheError {
 
     #[error("Configuration error: {0}")]
     Config(String),
+
+    #[error("Failed to read cache file: {0}")]
+    CacheReadError(String),
+
+    #[error("Failed to write cache file: {0}")]
+    CacheWriteError(String),
+
+    #[error("Failed to delete cache: {0}")]
+    CacheDeleteError(String),
+
+    #[error("Cache directory error: {0}")]
+    CacheDirectoryError(String),
 }
 
 pub type Result<T> = std::result::Result<T, GistCacheError>;
