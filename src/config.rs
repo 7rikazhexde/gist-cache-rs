@@ -1,6 +1,7 @@
 use crate::error::{GistCacheError, Result};
 use std::path::PathBuf;
 
+#[derive(Clone)]
 pub struct Config {
     pub cache_dir: PathBuf,
     pub cache_file: PathBuf,

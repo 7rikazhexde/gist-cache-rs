@@ -19,7 +19,7 @@ enum Commands {
     /// キャッシュから検索して実行
     Run(RunArgs),
     /// キャッシュ管理
-    Cache(CacheArgs),  // ← この行を追加
+    Cache(CacheArgs),
 }
 
 #[derive(Args)]
@@ -45,6 +45,10 @@ struct RunArgs {
     /// プレビューモード（内容表示のみ）
     #[arg(short, long)]
     preview: bool,
+
+    /// 実行前にGistキャッシュを更新
+    #[arg(short, long)]
+    force: bool,
 
     /// ID直接指定モード
     #[arg(long)]
@@ -107,10 +111,17 @@ fn run() -> Result<()> {
                 print_run_help();
                 return Ok(());
             }
+            
+            // --force オプションが指定されている場合は、先にキャッシュを更新
+            if args.force {
+                let updater = CacheUpdater::new(config.clone(), false);
+                updater.update(false)?;  // 差分更新（force=false）
+            }
+            
             run_gist(config, args)?;
         }
         Commands::Cache(args) => {
-            handle_cache_command(config, args)?;  // ← この行を追加
+            handle_cache_command(config, args)?;
         }
     }
 
@@ -133,6 +144,7 @@ fn print_run_help() {
     println!("Options:");
     println!("  -i, --interactive  対話的スクリプト実行モード");
     println!("  -p, --preview      プレビューモード（内容表示のみ）");
+    println!("  -f, --force        実行前にGistキャッシュを更新（常に最新版を取得）");
     println!("      --id           ID直接指定モード");
     println!("      --filename     ファイル名で検索");
     println!("      --description  説明文で検索");
@@ -153,6 +165,8 @@ fn print_run_help() {
     println!("  gist-cache-rs run -i interactive-script       # 対話モード");
     println!("  gist-cache-rs run --filename setup.sh         # ファイル名検索");
     println!("  gist-cache-rs run --id abc123def456           # ID指定");
+    println!("  gist-cache-rs run -f backup                   # キャッシュ更新後に実行");
+    println!("  gist-cache-rs run -f --description numpy uv   # キャッシュ更新+説明文検索");
     println!();
     println!("{}", "引数指定を確認してください:".red().bold());
     println!("  ✅ uv例: gist-cache-rs run --description numpy uv input.csv");
