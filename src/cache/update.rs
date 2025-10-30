@@ -129,13 +129,29 @@ impl CacheUpdater {
 
                         // 自己修復の原則：エラーが発生してもログ出力して継続
                         match content_cache.delete_gist(&new_gist.id) {
-                            Ok(_) => {
-                                deleted_cache_count += 1;
-                                if self.verbose {
+                            Ok(deleted) => {
+                                if deleted {
+                                    // 実際に削除された場合のみカウント
+                                    deleted_cache_count += 1;
+                                    if self.verbose {
+                                        println!(
+                                            "{}",
+                                            format!(
+                                                "  → キャッシュを削除しました: {}",
+                                                new_gist.id
+                                            )
+                                            .green()
+                                        );
+                                    }
+                                } else if self.verbose {
+                                    // 既に存在しなかった場合（verboseモードでのみ表示）
                                     println!(
                                         "{}",
-                                        format!("  → キャッシュを削除しました: {}", new_gist.id)
-                                            .green()
+                                        format!(
+                                            "  → キャッシュは既に存在しませんでした: {}",
+                                            new_gist.id
+                                        )
+                                        .cyan()
                                     );
                                 }
                             }

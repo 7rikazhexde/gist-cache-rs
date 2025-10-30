@@ -152,18 +152,17 @@ impl ContentCache {
     /// # Arguments
     /// * `gist_id` - GistのID
     ///
+    /// # Returns
+    /// 実際に削除した場合は `Ok(true)`、既に存在しなかった場合は `Ok(false)`
+    ///
     /// # Errors
     /// 削除に失敗した場合（ただし、ディレクトリが存在しない場合はエラーではない）
-    ///
-    /// # 自己修復の原則
-    /// - ディレクトリ内に予期しないファイルが存在する場合でも、ディレクトリ全体を削除
-    /// - エラーは致命的な場合のみ返し、予期しない状態は自動的に修復
-    pub fn delete_gist(&self, gist_id: &str) -> Result<()> {
+    pub fn delete_gist(&self, gist_id: &str) -> Result<bool> {
         let gist_dir = self.get_gist_dir(gist_id);
 
         if !gist_dir.exists() {
             // ディレクトリが存在しない場合はスキップ（エラーではない）
-            return Ok(());
+            return Ok(false); // 削除しなかった
         }
 
         // 自己修復の原則：ディレクトリ全体を削除
@@ -176,7 +175,7 @@ impl ContentCache {
             ))
         })?;
 
-        Ok(())
+        Ok(true) // 削除した
     }
 
     /// キャッシュされているすべてのGist IDを取得
@@ -314,11 +313,13 @@ mod tests {
         assert!(cache.exists(gist_id, filename));
 
         // 削除
-        cache.delete_gist(gist_id).unwrap();
+        let deleted = cache.delete_gist(gist_id).unwrap();
+        assert!(deleted); // 削除されたことを確認
         assert!(!cache.exists(gist_id, filename));
 
-        // 存在しないGistの削除はエラーにならない
-        cache.delete_gist("nonexistent").unwrap();
+        // 存在しないGistの削除はエラーにならず、false を返す
+        let deleted = cache.delete_gist("nonexistent").unwrap();
+        assert!(!deleted); // 削除されなかったことを確認
     }
 
     #[test]
@@ -357,7 +358,8 @@ mod tests {
         assert_eq!(entries.len(), 2);
 
         // delete_gistはディレクトリ全体を削除（自己修復）
-        cache.delete_gist(gist_id).unwrap();
+        let deleted = cache.delete_gist(gist_id).unwrap();
+        assert!(deleted); // 実際に削除されたことを確認
 
         // ディレクトリ全体が削除されていることを確認
         assert!(!gist_dir.exists());

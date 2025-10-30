@@ -18,6 +18,8 @@ enum Commands {
     Update(UpdateArgs),
     /// キャッシュから検索して実行
     Run(RunArgs),
+    /// キャッシュ管理
+    Cache(CacheArgs),  // ← この行を追加
 }
 
 #[derive(Args)]
@@ -65,6 +67,24 @@ struct RunArgs {
     script_args: Vec<String>,
 }
 
+#[derive(Args)]
+struct CacheArgs {
+    #[command(subcommand)]
+    command: CacheCommands,
+}
+
+#[derive(Subcommand)]
+enum CacheCommands {
+    /// キャッシュされたGistの一覧を表示
+    List,
+    /// キャッシュの合計サイズを表示
+    Size,
+    /// 古いキャッシュを削除（未実装）
+    Clean,
+    /// 全てのキャッシュを削除
+    Clear,
+}
+
 fn main() {
     if let Err(e) = run() {
         eprintln!("{} {}", "エラー:".red().bold(), e);
@@ -88,6 +108,9 @@ fn run() -> Result<()> {
                 return Ok(());
             }
             run_gist(config, args)?;
+        }
+        Commands::Cache(args) => {
+            handle_cache_command(config, args)?;  // ← この行を追加
         }
     }
 
@@ -244,5 +267,148 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
             }
             Ok((custom.to_string(), None, false, false))
         }
+    }
+}
+
+fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
+    let content_cache = ContentCache::new(config.contents_dir.clone());
+
+    match args.command {
+        CacheCommands::List => {
+            println!("{}", "キャッシュされたGist一覧:".cyan().bold());
+            println!();
+
+            let gist_ids = content_cache.list_cached_gists()?;
+
+            if gist_ids.is_empty() {
+                println!("{}", "キャッシュされたGistはありません".yellow());
+                return Ok(());
+            }
+
+            // メタデータJSONを読み込んで詳細情報を表示
+            if config.cache_exists() {
+                let cache_content = fs::read_to_string(&config.cache_file)?;
+                let cache: GistCache = serde_json::from_str(&cache_content)?;
+
+                for gist_id in &gist_ids {
+                    if let Some(gist) = cache.gists.iter().find(|g| &g.id == gist_id) {
+                        // 修正: as_deref() を使用
+                        let desc = gist
+                            .description
+                            .as_deref()
+                            .unwrap_or("No description");
+                        
+                        let files: Vec<_> = gist.files.iter().map(|f| f.filename.as_str()).collect();
+
+                        println!("{}", format!("ID: {}", gist.id).green());
+                        println!("  説明: {}", desc);
+                        println!("  ファイル: {}", files.join(", "));
+                        println!("  更新日時: {}", gist.updated_at.format("%Y-%m-%d %H:%M:%S"));
+                        println!();
+                    } else {
+                        println!("{}", format!("ID: {}", gist_id).green());
+                        println!("  (メタデータが見つかりません)");
+                        println!();
+                    }
+                }
+
+                println!(
+                    "{}",
+                    format!("合計: {}件のGistがキャッシュされています", gist_ids.len())
+                        .cyan()
+                        .bold()
+                );
+            } else {
+                // メタデータがない場合はIDのみ表示
+                for gist_id in &gist_ids {
+                    println!("  {}", gist_id.green());
+                }
+                println!();
+                println!(
+                    "{}",
+                    format!("合計: {}件", gist_ids.len()).cyan().bold()
+                );
+            }
+        }
+        CacheCommands::Size => {
+            println!("{}", "キャッシュサイズ情報:".cyan().bold());
+            println!();
+
+            let total_size = content_cache.total_size()?;
+            let gist_count = content_cache.list_cached_gists()?.len();
+
+            println!(
+                "{}",
+                format!("キャッシュされたGist数: {}件", gist_count).green()
+            );
+            println!("{}", format!("合計サイズ: {}", format_bytes(total_size)).green());
+            println!(
+                "{}",
+                format!("キャッシュディレクトリ: {}", config.contents_dir.display()).cyan()
+            );
+        }
+        CacheCommands::Clean => {
+            println!("{}", "古いキャッシュの削除".yellow());
+            println!();
+            println!(
+                "{}",
+                "この機能は現在未実装です。将来のバージョンで実装予定です。".yellow()
+            );
+            println!();
+            println!("代わりに以下のコマンドを使用できます:");
+            println!("  gist-cache-rs cache clear  # 全キャッシュを削除");
+        }
+        CacheCommands::Clear => {
+            println!("{}", "全キャッシュの削除".yellow().bold());
+            println!();
+
+            let gist_count = content_cache.list_cached_gists()?.len();
+
+            if gist_count == 0 {
+                println!("{}", "削除するキャッシュはありません".green());
+                return Ok(());
+            }
+
+            println!(
+                "{}",
+                format!("{}件のGistキャッシュを削除します。よろしいですか？", gist_count)
+                    .yellow()
+            );
+            println!("  {}", "この操作は取り消せません。".red());
+            println!();
+            print!("{}", "続行しますか？ (y/N): ");
+
+            std::io::Write::flush(&mut std::io::stdout())?;
+
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input)?;
+
+            if input.trim().to_lowercase() == "y" {
+                content_cache.clear_all()?;
+                println!();
+                println!("{}", "全キャッシュを削除しました".green().bold());
+            } else {
+                println!();
+                println!("{}", "キャンセルしました".cyan());
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn format_bytes(bytes: u64) -> String {
+    const KB: u64 = 1024;
+    const MB: u64 = KB * 1024;
+    const GB: u64 = MB * 1024;
+
+    if bytes >= GB {
+        format!("{:.2} GB", bytes as f64 / GB as f64)
+    } else if bytes >= MB {
+        format!("{:.2} MB", bytes as f64 / MB as f64)
+    } else if bytes >= KB {
+        format!("{:.2} KB", bytes as f64 / KB as f64)
+    } else {
+        format!("{} bytes", bytes)
     }
 }
