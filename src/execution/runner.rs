@@ -1,4 +1,6 @@
+use crate::cache::ContentCache;
 use crate::cache::types::GistInfo;
+use crate::config::Config;
 use crate::error::{GistCacheError, Result};
 use crate::github::GitHubApi;
 use colored::Colorize;
@@ -16,6 +18,7 @@ pub struct ScriptRunner {
     preview: bool,
     force_file_based: bool,
     args: Vec<String>,
+    config: Config,
 }
 
 impl ScriptRunner {
@@ -28,6 +31,7 @@ impl ScriptRunner {
         preview: bool,
         force_file_based: bool,
         args: Vec<String>,
+        config: Config,
     ) -> Self {
         Self {
             gist,
@@ -38,6 +42,7 @@ impl ScriptRunner {
             preview,
             force_file_based,
             args,
+            config,
         }
     }
 
@@ -80,7 +85,24 @@ impl ScriptRunner {
 
         for file in &self.gist.files {
             println!("\n{}", format!("--- {} ---", file.filename).yellow().bold());
-            let content = GitHubApi::fetch_gist_content(&self.gist.id, &file.filename)?;
+
+            // キャッシュチェック
+            let content_cache = ContentCache::new(self.config.contents_dir.clone());
+
+            let content = if content_cache.exists(&self.gist.id, &file.filename) {
+                // キャッシュから読み込み
+                match content_cache.read(&self.gist.id, &file.filename) {
+                    Ok(c) => c,
+                    Err(_) => {
+                        // キャッシュ読み込み失敗時はAPIから取得
+                        GitHubApi::fetch_gist_content(&self.gist.id, &file.filename)?
+                    }
+                }
+            } else {
+                // APIから取得
+                GitHubApi::fetch_gist_content(&self.gist.id, &file.filename)?
+            };
+
             println!("{}", content);
         }
 
@@ -96,15 +118,86 @@ impl ScriptRunner {
             format!("実行中: {} ({})", main_file.filename, self.interpreter).cyan()
         );
 
-        // Fetch content
-        let content = GitHubApi::fetch_gist_content(&self.gist.id, &main_file.filename)?;
+        // キャッシュチェックと本文取得
+        let content_cache = ContentCache::new(self.config.contents_dir.clone());
 
-        // Execute based on mode - force file-based for uv/poetry/PHP
-        if self.force_file_based || self.interactive || self.is_shell {
-            self.execute_interactive(&content, &main_file.filename)
+        let content = if content_cache.exists(&self.gist.id, &main_file.filename) {
+            // キャッシュから読み込み
+            match content_cache.read(&self.gist.id, &main_file.filename) {
+                Ok(c) => {
+                    if std::env::var("GIST_CACHE_VERBOSE").is_ok() {
+                        println!("{}", "  → キャッシュからロード".green());
+                    }
+                    c
+                }
+                Err(e) => {
+                    // 自己修復の原則：キャッシュ読み込み失敗時はAPIから取得
+                    eprintln!(
+                        "{}",
+                        format!("  警告: キャッシュ読み込み失敗、APIから取得します: {}", e)
+                            .yellow()
+                    );
+                    let fetched =
+                        GitHubApi::fetch_gist_content(&self.gist.id, &main_file.filename)?;
+
+                    // 取得に成功したらキャッシュに保存を試みる
+                    let _ = content_cache.write(&self.gist.id, &main_file.filename, &fetched);
+
+                    fetched
+                }
+            }
+        } else {
+            // APIから取得
+            println!(
+                "{}",
+                "  情報: キャッシュが存在しないため、GitHub APIから取得します...".yellow()
+            );
+            let fetched = GitHubApi::fetch_gist_content(&self.gist.id, &main_file.filename)?;
+            fetched
+        };
+
+        // 対話モードでの整合性確保：
+        // キャッシュから読み込む場合もAPIから取得する場合も、
+        // 常に一時ファイルを経由して実行することで動作を統一
+        let execution_result = if self.force_file_based || self.interactive || self.is_shell {
+            self.execute_via_temp_file(&content, &main_file.filename)
         } else {
             self.execute_direct(&content)
+        };
+
+        // 実行が成功した場合のみキャッシュに保存
+        if execution_result.is_ok() {
+            // キャッシュが存在しない場合のみ保存（既存のキャッシュは上書きしない）
+            if !content_cache.exists(&self.gist.id, &main_file.filename) {
+                match content_cache.write(&self.gist.id, &main_file.filename, &content) {
+                    Ok(_) => {
+                        if std::env::var("GIST_CACHE_VERBOSE").is_ok() {
+                            println!(
+                                "{}",
+                                format!(
+                                    "  → キャッシュに保存しました: {}",
+                                    self.config
+                                        .contents_dir
+                                        .join(&self.gist.id)
+                                        .join(&main_file.filename)
+                                        .display()
+                                )
+                                .green()
+                            );
+                        }
+                    }
+                    Err(e) => {
+                        // キャッシュ保存失敗は警告のみ（実行は成功しているため）
+                        eprintln!(
+                            "{}",
+                            format!("  警告: キャッシュ保存に失敗: {}", e).yellow()
+                        );
+                    }
+                }
+            }
         }
+
+        execution_result
     }
 
     fn select_main_file(&self) -> Result<&crate::cache::types::GistFile> {
@@ -138,7 +231,11 @@ impl ScriptRunner {
         Ok(&self.gist.files[0])
     }
 
-    fn execute_interactive(&self, content: &str, filename: &str) -> Result<()> {
+    /// 一時ファイル経由での実行（対話モード、シェルスクリプト、file-basedインタープリタ）
+    ///
+    /// 重要：キャッシュの有無に関わらず、この関数を使用することで
+    /// 対話的なスクリプトの動作が一貫することを保証
+    fn execute_via_temp_file(&self, content: &str, filename: &str) -> Result<()> {
         // Create temporary file
         let temp_dir = std::env::temp_dir();
         let temp_file = temp_dir.join(filename);
@@ -175,6 +272,7 @@ impl ScriptRunner {
         }
 
         // Run with inherited stdio for interactive mode
+        // 対話モードでは標準入力を継承することで、readコマンドなどが正常に動作
         let status = cmd
             .stdin(Stdio::inherit())
             .stdout(Stdio::inherit())
@@ -194,6 +292,7 @@ impl ScriptRunner {
         Ok(())
     }
 
+    /// 標準入力経由での直接実行（非対話モード、stdin対応インタープリタ）
     fn execute_direct(&self, content: &str) -> Result<()> {
         // Build command with interpreter-specific flags for stdin execution
         let mut cmd = match self.interpreter.as_str() {

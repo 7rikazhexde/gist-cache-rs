@@ -27,6 +27,7 @@ colored = "3.0"
 [dev-dependencies]
 tokio = { version = "1.35", features = ["macros", "rt-multi-thread"] }
 assert_cmd = "2.0"
+tempfile = "3.8"
 
 [profile.release]
 opt-level = 3

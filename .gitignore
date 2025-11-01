@@ -38,3 +38,6 @@ Thumbs.db
 # Tools
 .env
 .env.local
+
+# Claude Code working directory
+.claude_request/

@@ -1,9 +1,11 @@
 use crate::error::{GistCacheError, Result};
 use std::path::PathBuf;
 
+#[derive(Clone)]
 pub struct Config {
     pub cache_dir: PathBuf,
     pub cache_file: PathBuf,
+    pub contents_dir: PathBuf,
 }
 
 impl Config {
@@ -13,16 +15,21 @@ impl Config {
 
         let cache_dir = home.join(".cache").join("gist-cache");
         let cache_file = cache_dir.join("cache.json");
+        let contents_dir = cache_dir.join("contents");
 
         Ok(Self {
             cache_dir,
             cache_file,
+            contents_dir,
         })
     }
 
     pub fn ensure_cache_dir(&self) -> Result<()> {
         if !self.cache_dir.exists() {
             std::fs::create_dir_all(&self.cache_dir)?;
+        }
+        if !self.contents_dir.exists() {
+            std::fs::create_dir_all(&self.contents_dir)?;
         }
         Ok(())
     }

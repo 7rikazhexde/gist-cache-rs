@@ -1,3 +1,4 @@
+use crate::cache::ContentCache;
 use crate::cache::types::{CacheMetadata, GistCache, GistInfo};
 use crate::config::Config;
 use crate::error::Result;
@@ -30,6 +31,10 @@ impl CacheUpdater {
 
         // Ensure cache directory exists
         self.config.ensure_cache_dir()?;
+
+        // ContentCacheインスタンスを作成
+        let content_cache = ContentCache::new(self.config.contents_dir.clone());
+        content_cache.ensure_cache_dir()?;
 
         // Check authentication
         GitHubApi::check_auth()?;
@@ -94,6 +99,78 @@ impl CacheUpdater {
             println!("{}", format!("取得したGist数: {}", fetched_count).green());
         }
 
+        // メタデータを比較してキャッシュ削除対象を特定
+        let mut deleted_cache_count = 0;
+        if let Some(ref old) = old_gists {
+            // 旧メタデータをMapに変換
+            let old_map: HashMap<String, &GistInfo> =
+                old.iter().map(|g| (g.id.clone(), g)).collect();
+
+            // 新しく取得したGistについて、updated_atが変化したものを検出
+            for new_gist in &fetched_gists {
+                if let Some(old_gist) = old_map.get(&new_gist.id) {
+                    // updated_atが異なる場合、Gistが更新されている
+                    if old_gist.updated_at != new_gist.updated_at {
+                        // キャッシュを削除
+                        if self.verbose {
+                            println!(
+                                "{}",
+                                format!(
+                                    "Gist更新を検出: {} ({})",
+                                    new_gist.id,
+                                    new_gist
+                                        .description
+                                        .as_ref()
+                                        .unwrap_or(&"No description".to_string())
+                                )
+                                .yellow()
+                            );
+                        }
+
+                        // 自己修復の原則：エラーが発生してもログ出力して継続
+                        match content_cache.delete_gist(&new_gist.id) {
+                            Ok(deleted) => {
+                                if deleted {
+                                    // 実際に削除された場合のみカウント
+                                    deleted_cache_count += 1;
+                                    if self.verbose {
+                                        println!(
+                                            "{}",
+                                            format!(
+                                                "  → キャッシュを削除しました: {}",
+                                                new_gist.id
+                                            )
+                                            .green()
+                                        );
+                                    }
+                                } else if self.verbose {
+                                    // 既に存在しなかった場合（verboseモードでのみ表示）
+                                    println!(
+                                        "{}",
+                                        format!(
+                                            "  → キャッシュは既に存在しませんでした: {}",
+                                            new_gist.id
+                                        )
+                                        .cyan()
+                                    );
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!(
+                                    "{}",
+                                    format!(
+                                        "  警告: キャッシュ削除に失敗: {} - {}",
+                                        new_gist.id, e
+                                    )
+                                    .yellow()
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Merge with existing cache if doing differential update
         let final_gists = if let Some(mut old) = old_gists {
             if fetched_count == 0 {
@@ -133,6 +210,14 @@ impl CacheUpdater {
                 println!("{}", format!("更新: {}件", fetched_count).green());
                 if new > 0 && self.verbose {
                     println!("{}", format!("新規Gist: {}件", new).green());
+                }
+
+                // キャッシュ削除の報告
+                if deleted_cache_count > 0 {
+                    println!(
+                        "{}",
+                        format!("キャッシュ削除: {}件", deleted_cache_count).yellow()
+                    );
                 }
 
                 merged

@@ -327,6 +327,86 @@ gcrsr backup bash /src /dst  # 引数付き実行
 
 ---
 
+## 🗂️ キャッシュ管理の例
+
+### キャッシュ一覧の確認
+
+```bash
+$ gist-cache-rs cache list
+キャッシュされたGist一覧:
+
+ID: 7bcb324e9291fa350334df8efb7f0deb
+  説明: hello_args.sh - 引数表示スクリプト #bash #test
+  ファイル: hello_args.sh
+  更新日時: 2025-10-26 12:30:45
+
+ID: e3a6336c9f3476342626551372f14d6e
+  説明: data_analysis.py - Pandas/NumPy使用例 #python #pep723
+  ファイル: data_analysis.py
+  更新日時: 2025-10-25 18:22:10
+
+合計: 2件のGistがキャッシュされています
+```
+
+### キャッシュサイズの確認
+
+```bash
+$ gist-cache-rs cache size
+キャッシュサイズ情報:
+
+キャッシュされたGist数: 15件
+合計サイズ: 89.45 KB
+キャッシュディレクトリ: /home/user/.cache/gist-cache/contents
+```
+
+### 全キャッシュの削除
+
+```bash
+$ gist-cache-rs cache clear
+全キャッシュの削除
+
+15件のGistキャッシュを削除します。よろしいですか？
+  この操作は取り消せません。
+
+続行しますか？ (y/N): y
+
+全キャッシュを削除しました
+```
+
+---
+
+## 🔄 強制更新オプションの使用例
+
+### 開発中のGistを常に最新版で実行
+
+```bash
+# 開発中のスクリプトを編集→実行のサイクルで使用
+$ gist-cache-rs run --force test-script bash arg1 arg2
+
+# 内部的に以下の動作を実行：
+# 1. メタデータキャッシュを差分更新
+# 2. Gistが更新されていればコンテンツキャッシュを削除
+# 3. 最新版を取得して実行
+# 4. 新しいキャッシュを作成
+```
+
+### 検索オプションと組み合わせ
+
+```bash
+# 説明文で検索して、常に最新版を実行
+$ gist-cache-rs run --force --description "backup script" bash /src /dst
+
+# ファイル名で検索して、最新版を実行
+$ gist-cache-rs run --force --filename deploy.sh bash
+```
+
+**ポイント:**
+- 📡 実行前に自動的に`update`を実行（差分更新）
+- ⚡ Gistが更新されていなければ、既存のキャッシュを使用して高速実行
+- 🔄 更新されている場合のみ、新しいバージョンを取得
+
+---
+
 ## 🎯 Tips & トリック
 
 ### 1. 最近更新したGistをすぐ実行
