@@ -21,7 +21,7 @@ gh auth status
 
 ```bash
 # プロジェクトディレクトリで実行
-cd ~/dev/rust/gist-cache-rs
+cd gist-cache-rs
 
 # ビルドとインストール
 cargo build --release
@@ -116,6 +116,19 @@ gist-cache-rs update --force
 gist-cache-rs update --verbose
 ```
 
+### 🗂️ コンテンツキャッシュ管理
+
+```bash
+# キャッシュ一覧表示
+gist-cache-rs cache list
+
+# キャッシュサイズ確認
+gist-cache-rs cache size
+
+# 全キャッシュ削除
+gist-cache-rs cache clear
+```
+
 ### 🔍 Gist検索・実行
 
 ```bash
@@ -133,6 +146,9 @@ gist-cache-rs run --filename setup.sh
 
 # 説明文で検索
 gist-cache-rs run --description deployment
+
+# 実行前に最新情報を取得（強制更新）
+gist-cache-rs run --force backup bash
 ```
 
 ### 🔧 インタープリタ指定

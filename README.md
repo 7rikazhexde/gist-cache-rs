@@ -6,10 +6,12 @@ GitHubのGistを効率的にキャッシュ・検索・実行するためのCLI�
 
 - ⚡ **高速性**: Rustによる実装で、キャッシュ操作と検索が高速
 - 🔄 **差分更新**: 効率的な差分キャッシュ更新をサポート
+- 💾 **2層キャッシング**: メタデータとコンテンツの両方をキャッシュし、実行を高速化
 - 🔍 **多様な検索**: ID、ファイル名、説明文による検索
 - ▶️ **実行サポート**: 複数のインタープリタ（bash, python, ruby, node, php, perl）に対応
 - 💬 **対話モード**: `read`コマンドなどを使用するスクリプトの対話的実行
 - 📦 **uv対応**: PEP 723メタデータに対応した実行
+- 🗂️ **キャッシュ管理**: 強力なキャッシュ管理コマンドで効率的に運用
 
 本プロジェクトはlinuxとmacOSをサポートします。  
 Windowsは将来対応予定です。
@@ -75,6 +77,23 @@ gist-cache-rs update --verbose
 gist-cache-rs update --force
 ```
 
+## 💾 キャッシュの仕組み
+
+gist-cache-rsは2層のキャッシュ構造を持ちます：
+
+### メタデータキャッシュ
+
+- **場所**: `~/.cache/gist-cache/cache.json`
+- **内容**: Gist ID、ファイル名、説明文、更新日時などのメタ情報
+- **更新**: `update`コマンドで差分または全件更新
+
+### コンテンツキャッシュ
+
+- **場所**: `~/.cache/gist-cache/contents/{gist_id}/{filename}`
+- **内容**: 実際のスクリプト本文
+- **更新**: 初回実行時に自動作成、Gist更新検出時に自動削除
+- **利点**: 2回目以降の実行が約20倍高速化（ネットワークアクセス不要）
+
 ## 🔍 Gistの検索と実行
 
 ### 検索方法
@@ -137,12 +156,41 @@ gist-cache-rs run -i config-tool bash
 
 ### プレビュー
 
+スクリプトを実行せずに内容を確認できます：
+
 ```bash
 # 実行せずに内容を表示
 gist-cache-rs run --preview backup
 
 # 短縮形
 gist-cache-rs run -p data-analysis
+
+# ID直接指定と組み合わせ
+gist-cache-rs run -p --id abc123def456
+
+# ファイル名検索と組み合わせ
+gist-cache-rs run -p --filename setup.sh
+```
+
+**プレビュー表示内容**:
+- 説明（Description）
+- ファイル名（Files）
+- スクリプト全文（構文ハイライトなし）
+
+**用途**:
+- スクリプトの内容を確認してから実行
+- 引数や設定を確認
+- 間違ったスクリプトの実行を防止
+
+### 強制更新オプション
+
+```bash
+# 実行前に最新のGist情報を取得してから実行
+# コンテンツキャッシュが更新されている場合は自動的に再取得
+gist-cache-rs run --force backup bash
+
+# 説明文検索と組み合わせ
+gist-cache-rs run --force --description "data processor" python3
 ```
 
 ## ⌨️ エイリアス設定
@@ -238,13 +286,53 @@ gist-cache-rs/
 └── README.md
 ```
 
+## 🗂️ キャッシュ管理
+
+実行したGistのコンテンツキャッシュを効率的に管理できます：
+
+```bash
+# キャッシュ一覧を表示
+gist-cache-rs cache list
+
+# キャッシュサイズを確認
+gist-cache-rs cache size
+
+# 孤立キャッシュを削除（未実装）
+gist-cache-rs cache clean
+
+# 全キャッシュを削除
+gist-cache-rs cache clear
+```
+
+### キャッシュの動作
+
+1. **初回実行**: GitHub APIから本文を取得し、実行後にキャッシュを作成
+2. **2回目以降**: キャッシュから高速に読み込んで実行（約20倍高速）
+3. **Gist更新時**: `update`コマンドが更新を検出し、自動的にキャッシュを削除
+4. **更新後の初回実行**: 最新版をAPIから取得し、新しいキャッシュを作成
+
 ## 💾 キャッシュの保存場所
 
 キャッシュファイルは以下の場所に保存されます：
 
 ```bash
-~/.cache/gist-cache/cache.json
+~/.cache/gist-cache/
+├── cache.json                    # メタデータキャッシュ
+└── contents/                     # コンテンツキャッシュ
+    ├── {gist_id_1}/
+    │   └── {filename_1}
+    ├── {gist_id_2}/
+    │   └── {filename_2}
+    └── ...
 ```
+
+## 📚 ドキュメント
+
+- [README.md](README.md) - プロジェクト概要と基本機能
+- [INSTALL.md](INSTALL.md) - インストール方法
+- [QUICKSTART.md](QUICKSTART.md) - 5分で始めるガイド
+- [EXAMPLES.md](EXAMPLES.md) - 実例集
+- [docs/tests/](docs/tests/) - 機能検証テスト設計書
 
 ## 📄 ライセンス
 
