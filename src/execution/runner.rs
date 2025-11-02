@@ -264,6 +264,13 @@ impl ScriptRunner {
             Command::new(&temp_file)
         } else {
             let mut command = Command::new(&self.interpreter);
+
+            // Add compiler options for ts-node (Node.js v22+ ESM compatibility)
+            if self.interpreter == "ts-node" {
+                command.arg("--compilerOptions");
+                command.arg(r#"{"module":"commonjs","moduleResolution":"node"}"#);
+            }
+
             command.arg(&temp_file);
             command
         };

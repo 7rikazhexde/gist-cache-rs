@@ -254,6 +254,7 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
         }
         Some("ts-node") => {
             // ts-node: TypeScript execution via Node.js (file-based for module resolution)
+            // Compiler options for Node.js v22+ ESM compatibility are added in runner
             Ok(("ts-node".to_string(), None, false, true))
         }
         Some("deno") => {
