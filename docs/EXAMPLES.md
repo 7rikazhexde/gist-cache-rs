@@ -482,6 +482,6 @@ $ gist-cache-rs run script-name python3
 
 ## 📚 関連ドキュメント
 
-- [README.md](README.md) - プロジェクト概要と基本機能
+- [README.md](../README.md) - プロジェクト概要と基本機能
 - [INSTALL.md](INSTALL.md) - インストール方法
 - [QUICKSTART.md](QUICKSTART.md) - 5分で始めるガイド

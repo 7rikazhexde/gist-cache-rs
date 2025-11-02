@@ -303,4 +303,4 @@ rm -rf ~/.cache/gist-cache/
 
 - [QUICKSTART.md](QUICKSTART.md) - クイックスタートガイド
 - [EXAMPLES.md](EXAMPLES.md) - 実用例
-- [README.md](README.md) - プロジェクト概要
+- [README.md](../README.md) - プロジェクト概要

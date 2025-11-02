@@ -209,7 +209,7 @@ gist-cache-rs run script uv arg1 arg2 ...
 
 ## 🎯 関連情報
 
-- [README.md](README.md) - 詳細な機能説明
+- [README.md](../README.md) - 詳細な機能説明
 - [INSTALL.md](INSTALL.md) - インストール詳細
 - [EXAMPLES.md](EXAMPLES.md) - 実例集（実際の使用例）
 

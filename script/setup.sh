@@ -958,10 +958,10 @@ echo -e "   ${CYAN}gist-cache-rs run keyword bash${NC}"
 echo ""
 echo "詳細は以下のドキュメントを参照してください:"
 echo "  • README.md - 機能の詳細"
-echo "  • QUICKSTART.md - クイックスタートガイド"
-echo "  • EXAMPLES.md - 実例集"
+echo "  • docs/QUICKSTART.md - クイックスタートガイド"
+echo "  • docs/EXAMPLES.md - 実例集"
 echo ""
-print_info "問題が発生した場合は、INSTALL.md を確認してください"
+print_info "問題が発生した場合は、docs/INSTALL.md を確認してください"
 echo ""
 
 # Cleanup temporary directory if created

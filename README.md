@@ -21,7 +21,7 @@ Windowsは将来対応予定です。
 - Rust toolchain (1.75以降)
 - GitHub CLI (`gh`) - 認証済み
 
-## 🔧 [インストール](INSTALL.md)
+## 🔧 [インストール](docs/INSTALL.md)
 
 ### セットアップスクリプト（推奨）
 
@@ -49,9 +49,9 @@ cargo build --release
 cargo install --path .
 ```
 
-## 🚀 [クイックスタート](QUICKSTART.md)
+## 🚀 [クイックスタート](docs/QUICKSTART.md)
 
-実際の使用例については [EXAMPLES.md](EXAMPLES.md) にもまとめています。
+実際の使用例については [EXAMPLES.md](docs/EXAMPLES.md) にもまとめています。
 
 ```bash
 # 初回キャッシュ作成
@@ -265,7 +265,7 @@ gist-cache-rs run --help
 - `~/.cargo/bin` がPATHに含まれているか確認
 - または `/usr/local/bin` にバイナリをコピー
 
-詳細は [INSTALL.md](INSTALL.md) を参照してください。
+詳細は [INSTALL.md](docs/INSTALL.md) を参照してください。
 
 ## 📁 プロジェクト構成
 
@@ -329,9 +329,9 @@ gist-cache-rs cache clear
 ## 📚 ドキュメント
 
 - [README.md](README.md) - プロジェクト概要と基本機能
-- [INSTALL.md](INSTALL.md) - インストール方法
-- [QUICKSTART.md](QUICKSTART.md) - 5分で始めるガイド
-- [EXAMPLES.md](EXAMPLES.md) - 実例集
+- [INSTALL.md](docs/INSTALL.md) - インストール方法
+- [QUICKSTART.md](docs/QUICKSTART.md) - 5分で始めるガイド
+- [EXAMPLES.md](docs/EXAMPLES.md) - 実例集
 - [docs/tests/](docs/tests/) - 機能検証テスト設計書
 
 ## 📄 ライセンス
