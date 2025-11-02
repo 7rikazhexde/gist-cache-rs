@@ -13,6 +13,7 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 - PHP実行（php）
 - Perl実行（perl）
 - PowerShell実行（pwsh）
+- TypeScript実行（ts-node, deno, bun）
 - UV実行（uv run）- PEP 723対応
 
 ## 前提条件
@@ -194,7 +195,99 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 
 ---
 
-### TC8: UV実行（PEP 723対応）
+### TC8: TypeScript実行（Deno）
+
+**目的**: DenoでTypeScriptスクリプトが正しく実行されることを確認
+
+**前提条件**:
+- hello_args_deno.ts (ID: 9b0e7e1bdf7d24c3f28a80d18f6aaafe) が存在する
+- denoコマンドがインストール済み
+
+**手順**:
+1. Denoで実行（引数なし）: `gist-cache-rs run --filename hello_args_deno.ts deno`
+2. Denoで実行（文字列引数）: `gist-cache-rs run --filename hello_args_deno.ts deno test1 test2 test3`
+3. Denoで実行（数値引数）: `gist-cache-rs run --filename hello_args_deno.ts deno 10 20 30`
+4. 各実行結果を確認
+
+**期待結果**:
+- Denoバージョンが表示される
+- TypeScriptバージョンが表示される
+- V8バージョンが表示される
+- 引数なし: 使用例が表示される
+- 文字列引数: 引数の数「3」、引数が正しく表示される（test1, test2, test3）、「数値以外が含まれているため、計算できませんでした」
+- 数値引数: 引数の数「3」、引数が正しく表示される（10, 20, 30）、合計「60」が表示される
+
+**検証項目**:
+- Denoインタープリタが正しく起動する
+- TypeScriptファイル（.ts）が正しく認識される
+- `deno run`コマンドが正しく使用される
+- 引数が正しく渡される
+- スクリプトが正常に実行される
+
+---
+
+### TC9: TypeScript実行（ts-node）
+
+**目的**: ts-nodeでTypeScriptスクリプトが正しく実行されることを確認
+
+**前提条件**:
+- hello_args.ts (ID: c3c925384cc8241d8cd30f269af84332) が存在する
+- ts-nodeコマンドがインストール済み（`npm install -g ts-node typescript`）
+
+**手順**:
+1. ts-nodeで実行: `gist-cache-rs run --filename hello_args.ts ts-node hello world`
+2. 実行結果を確認
+
+**期待結果**:
+- TypeScriptバージョンが表示される
+- Node.jsバージョンが表示される
+- 引数の数「2」が表示される
+- 引数が正しく表示される（hello, world）
+- 数値以外のため「数値以外が含まれているため、計算できませんでした」が表示される
+
+**検証項目**:
+- ts-nodeインタープリタが正しく起動する
+- TypeScriptファイル（.ts）が正しく認識される
+- 引数が正しく渡される
+- スクリプトが正常に実行される
+
+**注意事項**:
+- ts-nodeはNode.js上でTypeScriptを実行するため、`npm install -g ts-node typescript`が必要
+- インストールされていない場合はこのテストケースをスキップ
+
+---
+
+### TC10: TypeScript実行（Bun）
+
+**目的**: BunでTypeScriptスクリプトが正しく実行されることを確認
+
+**前提条件**:
+- hello_args_bun.ts (ID: a3d74a884ff923fc83c047c2cf3d6f08) が存在する
+- bunコマンドがインストール済み
+
+**手順**:
+1. Bunで実行: `gist-cache-rs run --filename hello_args_bun.ts bun 100 200`
+2. 実行結果を確認
+
+**期待結果**:
+- Bunバージョンが表示される
+- 引数の数「2」が表示される
+- 引数が正しく表示される（100, 200）
+- 合計「300」が表示される
+
+**検証項目**:
+- Bunインタープリタが正しく起動する
+- TypeScriptファイル（.ts）が正しく認識される
+- 引数が正しく渡される
+- スクリプトが正常に実行される
+
+**注意事項**:
+- Bunは高速なJavaScript/TypeScriptランタイム
+- インストールされていない場合はこのテストケースをスキップ
+
+---
+
+### TC11: UV実行（PEP 723対応）
 
 **目的**: UV（PEP 723対応）でPythonスクリプトが正しく実行されることを確認
 
@@ -229,13 +322,20 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 5. TC5: PHP実行
 6. TC6: Perl実行
 7. TC7: PowerShell実行
-8. TC8: UV実行（PEP 723）
+8. TC8: TypeScript実行（Deno）
+9. TC9: TypeScript実行（ts-node）
+10. TC10: TypeScript実行（Bun）
+11. TC11: UV実行（PEP 723）
 
 ## 注意事項
 
 - 各インタープリタがシステムにインストールされていることを確認すること
 - インストールされていないインタープリタのテストはスキップ可能
 - TC7（PowerShell）は主にLinux/macOS上のPowerShell Core（pwsh）を対象とする
-- TC8（UV）は特にPEP 723対応の検証が目的
+- TC8-10（TypeScript）は各ランタイムで動作を確認
+  - **TC8 (Deno)**: TypeScriptをネイティブサポート、最も推奨（動作確認済み）
+  - **TC9 (ts-node)**: Node.js上でTypeScriptを実行、要インストール（`npm install -g ts-node typescript`）
+  - **TC10 (Bun)**: TypeScriptをネイティブサポート、高速実行（要インストール）
+- TC11（UV）は特にPEP 723対応の検証が目的
 - 各スクリプトの実装内容により、出力形式が異なる場合がある
 - 引数の処理方法は各言語の仕様に依存する

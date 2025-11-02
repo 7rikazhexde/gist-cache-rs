@@ -252,6 +252,19 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
             // PowerShell: Force file-based execution for script execution policy compatibility
             Ok((interpreter.unwrap().to_string(), None, false, true))
         }
+        Some("ts-node") => {
+            // ts-node: TypeScript execution via Node.js (file-based for module resolution)
+            // Compiler options for Node.js v22+ ESM compatibility are added in runner
+            Ok(("ts-node".to_string(), None, false, true))
+        }
+        Some("deno") => {
+            // Deno: Native TypeScript support with 'deno run' command
+            Ok(("deno".to_string(), Some("deno run".to_string()), false, true))
+        }
+        Some("bun") => {
+            // Bun: Native TypeScript support (file-based)
+            Ok(("bun".to_string(), None, false, true))
+        }
         Some("uv") => {
             // uvは必ずファイルベースで実行（PEP 723対応のため）
             Ok((
@@ -276,6 +289,7 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
                     eprintln!();
                     eprintln!("{}", "サポートされているインタープリタ:".green());
                     eprintln!("  bash, sh, zsh, python3, python, uv, ruby, node, perl, php, pwsh, powershell");
+                    eprintln!("  ts-node, deno, bun (TypeScript)");
                     eprintln!();
                     eprintln!("{}", "引数指定を確認してください:".yellow());
                     eprintln!("  ✅ uv例: gist-cache-rs run --description numpy uv input.csv");

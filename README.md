@@ -8,7 +8,7 @@ GitHubのGistを効率的にキャッシュ・検索・実行するためのCLI�
 - 🔄 **差分更新**: 効率的な差分キャッシュ更新をサポート
 - 💾 **2層キャッシング**: メタデータとコンテンツの両方をキャッシュし、実行を高速化
 - 🔍 **多様な検索**: ID、ファイル名、説明文による検索
-- ▶️ **実行サポート**: 複数のインタープリタ（bash, python, ruby, node, php, perl, pwsh）に対応
+- ▶️ **実行サポート**: 複数のインタープリタ（bash, python, ruby, node, php, perl, pwsh, TypeScript）に対応
 - 💬 **対話モード**: `read`コマンドなどを使用するスクリプトの対話的実行
 - 📦 **uv対応**: PEP 723メタデータに対応した実行
 - 🗂️ **キャッシュ管理**: 強力なキャッシュ管理コマンドで効率的に運用
@@ -130,6 +130,11 @@ gist-cache-rs run script node
 gist-cache-rs run script perl
 gist-cache-rs run script php
 gist-cache-rs run script pwsh
+
+# TypeScript実行
+gist-cache-rs run script.ts ts-node  # ts-node経由
+gist-cache-rs run script.ts deno     # Deno経由
+gist-cache-rs run script.ts bun      # Bun経由
 ```
 
 ### 引数の渡し方
