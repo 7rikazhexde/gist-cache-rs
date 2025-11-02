@@ -214,6 +214,7 @@ impl ScriptRunner {
             "perl" => ".pl",
             "php" => ".php",
             "pwsh" | "powershell" => ".ps1",
+            "ts-node" | "deno" | "bun" => ".ts",
             _ => "",
         };
 
