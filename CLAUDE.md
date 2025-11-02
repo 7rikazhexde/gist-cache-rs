@@ -8,6 +8,8 @@
 
 **対応プラットフォーム**: Linux と macOS のみ（Windows対応は将来予定）
 
+**サポート対象インタープリタ**: bash, sh, zsh, python3, ruby, node, php, perl, pwsh (PowerShell Core), uv
+
 ## 開発コマンド
 
 ### ビルドとテスト
@@ -94,6 +96,7 @@ cargo run -- cache clear
 - `runner.rs`: `ScriptRunner`は複数インタープリタ実行（bash、python、ruby、node、php、perl、uv）を処理
 - stdin ベースとファイルベースの両方の実行モードをサポート
 - `uv`インタープリタはPEP 723メタデータサポートのためにファイルベース実行を使用
+- `pwsh`（PowerShell Core）と`powershell`（Windows PowerShell）はスクリプト実行ポリシーとの互換性のためファイルベース実行を使用
 - `read`などを使用するスクリプト用のインタラクティブモード
 
 **`config.rs`** - 設定管理
@@ -116,6 +119,7 @@ cargo run -- cache clear
    - シェルスクリプト（bash/sh/zsh）: 直接実行
    - `uv`: PEP 723サポートのため`uv run`コマンドを使用したファイルベース
    - `php`: 信頼性の高い引数処理のための強制ファイルベース実行
+   - `pwsh`/`powershell`: スクリプト実行ポリシー互換性のための強制ファイルベース実行
    - その他: 標準的なstdinベース実行
 
 5. **検索モード**: 柔軟な検索をサポート:

@@ -12,6 +12,7 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 - Node.js実行（node）
 - PHP実行（php）
 - Perl実行（perl）
+- PowerShell実行（pwsh）
 - UV実行（uv run）- PEP 723対応
 
 ## 前提条件
@@ -164,7 +165,36 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 
 ---
 
-### TC7: UV実行（PEP 723対応）
+### TC7: PowerShell実行
+
+**目的**: PowerShellスクリプトが正しく実行されることを確認
+
+**前提条件**:
+- hello_args.ps1 (ID: 2cb45541fee10264b615fd641c577a20) が存在する
+- pwshコマンドがインストール済み（PowerShell Core）
+
+**手順**:
+1. PowerShellで実行: `gist-cache-rs run --id 2cb45541fee10264b615fd641c577a20 pwsh test1 test2 test3`
+2. 実行結果を確認
+
+**期待結果**:
+- PowerShellバージョンが表示される
+- 引数の数「3」が表示される
+- 引数が正しく表示される（test1, test2, test3）
+- 数値以外のため「数値以外が含まれているため、計算できませんでした」が表示される
+
+**検証項目**:
+- PowerShellインタープリタ（pwsh）が正しく起動する
+- 引数が正しく渡される
+- スクリプトが正常に実行される
+
+**数値引数のテスト**:
+1. PowerShellで実行: `gist-cache-rs run --filename hello_args.ps1 pwsh 10 20 30`
+2. 期待結果: 合計「60」が表示される
+
+---
+
+### TC8: UV実行（PEP 723対応）
 
 **目的**: UV（PEP 723対応）でPythonスクリプトが正しく実行されることを確認
 
@@ -198,12 +228,14 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 4. TC4: Node.js実行
 5. TC5: PHP実行
 6. TC6: Perl実行
-7. TC7: UV実行（PEP 723）
+7. TC7: PowerShell実行
+8. TC8: UV実行（PEP 723）
 
 ## 注意事項
 
 - 各インタープリタがシステムにインストールされていることを確認すること
 - インストールされていないインタープリタのテストはスキップ可能
-- TC7（UV）は特にPEP 723対応の検証が目的
+- TC7（PowerShell）は主にLinux/macOS上のPowerShell Core（pwsh）を対象とする
+- TC8（UV）は特にPEP 723対応の検証が目的
 - 各スクリプトの実装内容により、出力形式が異なる場合がある
 - 引数の処理方法は各言語の仕様に依存する

@@ -248,6 +248,10 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
             // PHP: Force file-based execution for reliable argument handling and stdin stability
             Ok(("php".to_string(), None, false, true))
         }
+        Some("pwsh") | Some("powershell") => {
+            // PowerShell: Force file-based execution for script execution policy compatibility
+            Ok((interpreter.unwrap().to_string(), None, false, true))
+        }
         Some("uv") => {
             // uvは必ずファイルベースで実行（PEP 723対応のため）
             Ok((
@@ -271,7 +275,7 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
                 if !output.status.success() {
                     eprintln!();
                     eprintln!("{}", "サポートされているインタープリタ:".green());
-                    eprintln!("  bash, sh, zsh, python3, python, uv, ruby, node, perl, php");
+                    eprintln!("  bash, sh, zsh, python3, python, uv, ruby, node, perl, php, pwsh, powershell");
                     eprintln!();
                     eprintln!("{}", "引数指定を確認してください:".yellow());
                     eprintln!("  ✅ uv例: gist-cache-rs run --description numpy uv input.csv");

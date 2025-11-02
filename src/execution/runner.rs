@@ -213,6 +213,7 @@ impl ScriptRunner {
             "node" => ".js",
             "perl" => ".pl",
             "php" => ".php",
+            "pwsh" | "powershell" => ".ps1",
             _ => "",
         };
 
