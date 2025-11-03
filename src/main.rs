@@ -111,13 +111,13 @@ fn run() -> Result<()> {
                 print_run_help();
                 return Ok(());
             }
-            
+
             // --force オプションが指定されている場合は、先にキャッシュを更新
             if args.force {
                 let updater = CacheUpdater::new(config.clone(), false);
-                updater.update(false)?;  // 差分更新（force=false）
+                updater.update(false)?; // 差分更新（force=false）
             }
-            
+
             run_gist(config, args)?;
         }
         Commands::Cache(args) => {
@@ -219,14 +219,17 @@ fn run_gist(config: Config, args: RunArgs) -> Result<()> {
         parse_interpreter(args.interpreter.as_deref())?;
 
     // Create and run script runner
+    let options = RunOptions {
+        interactive: args.interactive,
+        preview: args.preview,
+        force_file_based,
+    };
     let runner = ScriptRunner::new(
         gist.clone(),
         interpreter,
         run_command,
         is_shell,
-        args.interactive,
-        args.preview,
-        force_file_based,
+        options,
         args.script_args,
         config,
     );
@@ -259,7 +262,12 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
         }
         Some("deno") => {
             // Deno: Native TypeScript support with 'deno run' command
-            Ok(("deno".to_string(), Some("deno run".to_string()), false, true))
+            Ok((
+                "deno".to_string(),
+                Some("deno run".to_string()),
+                false,
+                true,
+            ))
         }
         Some("bun") => {
             // Bun: Native TypeScript support (file-based)
@@ -284,18 +292,20 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
         None => Ok(("bash".to_string(), None, true, false)),
         Some(custom) => {
             // Check if the custom interpreter exists
-            if let Ok(output) = std::process::Command::new("which").arg(custom).output() {
-                if !output.status.success() {
-                    eprintln!();
-                    eprintln!("{}", "サポートされているインタープリタ:".green());
-                    eprintln!("  bash, sh, zsh, python3, python, uv, ruby, node, perl, php, pwsh, powershell");
-                    eprintln!("  ts-node, deno, bun (TypeScript)");
-                    eprintln!();
-                    eprintln!("{}", "引数指定を確認してください:".yellow());
-                    eprintln!("  ✅ uv例: gist-cache-rs run --description numpy uv input.csv");
-                    eprintln!();
-                    return Err(GistCacheError::InvalidInterpreter(custom.to_string()));
-                }
+            if let Ok(output) = std::process::Command::new("which").arg(custom).output()
+                && !output.status.success()
+            {
+                eprintln!();
+                eprintln!("{}", "サポートされているインタープリタ:".green());
+                eprintln!(
+                    "  bash, sh, zsh, python3, python, uv, ruby, node, perl, php, pwsh, powershell"
+                );
+                eprintln!("  ts-node, deno, bun (TypeScript)");
+                eprintln!();
+                eprintln!("{}", "引数指定を確認してください:".yellow());
+                eprintln!("  ✅ uv例: gist-cache-rs run --description numpy uv input.csv");
+                eprintln!();
+                return Err(GistCacheError::InvalidInterpreter(custom.to_string()));
             }
             Ok((custom.to_string(), None, false, false))
         }
@@ -325,17 +335,18 @@ fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
                 for gist_id in &gist_ids {
                     if let Some(gist) = cache.gists.iter().find(|g| &g.id == gist_id) {
                         // 修正: as_deref() を使用
-                        let desc = gist
-                            .description
-                            .as_deref()
-                            .unwrap_or("No description");
-                        
-                        let files: Vec<_> = gist.files.iter().map(|f| f.filename.as_str()).collect();
+                        let desc = gist.description.as_deref().unwrap_or("No description");
+
+                        let files: Vec<_> =
+                            gist.files.iter().map(|f| f.filename.as_str()).collect();
 
                         println!("{}", format!("ID: {}", gist.id).green());
                         println!("  説明: {}", desc);
                         println!("  ファイル: {}", files.join(", "));
-                        println!("  更新日時: {}", gist.updated_at.format("%Y-%m-%d %H:%M:%S"));
+                        println!(
+                            "  更新日時: {}",
+                            gist.updated_at.format("%Y-%m-%d %H:%M:%S")
+                        );
                         println!();
                     } else {
                         println!("{}", format!("ID: {}", gist_id).green());
@@ -356,10 +367,7 @@ fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
                     println!("  {}", gist_id.green());
                 }
                 println!();
-                println!(
-                    "{}",
-                    format!("合計: {}件", gist_ids.len()).cyan().bold()
-                );
+                println!("{}", format!("合計: {}件", gist_ids.len()).cyan().bold());
             }
         }
         CacheCommands::Size => {
@@ -373,7 +381,10 @@ fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
                 "{}",
                 format!("キャッシュされたGist数: {}件", gist_count).green()
             );
-            println!("{}", format!("合計サイズ: {}", format_bytes(total_size)).green());
+            println!(
+                "{}",
+                format!("合計サイズ: {}", format_bytes(total_size)).green()
+            );
             println!(
                 "{}",
                 format!("キャッシュディレクトリ: {}", config.contents_dir.display()).cyan()
@@ -403,12 +414,15 @@ fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
 
             println!(
                 "{}",
-                format!("{}件のGistキャッシュを削除します。よろしいですか？", gist_count)
-                    .yellow()
+                format!(
+                    "{}件のGistキャッシュを削除します。よろしいですか？",
+                    gist_count
+                )
+                .yellow()
             );
             println!("  {}", "この操作は取り消せません。".red());
             println!();
-            print!("{}", "続行しますか？ (y/N): ");
+            print!("続行しますか？ (y/N): ");
 
             std::io::Write::flush(&mut std::io::stdout())?;
 

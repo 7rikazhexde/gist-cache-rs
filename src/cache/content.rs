@@ -201,10 +201,10 @@ impl ContentCache {
             let path = entry.path();
 
             // ディレクトリのみを対象
-            if path.is_dir() {
-                if let Some(gist_id) = path.file_name().and_then(|n| n.to_str()) {
-                    gist_ids.push(gist_id.to_string());
-                }
+            if path.is_dir()
+                && let Some(gist_id) = path.file_name().and_then(|n| n.to_str())
+            {
+                gist_ids.push(gist_id.to_string());
             }
         }
 

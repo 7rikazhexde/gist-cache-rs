@@ -1,3 +1,3 @@
 pub mod runner;
 
-pub use runner::ScriptRunner;
+pub use runner::{RunOptions, ScriptRunner};
