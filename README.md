@@ -18,7 +18,7 @@ GitHubのGistを効率的にキャッシュ・検索・実行するためのCLI�
 
 ## 📋 前提条件
 
-- Rust toolchain (1.75以降)
+- Rust toolchain (1.85以降)
 - GitHub CLI (`gh`) - 認証済み
 
 ## 🔧 [インストール](docs/INSTALL.md)

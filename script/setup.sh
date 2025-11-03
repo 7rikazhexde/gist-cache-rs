@@ -403,12 +403,12 @@ if check_command "rustc" && check_command "cargo"; then
     check_version "rustc" "--version"
     check_version "cargo" "--version"
     
-    # Check minimum version (1.75)
+    # Check minimum version (1.85)
     RUST_VERSION=$(rustc --version | grep -oP '\d+\.\d+' | head -1)
-    if [ "$(echo "$RUST_VERSION >= 1.75" | bc -l 2>/dev/null || echo 0)" -eq 1 ] 2>/dev/null; then
-        print_success "Rustのバージョンは要件を満たしています (>= 1.75)"
+    if [ "$(echo "$RUST_VERSION >= 1.85" | bc -l 2>/dev/null || echo 0)" -eq 1 ] 2>/dev/null; then
+        print_success "Rustのバージョンは要件を満たしています (>= 1.85)"
     else
-        print_warning "Rustのバージョンが古い可能性があります（推奨: 1.75以降）"
+        print_warning "Rustのバージョンが古い可能性があります（推奨: 1.85以降）"
     fi
 else
     print_error "Rustがインストールされていません"

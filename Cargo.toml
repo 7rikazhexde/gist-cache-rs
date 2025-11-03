@@ -2,6 +2,7 @@
 name = "gist-cache-rs"
 version = "0.3.0"
 edition = "2024"
+rust-version = "1.85"
 
 authors = ["7rikazhexde"]
 description = "Interactive CLI tool for caching, searching, and executing GitHub Gists, built with Rust."

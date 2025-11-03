@@ -4,7 +4,7 @@
 
 ### 必須
 
-- **Rust toolchain** (1.75以降)
+- **Rust toolchain** (1.85以降)
 
   **Linux / macOS:**
   ```bash
