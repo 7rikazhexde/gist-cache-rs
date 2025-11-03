@@ -6,28 +6,43 @@
 
 - **Rust toolchain** (1.75以降)
 
+  **Linux / macOS:**
   ```bash
   rustc --version  # 確認
   ```
-  
-  インストール方法:
 
+  インストール方法:
   ```bash
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   ```
 
+  **Windows:**
+  ```powershell
+  rustc --version  # 確認
+  ```
+
+  インストール方法: https://rustup.rs/ からダウンロード
+
 - **GitHub CLI** (`gh`) - 認証済み
 
+  **Linux / macOS:**
   ```bash
   gh --version     # 確認
   gh auth status   # 認証状態確認
   ```
-  
-  認証方法:
 
+  **Windows:**
+  ```powershell
+  gh --version     # 確認
+  gh auth status   # 認証状態確認
+  ```
+
+  認証方法:
   ```bash
   gh auth login
   ```
+
+  インストール: https://cli.github.com/
 
 ### 推奨
 
@@ -38,6 +53,8 @@
 ### 方法1: セットアップスクリプト（推奨）
 
 対話的にすべてのステップを実行します。
+
+#### Linux / macOS
 
 ```bash
 # リポジトリをクローン
@@ -57,16 +74,41 @@ cd gist-cache-rs
 6. 🔄 初回キャッシュ作成
 7. ⌨️ エイリアス設定（オプション）
 
-### 方法2: cargo install
+#### Windows
+
+```powershell
+# リポジトリをクローン
+git clone https://github.com/7rikazhexde/gist-cache-rs.git
+cd gist-cache-rs
+
+# セットアップスクリプトを実行
+.\script\setup.ps1 install
+```
+
+**実行される処理:**
+1. ✅ 前提条件の確認（Rust、GitHub CLI）
+2. 🔨 リリースビルド
+3. 📦 cargoインストール実行
+4. 🔄 初回キャッシュ作成（オプション）
+
+**インストール先:**
+- バイナリ: `%USERPROFILE%\.cargo\bin\gist-cache-rs.exe`
+- キャッシュ: `%LOCALAPPDATA%\gist-cache\`
+
+### 方法2: cargo install（すべてのプラットフォーム共通）
 
 ```bash
 cargo build --release
 cargo install --path .
 ```
 
-**インストール先:** `~/.cargo/bin/gist-cache-rs`
+**インストール先:**
+- Linux/macOS: `~/.cargo/bin/gist-cache-rs`
+- Windows: `%USERPROFILE%\.cargo\bin\gist-cache-rs.exe`
 
 **PATH設定:**
+
+**Linux / macOS:**
 通常は自動設定済み。未設定の場合：
 
 ```bash
@@ -74,6 +116,13 @@ cargo install --path .
 export PATH="$HOME/.cargo/bin:$PATH"
 source ~/.bashrc
 ```
+
+**Windows:**
+Cargoのbinディレクトリが自動的にPATHに追加されます。未設定の場合：
+1. 「システム環境変数の編集」を開く
+2. 「環境変数」ボタンをクリック
+3. ユーザー環境変数の「Path」を編集
+4. `%USERPROFILE%\.cargo\bin` を追加
 
 ### 方法3: システムディレクトリ
 
@@ -180,7 +229,7 @@ gist-cache-rs update --verbose
 
 **原因:** PATHが設定されていない
 
-**解決方法:**
+**解決方法（Linux/macOS）:**
 
 ```bash
 # インストール場所を確認
@@ -197,6 +246,22 @@ export PATH="$HOME/bin:$PATH"
 
 # 設定を反映
 source ~/.bashrc
+```
+
+**解決方法（Windows）:**
+
+```powershell
+# インストール場所を確認
+where.exe gist-cache-rs
+
+# PATHを確認
+$env:PATH
+
+# 環境変数の設定（PowerShell）
+$env:PATH += ";$env:USERPROFILE\.cargo\bin"
+
+# 永続的に設定する場合
+[System.Environment]::SetEnvironmentVariable("Path", $env:PATH, [System.EnvironmentVariableTarget]::User)
 ```
 
 ### 権限エラー
@@ -242,6 +307,20 @@ cargo build --release
 gh auth login
 ```
 
+### PowerShell実行ポリシーエラー（Windows）
+
+**エラー:** `このシステムではスクリプトの実行が無効になっているため...`
+
+**解決方法:**
+
+```powershell
+# 現在のユーザーに対してスクリプト実行を許可
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# または、特定のスクリプトのみバイパス
+powershell -ExecutionPolicy Bypass -File .\script\setup.ps1 install
+```
+
 ### キャッシュが作成されない
 
 **エラー:** `Cache file not found`
@@ -269,6 +348,8 @@ gist-cache-rs update --verbose
 
 ### 自動アンインストール
 
+#### Linux / macOS
+
 ```bash
 ./script/setup.sh uninstall
 ```
@@ -278,7 +359,19 @@ gist-cache-rs update --verbose
 - キャッシュディレクトリ削除
 - エイリアス削除
 
+#### Windows
+
+```powershell
+.\script\setup.ps1 uninstall
+```
+
+対話的に以下を選択：
+- バイナリ削除
+- キャッシュディレクトリ削除
+
 ### 手動アンインストール
+
+#### Linux / macOS
 
 ```bash
 # cargo でインストールした場合
@@ -297,6 +390,16 @@ rm -rf ~/.cache/gist-cache/
 # 例:
 # alias gcrsu='gist-cache-rs update'
 # alias gcrsr='gist-cache-rs run'
+```
+
+#### Windows
+
+```powershell
+# cargo でインストールした場合
+cargo uninstall gist-cache-rs
+
+# キャッシュディレクトリを削除
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\gist-cache"
 ```
 
 ## ➡️ 次のステップ

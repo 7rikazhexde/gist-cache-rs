@@ -6,6 +6,7 @@ use crate::github::GitHubApi;
 use colored::Colorize;
 use std::fs;
 use std::io::Write;
+#[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 use std::process::{Command, Stdio};
 
@@ -256,12 +257,16 @@ impl ScriptRunner {
 
         fs::write(&temp_file, content)?;
 
-        // Make executable for shell scripts
+        // Make executable for shell scripts (Unix only)
+        #[cfg(unix)]
         if self.is_shell {
             let mut perms = fs::metadata(&temp_file)?.permissions();
             perms.set_mode(0o755);
             fs::set_permissions(&temp_file, perms)?;
         }
+
+        // Windows: No need to set executable permission
+        // File extension (.bat, .ps1, etc.) determines executability
 
         // Build command
         let mut cmd = if let Some(ref run_cmd) = self.run_command {

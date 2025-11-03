@@ -14,10 +14,20 @@ impl Config {
         let home = dirs::home_dir()
             .ok_or_else(|| GistCacheError::Config("Could not find home directory".to_string()))?;
 
+        // Cache directory: follow platform standards
+        #[cfg(unix)]
         let cache_dir = home.join(".cache").join("gist-cache");
+
+        #[cfg(windows)]
+        let cache_dir = dirs::cache_dir()
+            .unwrap_or_else(|| home.join("AppData").join("Local"))
+            .join("gist-cache");
+
         let cache_file = cache_dir.join("cache.json");
         let contents_dir = cache_dir.join("contents");
-        let download_dir = home.join("Downloads");
+
+        // Download directory: use platform standard
+        let download_dir = dirs::download_dir().unwrap_or_else(|| home.join("Downloads"));
 
         Ok(Self {
             cache_dir,

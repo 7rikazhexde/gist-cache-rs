@@ -14,8 +14,7 @@ GitHubのGistを効率的にキャッシュ・検索・実行するためのCLI�
 - 📥 **ダウンロード機能**: Gistファイルをダウンロードフォルダに保存
 - 🗂️ **キャッシュ管理**: 強力なキャッシュ管理コマンドで効率的に運用
 
-本プロジェクトはlinuxとmacOSをサポートします。  
-Windowsは将来対応予定です。
+本プロジェクトはLinux、macOS、Windows（Windows 10以降）をサポートします。
 
 ## 📋 前提条件
 
@@ -26,6 +25,8 @@ Windowsは将来対応予定です。
 
 ### セットアップスクリプト（推奨）
 
+#### Linux / macOS
+
 ```bash
 # リポジトリをクローン
 git clone https://github.com/7rikazhexde/gist-cache-rs.git
@@ -35,17 +36,28 @@ cd gist-cache-rs
 ./script/setup.sh install
 ```
 
+#### Windows
+
+```powershell
+# リポジトリをクローン
+git clone https://github.com/7rikazhexde/gist-cache-rs.git
+cd gist-cache-rs
+
+# セットアップスクリプトを実行
+.\script\setup.ps1 install
+```
+
 対話的に以下を実行：
 - ✅ 前提条件チェック
 - 🔨 リリースビルド
 - 📦 インストール方法選択
 - 🔄 初回キャッシュ作成
-- ⌨️ エイリアス設定（オプション）
+- ⌨️ エイリアス設定（オプション、Linux/macOSのみ）
 
 ### 手動インストール
 
 ```bash
-# プロジェクトディレクトリで
+# すべてのプラットフォーム共通
 cargo build --release
 cargo install --path .
 ```
@@ -84,13 +96,17 @@ gist-cache-rsは2層のキャッシュ構造を持ちます：
 
 ### メタデータキャッシュ
 
-- **場所**: `~/.cache/gist-cache/cache.json`
+- **場所**:
+  - Linux/macOS: `~/.cache/gist-cache/cache.json`
+  - Windows: `%LOCALAPPDATA%\gist-cache\cache.json`
 - **内容**: Gist ID、ファイル名、説明文、更新日時などのメタ情報
 - **更新**: `update`コマンドで差分または全件更新
 
 ### コンテンツキャッシュ
 
-- **場所**: `~/.cache/gist-cache/contents/{gist_id}/{filename}`
+- **場所**:
+  - Linux/macOS: `~/.cache/gist-cache/contents/{gist_id}/{filename}`
+  - Windows: `%LOCALAPPDATA%\gist-cache\contents\{gist_id}\{filename}`
 - **内容**: 実際のスクリプト本文
 - **更新**: 初回実行時に自動作成、Gist更新検出時に自動削除
 - **利点**: 2回目以降の実行が約20倍高速化（ネットワークアクセス不要）
@@ -260,6 +276,8 @@ gcrsr -p --download script  # プレビュー後ダウンロード
 
 ## 🗑️ アンインストール
 
+### Linux / macOS
+
 ```bash
 # 自動アンインストール
 ./script/setup.sh uninstall
@@ -267,6 +285,17 @@ gcrsr -p --download script  # プレビュー後ダウンロード
 # 手動アンインストール
 cargo uninstall gist-cache-rs
 rm -rf ~/.cache/gist-cache/
+```
+
+### Windows
+
+```powershell
+# 自動アンインストール
+.\script\setup.ps1 uninstall
+
+# 手動アンインストール
+cargo uninstall gist-cache-rs
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\gist-cache"
 ```
 
 ## ❓ ヘルプ
@@ -317,7 +346,8 @@ gist-cache-rs/
 │   ├── search/          # 検索モジュール
 │   └── execution/       # 実行モジュール
 ├── script/
-│   └── setup.sh         # セットアップスクリプト
+│   ├── setup.sh         # セットアップスクリプト (Linux/macOS)
+│   └── setup.ps1        # セットアップスクリプト (Windows)
 └── README.md
 ```
 
@@ -350,6 +380,8 @@ gist-cache-rs cache clear
 
 キャッシュファイルは以下の場所に保存されます：
 
+### Linux / macOS
+
 ```bash
 ~/.cache/gist-cache/
 ├── cache.json                    # メタデータキャッシュ
@@ -357,6 +389,19 @@ gist-cache-rs cache clear
     ├── {gist_id_1}/
     │   └── {filename_1}
     ├── {gist_id_2}/
+    │   └── {filename_2}
+    └── ...
+```
+
+### Windows
+
+```
+%LOCALAPPDATA%\gist-cache\
+├── cache.json                    # メタデータキャッシュ
+└── contents\                     # コンテンツキャッシュ
+    ├── {gist_id_1}\
+    │   └── {filename_1}
+    ├── {gist_id_2}\
     │   └── {filename_2}
     └── ...
 ```

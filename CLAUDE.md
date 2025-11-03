@@ -6,7 +6,7 @@
 
 **gist-cache-rs** は、GitHub Gistを効率的にキャッシュ・検索・実行するためのRust製CLIツールです。高速な差分更新、複数言語のスクリプト実行サポート、コンテンツキャッシュ機能を提供します。
 
-**対応プラットフォーム**: Linux と macOS のみ（Windows対応は将来予定）
+**対応プラットフォーム**: Linux、macOS、Windows 10以降
 
 **サポート対象インタープリタ**: bash, sh, zsh, python3, ruby, node, php, perl, pwsh (PowerShell Core), TypeScript (ts-node, deno, bun), uv
 
@@ -102,8 +102,10 @@ cargo run -- cache clear
 - `read`などを使用するスクリプト用のインタラクティブモード
 
 **`config.rs`** - 設定管理
-- キャッシュパスを管理：`~/.cache/gist-cache/cache.json` と `~/.cache/gist-cache/contents/`
-- ダウンロードパスを管理：`~/Downloads`
+- キャッシュパスを管理（プラットフォーム別）：
+  - Unix: `~/.cache/gist-cache/cache.json` と `~/.cache/gist-cache/contents/`
+  - Windows: `%LOCALAPPDATA%\gist-cache\cache.json` と `%LOCALAPPDATA%\gist-cache\contents\`
+- ダウンロードパスを管理：`dirs::download_dir()`を使用してOSの標準に従う
 
 **`error.rs`** - `thiserror`を使用した集中エラー処理
 
@@ -166,6 +168,21 @@ cargo run -- cache clear
 - **ファイルモード**（uv、php、interactive）: 実行用に一時ファイルを作成
 - **インタラクティブモード**（`-i`）: `read`コマンドをサポートするためstdioに`inherit()`を使用
 - **プレビューモード**（`-p`/`--preview`）: スクリプトを実行せず、Description、Files、Gist内容のみを表示。検索モード（Auto、ID、Filename、Description）と組み合わせ可能
+
+### プラットフォーム固有の実装
+
+**Windows対応**:
+- **パーミッション設定**: 条件付きコンパイル（`#[cfg(unix)]`）を使用し、Unix環境のみで`chmod`を実行。Windowsではファイル拡張子で実行可能性が決定されるため、パーミッション設定は不要
+- **パス設定**: `src/config.rs`でプラットフォーム別のキャッシュディレクトリを使用
+  - Unix: `~/.cache/gist-cache`
+  - Windows: `%LOCALAPPDATA%\gist-cache`（`dirs::cache_dir()`を使用）
+  - ダウンロードディレクトリは全プラットフォームで`dirs::download_dir()`を使用
+- **インストールスクリプト**: PowerShell版（`script/setup.ps1`）を提供
+
+**クロスプラットフォーム設計**:
+- 条件付きコンパイル（`cfg`属性）で明示的に分岐
+- プラットフォーム非依存のコードを優先
+- 既存のLinux/macOS環境に影響を与えないデグレード防止
 
 ### レート制限
 
