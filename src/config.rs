@@ -6,6 +6,7 @@ pub struct Config {
     pub cache_dir: PathBuf,
     pub cache_file: PathBuf,
     pub contents_dir: PathBuf,
+    pub download_dir: PathBuf,
 }
 
 impl Config {
@@ -16,11 +17,13 @@ impl Config {
         let cache_dir = home.join(".cache").join("gist-cache");
         let cache_file = cache_dir.join("cache.json");
         let contents_dir = cache_dir.join("contents");
+        let download_dir = home.join("Downloads");
 
         Ok(Self {
             cache_dir,
             cache_file,
             contents_dir,
+            download_dir,
         })
     }
 
@@ -30,6 +33,13 @@ impl Config {
         }
         if !self.contents_dir.exists() {
             std::fs::create_dir_all(&self.contents_dir)?;
+        }
+        Ok(())
+    }
+
+    pub fn ensure_download_dir(&self) -> Result<()> {
+        if !self.download_dir.exists() {
+            std::fs::create_dir_all(&self.download_dir)?;
         }
         Ok(())
     }

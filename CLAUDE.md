@@ -66,6 +66,7 @@ cargo run -- run <query> [interpreter] [args...]
 cargo run -- run --preview <query>
 cargo run -- run --interactive <query>
 cargo run -- run --force <query>  # 実行前にキャッシュ更新
+cargo run -- run --download <query>  # ダウンロードフォルダに保存
 
 # キャッシュ管理
 cargo run -- cache list
@@ -102,6 +103,7 @@ cargo run -- cache clear
 
 **`config.rs`** - 設定管理
 - キャッシュパスを管理：`~/.cache/gist-cache/cache.json` と `~/.cache/gist-cache/contents/`
+- ダウンロードパスを管理：`~/Downloads`
 
 **`error.rs`** - `thiserror`を使用した集中エラー処理
 
@@ -134,6 +136,8 @@ cargo run -- cache clear
    - `Description`: 説明文のみを検索
 
 6. **--forceオプション**: `run`コマンドで`--force`を指定すると、実行前に自動的に`update`コマンドを実行（差分更新）し、最新のGist情報を取得してから実行。更新されたGistは自動的に最新版が取得される
+
+7. **--downloadオプション**: `run`コマンドで`--download`を指定すると、Gistファイルをダウンロードフォルダ（`~/Downloads`）に保存。実行可能なスクリプトキャッシュとは別に、個別に保存したい場合に便利。ダウンロード時にコンテンツキャッシュも自動作成され、2回目以降の実行が高速化。他のオプション（`--preview`, `--force`, `--interactive`など）と併用可能
 
 ## 重要な実装詳細
 

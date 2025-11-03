@@ -13,6 +13,7 @@ use std::process::{Command, Stdio};
 pub struct RunOptions {
     pub interactive: bool,
     pub preview: bool,
+    pub download: bool,
     pub force_file_based: bool,
 }
 
@@ -52,10 +53,21 @@ impl ScriptRunner {
         self.display_info();
 
         if self.options.preview {
-            return self.preview_content();
+            self.preview_content()?;
+            if self.options.download {
+                return self.download_files();
+            }
+            return Ok(());
         }
 
-        self.execute()
+        let result = self.execute();
+
+        // ダウンロードオプションが指定されている場合は、実行結果に関わらずダウンロード
+        if self.options.download {
+            self.download_files()?;
+        }
+
+        result
     }
 
     fn display_info(&self) {
@@ -373,6 +385,60 @@ impl ScriptRunner {
                 status.code().unwrap_or(-1)
             )));
         }
+
+        Ok(())
+    }
+
+    fn download_files(&self) -> Result<()> {
+        println!();
+        println!("{}", "=== ファイルをダウンロード中 ===".cyan().bold());
+
+        // ダウンロードディレクトリを確保
+        self.config.ensure_download_dir()?;
+
+        let content_cache = ContentCache::new(self.config.contents_dir.clone());
+
+        for file in &self.gist.files {
+            // キャッシュから読み込むか、APIから取得
+            let content = if content_cache.exists(&self.gist.id, &file.filename) {
+                match content_cache.read(&self.gist.id, &file.filename) {
+                    Ok(c) => c,
+                    Err(_) => {
+                        // キャッシュ読み込み失敗時はAPIから取得
+                        GitHubApi::fetch_gist_content(&self.gist.id, &file.filename)?
+                    }
+                }
+            } else {
+                // APIから取得
+                let fetched = GitHubApi::fetch_gist_content(&self.gist.id, &file.filename)?;
+
+                // ダウンロード時はキャッシュも作成
+                let _ = content_cache.write(&self.gist.id, &file.filename, &fetched);
+
+                fetched
+            };
+
+            // ダウンロードフォルダに保存
+            let download_path = self.config.download_dir.join(&file.filename);
+            fs::write(&download_path, &content)?;
+
+            println!(
+                "{}",
+                format!("  ✓ ダウンロード完了: {}", download_path.display()).green()
+            );
+        }
+
+        println!();
+        println!(
+            "{}",
+            format!(
+                "{}件のファイルを{}に保存しました",
+                self.gist.files.len(),
+                self.config.download_dir.display()
+            )
+            .green()
+            .bold()
+        );
 
         Ok(())
     }

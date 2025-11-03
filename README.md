@@ -11,6 +11,7 @@ GitHubのGistを効率的にキャッシュ・検索・実行するためのCLI�
 - ▶️ **実行サポート**: 複数のインタープリタ（bash, python, ruby, node, php, perl, pwsh, TypeScript）に対応
 - 💬 **対話モード**: `read`コマンドなどを使用するスクリプトの対話的実行
 - 📦 **uv対応**: PEP 723メタデータに対応した実行
+- 📥 **ダウンロード機能**: Gistファイルをダウンロードフォルダに保存
 - 🗂️ **キャッシュ管理**: 強力なキャッシュ管理コマンドで効率的に運用
 
 本プロジェクトはlinuxとmacOSをサポートします。  
@@ -188,6 +189,32 @@ gist-cache-rs run -p --filename setup.sh
 - 引数や設定を確認
 - 間違ったスクリプトの実行を防止
 
+### ファイルのダウンロード
+
+Gistファイルをダウンロードフォルダ（`~/Downloads`）に保存できます：
+
+```bash
+# 実行後にダウンロード
+gist-cache-rs run --download backup bash
+
+# プレビュー後にダウンロード
+gist-cache-rs run --preview --download script.py
+
+# ID指定でダウンロード
+gist-cache-rs run --download --id abc123def456
+```
+
+**特徴**:
+- ダウンロードフォルダ（`~/Downloads`）に保存
+- 実行可能なスクリプトとは別に、個別に保存したい場合に便利
+- ダウンロード時にキャッシュも自動作成され、2回目以降の実行が高速化
+- 他のオプション（`--preview`, `--force`, `--interactive`など）と併用可能
+
+**ダウンロードの動作順序**:
+1. `--preview --download`: プレビュー表示 → ダウンロード
+2. `--force --download`: キャッシュ更新 → 実行 → ダウンロード
+3. `--download` のみ: 実行 → ダウンロード
+
 ### 強制更新オプション
 
 ```bash
@@ -227,6 +254,8 @@ gcrsu  # キャッシュ更新
 gcrsr backup bash /src /dst  # Gist実行
 gcrsr -p script  # プレビュー
 gcrsr -i interactive-script  # 対話モード
+gcrsr --download backup  # ダウンロード
+gcrsr -p --download script  # プレビュー後ダウンロード
 ```
 
 ## 🗑️ アンインストール

@@ -141,6 +141,12 @@ gist-cache-rs run -p keyword
 # 対話モード（readコマンドなど使用時）
 gist-cache-rs run -i interactive-script
 
+# ダウンロードフォルダに保存
+gist-cache-rs run --download backup bash
+
+# プレビュー後にダウンロード
+gist-cache-rs run -p --download script
+
 # ファイル名で検索
 gist-cache-rs run --filename setup.sh
 

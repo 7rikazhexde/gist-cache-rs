@@ -50,6 +50,10 @@ struct RunArgs {
     #[arg(short, long)]
     force: bool,
 
+    /// ファイルをダウンロードフォルダに保存
+    #[arg(long)]
+    download: bool,
+
     /// ID直接指定モード
     #[arg(long)]
     id: bool,
@@ -145,6 +149,7 @@ fn print_run_help() {
     println!("  -i, --interactive  対話的スクリプト実行モード");
     println!("  -p, --preview      プレビューモード（内容表示のみ）");
     println!("  -f, --force        実行前にGistキャッシュを更新（常に最新版を取得）");
+    println!("      --download     ファイルをダウンロードフォルダに保存");
     println!("      --id           ID直接指定モード");
     println!("      --filename     ファイル名で検索");
     println!("      --description  説明文で検索");
@@ -167,6 +172,8 @@ fn print_run_help() {
     println!("  gist-cache-rs run --id abc123def456           # ID指定");
     println!("  gist-cache-rs run -f backup                   # キャッシュ更新後に実行");
     println!("  gist-cache-rs run -f --description numpy uv   # キャッシュ更新+説明文検索");
+    println!("  gist-cache-rs run --download backup           # ダウンロードフォルダに保存");
+    println!("  gist-cache-rs run -p --download backup        # プレビュー後にダウンロード");
     println!();
     println!("{}", "引数指定を確認してください:".red().bold());
     println!("  ✅ uv例: gist-cache-rs run --description numpy uv input.csv");
@@ -222,6 +229,7 @@ fn run_gist(config: Config, args: RunArgs) -> Result<()> {
     let options = RunOptions {
         interactive: args.interactive,
         preview: args.preview,
+        download: args.download,
         force_file_based,
     };
     let runner = ScriptRunner::new(
