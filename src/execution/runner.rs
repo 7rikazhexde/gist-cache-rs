@@ -9,14 +9,19 @@ use std::io::Write;
 use std::os::unix::fs::PermissionsExt;
 use std::process::{Command, Stdio};
 
+/// Options for script execution
+pub struct RunOptions {
+    pub interactive: bool,
+    pub preview: bool,
+    pub force_file_based: bool,
+}
+
 pub struct ScriptRunner {
     gist: GistInfo,
     interpreter: String,
     run_command: Option<String>,
     is_shell: bool,
-    interactive: bool,
-    preview: bool,
-    force_file_based: bool,
+    options: RunOptions,
     args: Vec<String>,
     config: Config,
 }
@@ -27,9 +32,7 @@ impl ScriptRunner {
         interpreter: String,
         run_command: Option<String>,
         is_shell: bool,
-        interactive: bool,
-        preview: bool,
-        force_file_based: bool,
+        options: RunOptions,
         args: Vec<String>,
         config: Config,
     ) -> Self {
@@ -38,9 +41,7 @@ impl ScriptRunner {
             interpreter,
             run_command,
             is_shell,
-            interactive,
-            preview,
-            force_file_based,
+            options,
             args,
             config,
         }
@@ -50,7 +51,7 @@ impl ScriptRunner {
         // Display gist info
         self.display_info();
 
-        if self.preview {
+        if self.options.preview {
             return self.preview_content();
         }
 
@@ -152,14 +153,13 @@ impl ScriptRunner {
                 "{}",
                 "  情報: キャッシュが存在しないため、GitHub APIから取得します...".yellow()
             );
-            let fetched = GitHubApi::fetch_gist_content(&self.gist.id, &main_file.filename)?;
-            fetched
+            GitHubApi::fetch_gist_content(&self.gist.id, &main_file.filename)?
         };
 
         // 対話モードでの整合性確保：
         // キャッシュから読み込む場合もAPIから取得する場合も、
         // 常に一時ファイルを経由して実行することで動作を統一
-        let execution_result = if self.force_file_based || self.interactive || self.is_shell {
+        let execution_result = if self.options.force_file_based || self.options.interactive || self.is_shell {
             self.execute_via_temp_file(&content, &main_file.filename)
         } else {
             self.execute_direct(&content)
@@ -218,8 +218,8 @@ impl ScriptRunner {
             _ => "",
         };
 
-        if !preferred_extension.is_empty() {
-            if let Some(file) = self
+        if !preferred_extension.is_empty()
+            && let Some(file) = self
                 .gist
                 .files
                 .iter()
@@ -227,7 +227,6 @@ impl ScriptRunner {
             {
                 return Ok(file);
             }
-        }
 
         // Default to first file
         Ok(&self.gist.files[0])

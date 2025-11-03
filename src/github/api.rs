@@ -9,7 +9,7 @@ impl GitHubApi {
     /// Check if GitHub CLI is authenticated
     pub fn check_auth() -> Result<()> {
         let output = Command::new("gh")
-            .args(&["auth", "status"])
+            .args(["auth", "status"])
             .output()
             .map_err(|_| GistCacheError::NotAuthenticated)?;
 
@@ -23,7 +23,7 @@ impl GitHubApi {
     /// Get the authenticated GitHub user
     pub fn get_user() -> Result<String> {
         let output = Command::new("gh")
-            .args(&["api", "user", "--jq", ".login"])
+            .args(["api", "user", "--jq", ".login"])
             .output()?;
 
         if !output.status.success() {
@@ -38,7 +38,7 @@ impl GitHubApi {
 
     /// Check rate limit
     pub fn check_rate_limit() -> Result<i64> {
-        let output = Command::new("gh").args(&["api", "rate_limit"]).output()?;
+        let output = Command::new("gh").args(["api", "rate_limit"]).output()?;
 
         if !output.status.success() {
             return Err(GistCacheError::GitHubApi(
@@ -100,7 +100,7 @@ impl GitHubApi {
     /// Fetch a single gist by ID
     pub fn fetch_gist_content(gist_id: &str, filename: &str) -> Result<String> {
         let output = Command::new("gh")
-            .args(&["gist", "view", gist_id, "--filename", filename, "--raw"])
+            .args(["gist", "view", gist_id, "--filename", filename, "--raw"])
             .output()?;
 
         if !output.status.success() {
