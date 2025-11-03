@@ -159,11 +159,12 @@ impl ScriptRunner {
         // 対話モードでの整合性確保：
         // キャッシュから読み込む場合もAPIから取得する場合も、
         // 常に一時ファイルを経由して実行することで動作を統一
-        let execution_result = if self.options.force_file_based || self.options.interactive || self.is_shell {
-            self.execute_via_temp_file(&content, &main_file.filename)
-        } else {
-            self.execute_direct(&content)
-        };
+        let execution_result =
+            if self.options.force_file_based || self.options.interactive || self.is_shell {
+                self.execute_via_temp_file(&content, &main_file.filename)
+            } else {
+                self.execute_direct(&content)
+            };
 
         // 実行が成功した場合のみキャッシュに保存
         if execution_result.is_ok() {
@@ -224,9 +225,9 @@ impl ScriptRunner {
                 .files
                 .iter()
                 .find(|f| f.filename.ends_with(preferred_extension))
-            {
-                return Ok(file);
-            }
+        {
+            return Ok(file);
+        }
 
         // Default to first file
         Ok(&self.gist.files[0])

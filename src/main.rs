@@ -293,19 +293,20 @@ fn parse_interpreter(interpreter: Option<&str>) -> Result<(String, Option<String
         Some(custom) => {
             // Check if the custom interpreter exists
             if let Ok(output) = std::process::Command::new("which").arg(custom).output()
-                && !output.status.success() {
-                    eprintln!();
-                    eprintln!("{}", "サポートされているインタープリタ:".green());
-                    eprintln!(
-                        "  bash, sh, zsh, python3, python, uv, ruby, node, perl, php, pwsh, powershell"
-                    );
-                    eprintln!("  ts-node, deno, bun (TypeScript)");
-                    eprintln!();
-                    eprintln!("{}", "引数指定を確認してください:".yellow());
-                    eprintln!("  ✅ uv例: gist-cache-rs run --description numpy uv input.csv");
-                    eprintln!();
-                    return Err(GistCacheError::InvalidInterpreter(custom.to_string()));
-                }
+                && !output.status.success()
+            {
+                eprintln!();
+                eprintln!("{}", "サポートされているインタープリタ:".green());
+                eprintln!(
+                    "  bash, sh, zsh, python3, python, uv, ruby, node, perl, php, pwsh, powershell"
+                );
+                eprintln!("  ts-node, deno, bun (TypeScript)");
+                eprintln!();
+                eprintln!("{}", "引数指定を確認してください:".yellow());
+                eprintln!("  ✅ uv例: gist-cache-rs run --description numpy uv input.csv");
+                eprintln!();
+                return Err(GistCacheError::InvalidInterpreter(custom.to_string()));
+            }
             Ok((custom.to_string(), None, false, false))
         }
     }
