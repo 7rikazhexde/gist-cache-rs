@@ -1,3 +1,7 @@
+// Allow deprecated Command::cargo_bin for now
+// See: https://github.com/assert-rs/assert_cmd/issues/200
+#![allow(deprecated)]
+
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs;
@@ -6,7 +10,15 @@ use tempfile::TempDir;
 fn setup_test_env() -> TempDir {
     let temp_dir = TempDir::new().unwrap();
     unsafe {
+        // Use GIST_CACHE_DIR to override cache directory for testing
+        std::env::set_var("GIST_CACHE_DIR", temp_dir.path());
+
+        // Also set HOME/USERPROFILE for dirs::home_dir() fallback
+        #[cfg(unix)]
         std::env::set_var("HOME", temp_dir.path());
+
+        #[cfg(windows)]
+        std::env::set_var("USERPROFILE", temp_dir.path());
     }
     temp_dir
 }
