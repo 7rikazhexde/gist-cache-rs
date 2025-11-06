@@ -109,12 +109,12 @@ impl ScriptRunner {
                     Ok(c) => c,
                     Err(_) => {
                         // キャッシュ読み込み失敗時はAPIから取得
-                        GitHubApi::fetch_gist_content(&self.gist.id, &file.filename)?
+                        GitHubApi::new().fetch_gist_content(&self.gist.id, &file.filename)?
                     }
                 }
             } else {
                 // APIから取得
-                GitHubApi::fetch_gist_content(&self.gist.id, &file.filename)?
+                GitHubApi::new().fetch_gist_content(&self.gist.id, &file.filename)?
             };
 
             println!("{}", content);
@@ -152,7 +152,7 @@ impl ScriptRunner {
                             .yellow()
                     );
                     let fetched =
-                        GitHubApi::fetch_gist_content(&self.gist.id, &main_file.filename)?;
+                        GitHubApi::new().fetch_gist_content(&self.gist.id, &main_file.filename)?;
 
                     // 取得に成功したらキャッシュに保存を試みる
                     let _ = content_cache.write(&self.gist.id, &main_file.filename, &fetched);
@@ -166,7 +166,7 @@ impl ScriptRunner {
                 "{}",
                 "  情報: キャッシュが存在しないため、GitHub APIから取得します...".yellow()
             );
-            GitHubApi::fetch_gist_content(&self.gist.id, &main_file.filename)?
+            GitHubApi::new().fetch_gist_content(&self.gist.id, &main_file.filename)?
         };
 
         // 対話モードでの整合性確保：
@@ -410,12 +410,12 @@ impl ScriptRunner {
                     Ok(c) => c,
                     Err(_) => {
                         // キャッシュ読み込み失敗時はAPIから取得
-                        GitHubApi::fetch_gist_content(&self.gist.id, &file.filename)?
+                        GitHubApi::new().fetch_gist_content(&self.gist.id, &file.filename)?
                     }
                 }
             } else {
                 // APIから取得
-                let fetched = GitHubApi::fetch_gist_content(&self.gist.id, &file.filename)?;
+                let fetched = GitHubApi::new().fetch_gist_content(&self.gist.id, &file.filename)?;
 
                 // ダウンロード時はキャッシュも作成
                 let _ = content_cache.write(&self.gist.id, &file.filename, &fetched);
@@ -446,5 +446,313 @@ impl ScriptRunner {
         );
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::cache::types::GistFile;
+    use chrono::Utc;
+    use tempfile::TempDir;
+
+    fn create_test_gist() -> GistInfo {
+        GistInfo {
+            id: "test123".to_string(),
+            description: Some("Test gist".to_string()),
+            files: vec![
+                GistFile {
+                    filename: "test.sh".to_string(),
+                    language: Some("Shell".to_string()),
+                    size: 100,
+                },
+                GistFile {
+                    filename: "test.py".to_string(),
+                    language: Some("Python".to_string()),
+                    size: 200,
+                },
+            ],
+            updated_at: Utc::now(),
+            public: true,
+            html_url: "https://gist.github.com/test123".to_string(),
+        }
+    }
+
+    fn create_test_config() -> Config {
+        let temp_dir = TempDir::new().unwrap();
+        Config {
+            cache_dir: temp_dir.path().to_path_buf(),
+            cache_file: temp_dir.path().join("cache.json"),
+            contents_dir: temp_dir.path().join("contents"),
+            download_dir: temp_dir.path().join("downloads"),
+        }
+    }
+
+    #[test]
+    fn test_runner_new() {
+        let gist = create_test_gist();
+        let config = create_test_config();
+
+        let runner = ScriptRunner::new(
+            gist.clone(),
+            "bash".to_string(),
+            None,
+            true,
+            RunOptions {
+                interactive: false,
+                preview: false,
+                download: false,
+                force_file_based: false,
+            },
+            vec![],
+            config,
+        );
+
+        assert_eq!(runner.interpreter, "bash");
+        assert!(runner.is_shell);
+    }
+
+    #[test]
+    fn test_run_options() {
+        let options = RunOptions {
+            interactive: true,
+            preview: false,
+            download: true,
+            force_file_based: false,
+        };
+
+        assert!(options.interactive);
+        assert!(!options.preview);
+        assert!(options.download);
+        assert!(!options.force_file_based);
+    }
+
+    #[test]
+    fn test_select_main_file_single_file() {
+        let config = create_test_config();
+        let mut gist = create_test_gist();
+        gist.files = vec![GistFile {
+            filename: "single.sh".to_string(),
+            language: Some("Shell".to_string()),
+            size: 100,
+        }];
+
+        let runner = ScriptRunner::new(
+            gist,
+            "bash".to_string(),
+            None,
+            true,
+            RunOptions {
+                interactive: false,
+                preview: false,
+                download: false,
+                force_file_based: false,
+            },
+            vec![],
+            config,
+        );
+
+        let main_file = runner.select_main_file().unwrap();
+        assert_eq!(main_file.filename, "single.sh");
+    }
+
+    #[test]
+    fn test_select_main_file_multiple_files() {
+        let config = create_test_config();
+        let gist = create_test_gist();
+
+        let runner = ScriptRunner::new(
+            gist,
+            "bash".to_string(),
+            None,
+            true,
+            RunOptions {
+                interactive: false,
+                preview: false,
+                download: false,
+                force_file_based: false,
+            },
+            vec![],
+            config,
+        );
+
+        let main_file = runner.select_main_file().unwrap();
+        assert_eq!(main_file.filename, "test.sh"); // Matches .sh for bash
+    }
+
+    #[test]
+    fn test_select_main_file_by_interpreter() {
+        let config = create_test_config();
+        let gist = create_test_gist();
+
+        // Test with python interpreter
+        let runner = ScriptRunner::new(
+            gist,
+            "python3".to_string(),
+            None,
+            false,
+            RunOptions {
+                interactive: false,
+                preview: false,
+                download: false,
+                force_file_based: false,
+            },
+            vec![],
+            config,
+        );
+
+        let main_file = runner.select_main_file().unwrap();
+        assert_eq!(main_file.filename, "test.py"); // Matches .py for python
+    }
+
+    #[test]
+    fn test_display_info() {
+        let config = create_test_config();
+        let gist = create_test_gist();
+
+        let runner = ScriptRunner::new(
+            gist,
+            "bash".to_string(),
+            None,
+            true,
+            RunOptions {
+                interactive: false,
+                preview: false,
+                download: false,
+                force_file_based: false,
+            },
+            vec![],
+            config,
+        );
+
+        // Just call display_info to ensure it doesn't panic
+        runner.display_info();
+    }
+
+    #[test]
+    fn test_runner_with_different_interpreters() {
+        let config = create_test_config();
+        let gist = create_test_gist();
+
+        // Test python3
+        let runner = ScriptRunner::new(
+            gist.clone(),
+            "python3".to_string(),
+            None,
+            false,
+            RunOptions {
+                interactive: false,
+                preview: false,
+                download: false,
+                force_file_based: false,
+            },
+            vec![],
+            config.clone(),
+        );
+        assert_eq!(runner.interpreter, "python3");
+        assert!(!runner.is_shell);
+
+        // Test node
+        let runner = ScriptRunner::new(
+            gist.clone(),
+            "node".to_string(),
+            None,
+            false,
+            RunOptions {
+                interactive: false,
+                preview: false,
+                download: false,
+                force_file_based: false,
+            },
+            vec![],
+            config.clone(),
+        );
+        assert_eq!(runner.interpreter, "node");
+
+        // Test ruby
+        let runner = ScriptRunner::new(
+            gist.clone(),
+            "ruby".to_string(),
+            None,
+            false,
+            RunOptions {
+                interactive: false,
+                preview: false,
+                download: false,
+                force_file_based: false,
+            },
+            vec![],
+            config.clone(),
+        );
+        assert_eq!(runner.interpreter, "ruby");
+    }
+
+    #[test]
+    fn test_run_options_combinations() {
+        let options = RunOptions {
+            interactive: true,
+            preview: true,
+            download: true,
+            force_file_based: true,
+        };
+
+        assert!(options.interactive);
+        assert!(options.preview);
+        assert!(options.download);
+        assert!(options.force_file_based);
+    }
+
+    #[test]
+    fn test_select_main_file_with_explicit_filename() {
+        let config = create_test_config();
+        let gist = create_test_gist();
+
+        // Specify explicit filename - but select_main_file still uses interpreter logic
+        // This test verifies the current behavior
+        let runner = ScriptRunner::new(
+            gist,
+            "bash".to_string(),
+            Some("test.py".to_string()),
+            true,
+            RunOptions {
+                interactive: false,
+                preview: false,
+                download: false,
+                force_file_based: false,
+            },
+            vec![],
+            config,
+        );
+
+        // select_main_file matches by interpreter, not by main_filename
+        let main_file = runner.select_main_file().unwrap();
+        // For bash interpreter, it will select test.sh (matches .sh extension)
+        assert_eq!(main_file.filename, "test.sh");
+    }
+
+    #[test]
+    fn test_run_options_preview_mode() {
+        let options = RunOptions {
+            interactive: false,
+            preview: true,
+            download: false,
+            force_file_based: false,
+        };
+
+        assert!(options.preview);
+        assert!(!options.interactive);
+    }
+
+    #[test]
+    fn test_run_options_download_mode() {
+        let options = RunOptions {
+            interactive: false,
+            preview: false,
+            download: true,
+            force_file_based: false,
+        };
+
+        assert!(options.download);
+        assert!(!options.preview);
     }
 }

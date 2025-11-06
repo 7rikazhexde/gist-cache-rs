@@ -400,4 +400,142 @@ mod tests {
         // クリア後は0個
         assert_eq!(cache.list_cached_gists().unwrap().len(), 0);
     }
+
+    #[test]
+    fn test_read_nonexistent_file() {
+        let (_temp, cache) = setup_test_cache();
+
+        // 存在しないファイルを読み込もうとするとエラー
+        let result = cache.read("nonexistent", "file.sh");
+        assert!(result.is_err());
+        assert!(matches!(
+            result.unwrap_err(),
+            GistCacheError::CacheReadError(_)
+        ));
+    }
+
+    #[test]
+    fn test_clear_all_when_empty() {
+        let temp_dir = TempDir::new().unwrap();
+        let cache_dir = temp_dir.path().join("contents");
+        let cache = ContentCache::new(cache_dir);
+
+        // キャッシュディレクトリが存在しない状態でclear_all
+        cache.clear_all().unwrap(); // エラーにならない
+    }
+
+    #[test]
+    fn test_total_size_when_no_cache_dir() {
+        let temp_dir = TempDir::new().unwrap();
+        let cache_dir = temp_dir.path().join("nonexistent_contents");
+        let cache = ContentCache::new(cache_dir);
+
+        // キャッシュディレクトリが存在しない場合は0を返す
+        assert_eq!(cache.total_size().unwrap(), 0);
+    }
+
+    #[test]
+    fn test_list_cached_gists_when_no_cache_dir() {
+        let temp_dir = TempDir::new().unwrap();
+        let cache_dir = temp_dir.path().join("nonexistent_contents");
+        let cache = ContentCache::new(cache_dir);
+
+        // キャッシュディレクトリが存在しない場合は空のベクトルを返す
+        assert_eq!(cache.list_cached_gists().unwrap().len(), 0);
+    }
+
+    #[test]
+    fn test_write_creates_gist_directory() {
+        let temp_dir = TempDir::new().unwrap();
+        let cache_dir = temp_dir.path().join("contents");
+        let cache = ContentCache::new(cache_dir.clone());
+
+        // ensure_cache_dirを呼ばずに直接書き込み
+        cache.write("new_gist", "file.sh", "content").unwrap();
+
+        // ディレクトリとファイルが自動作成されることを確認
+        assert!(cache_dir.join("new_gist").exists());
+        assert!(cache.exists("new_gist", "file.sh"));
+    }
+
+    #[test]
+    fn test_list_cached_gists_with_file_in_contents_dir() {
+        let (temp, cache) = setup_test_cache();
+        let cache_dir = temp.path().join("contents");
+
+        // 通常のGistキャッシュを作成
+        cache.write("gist1", "file1.sh", "content1").unwrap();
+
+        // contentsディレクトリ直下に予期しないファイルを作成
+        let unexpected_file = cache_dir.join("unexpected_file.txt");
+        fs::write(&unexpected_file, "unexpected").unwrap();
+
+        // list_cached_gistsは通常のGistのみを返す（ファイルは無視される）
+        let gist_ids = cache.list_cached_gists().unwrap();
+        assert_eq!(gist_ids.len(), 1);
+        assert!(gist_ids.contains(&"gist1".to_string()));
+    }
+
+    #[test]
+    fn test_delete_gist_already_deleted() {
+        let (_temp, cache) = setup_test_cache();
+
+        let gist_id = "test_delete";
+        cache.write(gist_id, "file.sh", "content").unwrap();
+
+        // 最初の削除は成功
+        assert!(cache.delete_gist(gist_id).unwrap());
+
+        // 2回目の削除はfalseを返す（既に存在しない）
+        assert!(!cache.delete_gist(gist_id).unwrap());
+    }
+
+    #[test]
+    fn test_multiple_files_in_same_gist() {
+        let (_temp, cache) = setup_test_cache();
+
+        let gist_id = "multi_file_gist";
+
+        // 同じGistに複数のファイルを書き込み
+        cache.write(gist_id, "file1.sh", "content1").unwrap();
+        cache.write(gist_id, "file2.py", "content2").unwrap();
+        cache.write(gist_id, "file3.rb", "content3").unwrap();
+
+        // 全てのファイルが存在することを確認
+        assert!(cache.exists(gist_id, "file1.sh"));
+        assert!(cache.exists(gist_id, "file2.py"));
+        assert!(cache.exists(gist_id, "file3.rb"));
+
+        // Gistを削除すると全ファイルが削除される
+        assert!(cache.delete_gist(gist_id).unwrap());
+        assert!(!cache.exists(gist_id, "file1.sh"));
+        assert!(!cache.exists(gist_id, "file2.py"));
+        assert!(!cache.exists(gist_id, "file3.rb"));
+    }
+
+    #[test]
+    fn test_overwrite_existing_file() {
+        let (_temp, cache) = setup_test_cache();
+
+        let gist_id = "overwrite_test";
+        let filename = "file.sh";
+
+        // 最初の書き込み
+        cache.write(gist_id, filename, "original content").unwrap();
+        assert_eq!(cache.read(gist_id, filename).unwrap(), "original content");
+
+        // 上書き
+        cache.write(gist_id, filename, "new content").unwrap();
+        assert_eq!(cache.read(gist_id, filename).unwrap(), "new content");
+    }
+
+    #[test]
+    fn test_cache_path_generation() {
+        let temp_dir = TempDir::new().unwrap();
+        let cache_dir = temp_dir.path().join("contents");
+        let cache = ContentCache::new(cache_dir.clone());
+
+        let path = cache.get_cache_path("test_id", "test_file.sh");
+        assert_eq!(path, cache_dir.join("test_id").join("test_file.sh"));
+    }
 }
