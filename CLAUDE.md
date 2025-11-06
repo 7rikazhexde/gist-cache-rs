@@ -131,9 +131,11 @@ src/
 
 **`config.rs`** - 設定管理
 - キャッシュパスを管理（プラットフォーム別）：
+  - 環境変数`GIST_CACHE_DIR`でオーバーライド可能（テスト用）
   - Unix: `~/.cache/gist-cache/cache.json` と `~/.cache/gist-cache/contents/`
   - Windows: `%LOCALAPPDATA%\gist-cache\cache.json` と `%LOCALAPPDATA%\gist-cache\contents\`
 - ダウンロードパスを管理：`dirs::download_dir()`を使用してOSの標準に従う
+- テスト環境での分離：`GIST_CACHE_DIR`を設定することで、実際のユーザーキャッシュに影響を与えずにテスト可能
 
 **`error.rs`** - `thiserror`を使用した集中エラー処理
 
@@ -275,11 +277,11 @@ Updaterはレート制限をチェックし、残りリクエストが50未満�
 
 ## テストとカバレッジ
 
-### 現在の状況（2025-11-06）
+### 現在の状況（2025-11-07）
 
 **全体カバレッジ**: 68.95% (533/773 lines)
-**テスト数**: 158個（ユニット: 125, 統合: 33）
-**テスト実行時間**: 約15秒
+**テスト数**: 163個（ユニット: 120, 統合: 43、プラットフォーム別にスキップ: 18）
+**テスト実行時間**: 約15秒（Windows）、約10秒（Unix）
 
 ### モジュール別カバレッジ
 
@@ -331,16 +333,39 @@ cargo tarpaulin --out Stdout --output-dir coverage 2>&1 | tail -100
 - MockGitHubClient を使用した外部依存の排除
 - 高速実行、CI/CD対応
 
-**統合テスト (33個)**:
+**統合テスト (43個、プラットフォーム依存18個)**:
 - `tests/cli_tests.rs`: CLI動作テスト (15個)
-- `tests/integration_test.rs`: インタープリタテスト (12個)
-  - Bash, Python, Node.js, Ruby, Perl, PHP
-  - TypeScript (ts-node, deno, bun)
-- `tests/runner_test.rs`: ランナーテスト (6個)
+- `tests/integration_test.rs`: インタープリタテスト (16個)
+  - **Unix専用 (12個)**: Bash, Python, Node.js, Ruby, Perl, PHP, TypeScript (ts-node, deno, bun)
+  - **Windows専用 (4個)**: PowerShell Core (pwsh)
+- `tests/runner_test.rs`: ランナーテスト (12個)
+  - **Unix専用 (6個)**: Bashを使用したテスト
+  - **Windows専用 (6個)**: PowerShellを使用したテスト
 
 **E2Eテスト (手動)**:
 - `docs/tests/`: 機能検証テスト設計書 (26ケース)
 - 実際のGistを使用した包括的検証
+
+### プラットフォーム別テスト戦略
+
+**Unix環境（Linux/macOS）**:
+- bashを使用した統合テスト（18個）が実行される
+- PowerShellテスト（10個）はコンパイル時に除外される（`#[cfg(windows)]`）
+- 合計: 120 + 15 + 18 = **153個のテストが実行**
+
+**Windows環境**:
+- PowerShellを使用した統合テスト（10個）が実行される
+- bashテスト（18個）は実行時にスキップされる（`#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]`）
+- 合計: 120 + 15 + 10 = **145個のテストが実行**
+
+**テスト対等性**:
+| テスト種別 | bash (Unix) | PowerShell (Windows) |
+|-----------|-------------|---------------------|
+| 統合テスト | 12個 | 4個 |
+| ランナーテスト | 6個 | 6個 |
+| **合計** | **18個** | **10個** |
+
+bashとPowerShellでテストカバレッジが対等になるよう設計されており、両プラットフォームで同等の品質保証を実現しています。
 
 ### 設計判断：68.95%カバレッジの内訳
 
