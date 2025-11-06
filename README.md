@@ -395,7 +395,7 @@ gist-cache-rs cache clear
 
 ### Windows
 
-```
+```bash
 %LOCALAPPDATA%\gist-cache\
 ├── cache.json                    # メタデータキャッシュ
 └── contents\                     # コンテンツキャッシュ
@@ -408,11 +408,21 @@ gist-cache-rs cache clear
 
 ## 📚 ドキュメント
 
+### ユーザー向け
+
 - [README.md](README.md) - プロジェクト概要と基本機能
 - [INSTALL.md](docs/INSTALL.md) - インストール方法
 - [QUICKSTART.md](docs/QUICKSTART.md) - 5分で始めるガイド
 - [EXAMPLES.md](docs/EXAMPLES.md) - 実例集
-- [docs/tests/](docs/tests/) - 機能検証テスト設計書
+
+### 開発者向け
+
+- [CLAUDE.md](CLAUDE.md) - プロジェクト構造とアーキテクチャ
+- [TESTING.md](docs/testing/TESTING.md) - テスト戦略と実行ガイド
+- [TEST_INVENTORY.md](docs/testing/TEST_INVENTORY.md) - テストインベントリ（全テスト一覧）
+- [COVERAGE.md](docs/testing/COVERAGE.md) - カバレッジ測定ガイド
+- [GH_TESTING_EVALUATION.md](docs/testing/GH_TESTING_EVALUATION.md) - GitHub CLI関連テスト評価
+- [docs/tests/](docs/tests/) - 機能検証テスト設計書（E2Eテスト）
 
 ## 📄 ライセンス
 

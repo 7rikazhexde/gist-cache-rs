@@ -7,16 +7,19 @@
 - **Rust toolchain** (1.85以降)
 
   **Linux / macOS:**
+
   ```bash
   rustc --version  # 確認
   ```
 
   インストール方法:
+
   ```bash
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   ```
 
   **Windows:**
+
   ```powershell
   rustc --version  # 確認
   ```
@@ -26,18 +29,21 @@
 - **GitHub CLI** (`gh`) - 認証済み
 
   **Linux / macOS:**
+
   ```bash
   gh --version     # 確認
   gh auth status   # 認証状態確認
   ```
 
   **Windows:**
+
   ```powershell
   gh --version     # 確認
   gh auth status   # 認証状態確認
   ```
 
   認証方法:
+
   ```bash
   gh auth login
   ```
