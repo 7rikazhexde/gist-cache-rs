@@ -54,6 +54,7 @@ fn create_test_gist(id: &str, filename: &str, lang: Option<&str>) -> GistInfo {
 
 #[test]
 #[serial]
+#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]
 fn test_download_mode_creates_file() {
     let (config, _temp_dir) = create_test_config();
     let gist = create_test_gist("test_download", "hello.sh", Some("Shell"));
@@ -99,6 +100,7 @@ fn test_download_mode_creates_file() {
 
 #[test]
 #[serial]
+#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]
 fn test_preview_with_download_mode() {
     let (config, _temp_dir) = create_test_config();
     let gist = create_test_gist("test_preview_dl", "hello.sh", Some("Shell"));
@@ -138,6 +140,7 @@ fn test_preview_with_download_mode() {
 
 #[test]
 #[serial]
+#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]
 fn test_cache_creation_after_execution() {
     let (config, _temp_dir) = create_test_config();
     let gist = create_test_gist("test_cache_creation", "hello.sh", Some("Shell"));
@@ -181,6 +184,7 @@ fn test_cache_creation_after_execution() {
 
 #[test]
 #[serial]
+#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]
 fn test_multiple_files_gist() {
     let (config, _temp_dir) = create_test_config();
 
@@ -223,6 +227,7 @@ fn test_multiple_files_gist() {
 
 #[test]
 #[serial]
+#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]
 fn test_force_file_based_execution() {
     let (config, _temp_dir) = create_test_config();
     let gist = create_test_gist("test_file_based", "hello.sh", Some("Shell"));
@@ -255,6 +260,7 @@ fn test_force_file_based_execution() {
 
 #[test]
 #[serial]
+#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]
 fn test_script_with_empty_arguments() {
     let (config, _temp_dir) = create_test_config();
     let gist = create_test_gist("test_no_args", "hello.sh", Some("Shell"));
@@ -283,4 +289,266 @@ fn test_script_with_empty_arguments() {
 
     let result = runner.run();
     assert!(result.is_ok(), "Script with no arguments should succeed");
+}
+
+// Windows専用テスト (PowerShell)
+
+#[test]
+#[serial]
+#[cfg(windows)]
+fn test_powershell_download_mode() {
+    let (config, _temp_dir) = create_test_config();
+    let gist = create_test_gist("test_pwsh_download", "hello.ps1", Some("PowerShell"));
+
+    let content = read_fixture("hello.ps1");
+    let content_cache = gist_cache_rs::cache::ContentCache::new(config.contents_dir.clone());
+    content_cache.ensure_cache_dir().unwrap();
+    content_cache
+        .write(&gist.id, "hello.ps1", &content)
+        .unwrap();
+
+    let options = RunOptions {
+        interactive: false,
+        preview: false,
+        download: true, // ダウンロードモード
+        force_file_based: true,
+    };
+
+    let runner = ScriptRunner::new(
+        gist.clone(),
+        "pwsh".to_string(),
+        None,
+        false,
+        options,
+        vec![],
+        config.clone(),
+    );
+
+    let result = runner.run();
+    assert!(result.is_ok(), "PowerShell download mode should succeed");
+
+    // ダウンロードファイルが作成されたか確認
+    let download_path = config.download_dir.join("hello.ps1");
+    assert!(
+        download_path.exists(),
+        "Downloaded file should exist in download directory"
+    );
+
+    let downloaded_content = fs::read_to_string(download_path).unwrap();
+    assert_eq!(
+        downloaded_content, content,
+        "Downloaded content should match"
+    );
+}
+
+#[test]
+#[serial]
+#[cfg(windows)]
+fn test_powershell_cache_creation() {
+    let (config, _temp_dir) = create_test_config();
+    let gist = create_test_gist("test_pwsh_cache", "hello.ps1", Some("PowerShell"));
+
+    let content = read_fixture("hello.ps1");
+    let content_cache = gist_cache_rs::cache::ContentCache::new(config.contents_dir.clone());
+    content_cache.ensure_cache_dir().unwrap();
+
+    // 初回実行前はキャッシュが存在しない
+    assert!(!content_cache.exists(&gist.id, "hello.ps1"));
+
+    // コンテンツを手動で設定（GitHub APIから取得したと仮定）
+    content_cache
+        .write(&gist.id, "hello.ps1", &content)
+        .unwrap();
+
+    let options = RunOptions {
+        interactive: false,
+        preview: false,
+        download: false,
+        force_file_based: true,
+    };
+
+    let runner = ScriptRunner::new(
+        gist.clone(),
+        "pwsh".to_string(),
+        None,
+        false,
+        options,
+        vec![],
+        config.clone(),
+    );
+
+    let result = runner.run();
+    assert!(result.is_ok(), "PowerShell execution should succeed");
+
+    // 実行後にキャッシュが存在する
+    assert!(
+        content_cache.exists(&gist.id, "hello.ps1"),
+        "Cache should exist after execution"
+    );
+}
+
+#[test]
+#[serial]
+#[cfg(windows)]
+fn test_powershell_force_file_based() {
+    let (config, _temp_dir) = create_test_config();
+    let gist = create_test_gist("test_pwsh_force", "hello.ps1", Some("PowerShell"));
+
+    let content = read_fixture("hello.ps1");
+    let content_cache = gist_cache_rs::cache::ContentCache::new(config.contents_dir.clone());
+    content_cache.ensure_cache_dir().unwrap();
+    content_cache
+        .write(&gist.id, "hello.ps1", &content)
+        .unwrap();
+
+    let options = RunOptions {
+        interactive: false,
+        preview: false,
+        download: false,
+        force_file_based: true, // ファイルベース実行を強制
+    };
+
+    let runner = ScriptRunner::new(
+        gist.clone(),
+        "pwsh".to_string(),
+        None,
+        false,
+        options,
+        vec![],
+        config,
+    );
+
+    let result = runner.run();
+    assert!(
+        result.is_ok(),
+        "PowerShell force file-based execution should succeed"
+    );
+}
+
+#[test]
+#[serial]
+#[cfg(windows)]
+fn test_powershell_preview_with_download() {
+    let (config, _temp_dir) = create_test_config();
+    let gist = create_test_gist("test_pwsh_preview_dl", "hello.ps1", Some("PowerShell"));
+
+    let content = read_fixture("hello.ps1");
+    let content_cache = gist_cache_rs::cache::ContentCache::new(config.contents_dir.clone());
+    content_cache.ensure_cache_dir().unwrap();
+    content_cache
+        .write(&gist.id, "hello.ps1", &content)
+        .unwrap();
+
+    let options = RunOptions {
+        interactive: false,
+        preview: true,  // プレビュー
+        download: true, // ダウンロード
+        force_file_based: true,
+    };
+
+    let runner = ScriptRunner::new(
+        gist.clone(),
+        "pwsh".to_string(),
+        None,
+        false,
+        options,
+        vec![],
+        config.clone(),
+    );
+
+    let result = runner.run();
+    assert!(
+        result.is_ok(),
+        "PowerShell preview + download should succeed"
+    );
+
+    // ダウンロードファイルが作成されたか確認
+    let download_path = config.download_dir.join("hello.ps1");
+    assert!(
+        download_path.exists(),
+        "Downloaded file should exist even in preview mode"
+    );
+}
+
+#[test]
+#[serial]
+#[cfg(windows)]
+fn test_powershell_multiple_files_gist() {
+    let (config, _temp_dir) = create_test_config();
+
+    let mut gist = create_test_gist("test_pwsh_multi", "hello.ps1", Some("PowerShell"));
+    gist.files.push(GistFile {
+        filename: "hello.py".to_string(),
+        language: Some("Python".to_string()),
+        size: 100,
+    });
+
+    let content = read_fixture("hello.ps1");
+    let content_cache = gist_cache_rs::cache::ContentCache::new(config.contents_dir.clone());
+    content_cache.ensure_cache_dir().unwrap();
+    content_cache
+        .write(&gist.id, "hello.ps1", &content)
+        .unwrap();
+
+    let options = RunOptions {
+        interactive: false,
+        preview: false,
+        download: false,
+        force_file_based: true,
+    };
+
+    // pwsh インタープリタを指定した場合、.ps1 ファイルが選択されるべき
+    let runner = ScriptRunner::new(
+        gist.clone(),
+        "pwsh".to_string(),
+        None,
+        false,
+        options,
+        vec![],
+        config,
+    );
+
+    let result = runner.run();
+    assert!(
+        result.is_ok(),
+        "PowerShell should select correct file from multiple files"
+    );
+}
+
+#[test]
+#[serial]
+#[cfg(windows)]
+fn test_powershell_with_empty_arguments() {
+    let (config, _temp_dir) = create_test_config();
+    let gist = create_test_gist("test_pwsh_no_args", "hello.ps1", Some("PowerShell"));
+
+    let content = read_fixture("hello.ps1");
+    let content_cache = gist_cache_rs::cache::ContentCache::new(config.contents_dir.clone());
+    content_cache.ensure_cache_dir().unwrap();
+    content_cache
+        .write(&gist.id, "hello.ps1", &content)
+        .unwrap();
+
+    let options = RunOptions {
+        interactive: false,
+        preview: false,
+        download: false,
+        force_file_based: true,
+    };
+
+    let runner = ScriptRunner::new(
+        gist.clone(),
+        "pwsh".to_string(),
+        None,
+        false,
+        options,
+        vec![], // 空の引数リスト
+        config,
+    );
+
+    let result = runner.run();
+    assert!(
+        result.is_ok(),
+        "PowerShell script with no arguments should succeed"
+    );
 }

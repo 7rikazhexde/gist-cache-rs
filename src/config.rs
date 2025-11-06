@@ -14,14 +14,21 @@ impl Config {
         let home = dirs::home_dir()
             .ok_or_else(|| GistCacheError::Config("Could not find home directory".to_string()))?;
 
-        // Cache directory: follow platform standards
-        #[cfg(unix)]
-        let cache_dir = home.join(".cache").join("gist-cache");
+        // Cache directory: check for override via environment variable first
+        let cache_dir = if let Ok(override_dir) = std::env::var("GIST_CACHE_DIR") {
+            PathBuf::from(override_dir).join("gist-cache")
+        } else {
+            // Cache directory: follow platform standards
+            #[cfg(unix)]
+            let dir = home.join(".cache").join("gist-cache");
 
-        #[cfg(windows)]
-        let cache_dir = dirs::cache_dir()
-            .unwrap_or_else(|| home.join("AppData").join("Local"))
-            .join("gist-cache");
+            #[cfg(windows)]
+            let dir = dirs::cache_dir()
+                .unwrap_or_else(|| home.join("AppData").join("Local"))
+                .join("gist-cache");
+
+            dir
+        };
 
         let cache_file = cache_dir.join("cache.json");
         let contents_dir = cache_dir.join("contents");

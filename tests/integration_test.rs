@@ -58,6 +58,7 @@ fn create_test_gist(id: &str, filename: &str) -> GistInfo {
 
 #[test]
 #[serial]
+#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]
 fn test_execute_bash_script() {
     let (config, _temp_dir) = create_test_config();
     let gist = create_test_gist("test_bash", "hello.sh");
@@ -158,6 +159,7 @@ fn test_execute_node_script() {
 
 #[test]
 #[serial]
+#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]
 fn test_execute_with_arguments() {
     let (config, _temp_dir) = create_test_config();
     let gist = create_test_gist("test_args", "args_echo.sh");
@@ -195,6 +197,7 @@ fn test_execute_with_arguments() {
 
 #[test]
 #[serial]
+#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]
 fn test_execute_failing_script() {
     let (config, _temp_dir) = create_test_config();
     let gist = create_test_gist("test_error", "error_exit.sh");
@@ -229,6 +232,7 @@ fn test_execute_failing_script() {
 
 #[test]
 #[serial]
+#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]
 fn test_preview_mode_does_not_execute() {
     let (config, _temp_dir) = create_test_config();
     let gist = create_test_gist("test_preview", "hello.sh");
@@ -391,6 +395,160 @@ fn test_execute_bun_script() {
 
     let result = runner.run();
     assert!(result.is_ok(), "bun script should execute successfully");
+}
+
+// Windows専用テスト (PowerShell)
+
+#[test]
+#[serial]
+#[cfg(windows)]
+fn test_execute_powershell_script() {
+    let (config, _temp_dir) = create_test_config();
+    let gist = create_test_gist("test_pwsh", "hello.ps1");
+
+    let content = read_fixture("hello.ps1");
+    let content_cache = gist_cache_rs::cache::ContentCache::new(config.contents_dir.clone());
+    content_cache.ensure_cache_dir().unwrap();
+    content_cache
+        .write(&gist.id, "hello.ps1", &content)
+        .unwrap();
+
+    let options = RunOptions {
+        interactive: false,
+        preview: false,
+        download: false,
+        force_file_based: true, // PowerShellはファイルベース実行
+    };
+
+    let runner = ScriptRunner::new(
+        gist.clone(),
+        "pwsh".to_string(),
+        None,
+        false,
+        options,
+        vec![],
+        config,
+    );
+
+    let result = runner.run();
+    assert!(
+        result.is_ok(),
+        "PowerShell script should execute successfully"
+    );
+}
+
+#[test]
+#[serial]
+#[cfg(windows)]
+fn test_execute_powershell_with_arguments() {
+    let (config, _temp_dir) = create_test_config();
+    let gist = create_test_gist("test_pwsh_args", "args_echo.ps1");
+
+    let content = read_fixture("args_echo.ps1");
+    let content_cache = gist_cache_rs::cache::ContentCache::new(config.contents_dir.clone());
+    content_cache.ensure_cache_dir().unwrap();
+    content_cache
+        .write(&gist.id, "args_echo.ps1", &content)
+        .unwrap();
+
+    let options = RunOptions {
+        interactive: false,
+        preview: false,
+        download: false,
+        force_file_based: true,
+    };
+
+    let runner = ScriptRunner::new(
+        gist.clone(),
+        "pwsh".to_string(),
+        None,
+        false,
+        options,
+        vec!["arg1".to_string(), "arg2".to_string()],
+        config,
+    );
+
+    let result = runner.run();
+    assert!(
+        result.is_ok(),
+        "PowerShell script with arguments should execute successfully"
+    );
+}
+
+#[test]
+#[serial]
+#[cfg(windows)]
+fn test_execute_powershell_failing_script() {
+    let (config, _temp_dir) = create_test_config();
+    let gist = create_test_gist("test_pwsh_error", "error_exit.ps1");
+
+    let content = read_fixture("error_exit.ps1");
+    let content_cache = gist_cache_rs::cache::ContentCache::new(config.contents_dir.clone());
+    content_cache.ensure_cache_dir().unwrap();
+    content_cache
+        .write(&gist.id, "error_exit.ps1", &content)
+        .unwrap();
+
+    let options = RunOptions {
+        interactive: false,
+        preview: false,
+        download: false,
+        force_file_based: true,
+    };
+
+    let runner = ScriptRunner::new(
+        gist.clone(),
+        "pwsh".to_string(),
+        None,
+        false,
+        options,
+        vec![],
+        config,
+    );
+
+    let result = runner.run();
+    assert!(
+        result.is_err(),
+        "Failing PowerShell script should return an error"
+    );
+}
+
+#[test]
+#[serial]
+#[cfg(windows)]
+fn test_execute_powershell_preview_mode() {
+    let (config, _temp_dir) = create_test_config();
+    let gist = create_test_gist("test_pwsh_preview", "hello.ps1");
+
+    let content = read_fixture("hello.ps1");
+    let content_cache = gist_cache_rs::cache::ContentCache::new(config.contents_dir.clone());
+    content_cache.ensure_cache_dir().unwrap();
+    content_cache
+        .write(&gist.id, "hello.ps1", &content)
+        .unwrap();
+
+    let options = RunOptions {
+        interactive: false,
+        preview: true, // プレビューモード
+        download: false,
+        force_file_based: true,
+    };
+
+    let runner = ScriptRunner::new(
+        gist.clone(),
+        "pwsh".to_string(),
+        None,
+        false,
+        options,
+        vec![],
+        config,
+    );
+
+    let result = runner.run();
+    assert!(
+        result.is_ok(),
+        "PowerShell preview mode should succeed without execution"
+    );
 }
 
 // Ruby, Perl, PHP インタープリタのテスト
