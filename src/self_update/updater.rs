@@ -76,10 +76,7 @@ impl Updater {
                         .yellow()
                         .bold()
                 );
-                println!(
-                    "更新するには: {}",
-                    "gist-cache-rs self update".cyan()
-                );
+                println!("更新するには: {}", "gist-cache-rs self update".cyan());
             } else {
                 println!("{}", "最新版を使用しています".green().bold());
             }
@@ -93,14 +90,15 @@ impl Updater {
 
         match status {
             self_update::Status::UpToDate(version) => {
-                println!("{}", format!("すでに最新版です ({})", version).green().bold());
+                println!(
+                    "{}",
+                    format!("すでに最新版です ({})", version).green().bold()
+                );
             }
             self_update::Status::Updated(version) => {
                 println!(
                     "{}",
-                    format!("更新が完了しました: {}", version)
-                        .green()
-                        .bold()
+                    format!("更新が完了しました: {}", version).green().bold()
                 );
                 println!("新しいバージョンで再起動してください。");
             }
