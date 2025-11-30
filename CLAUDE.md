@@ -275,6 +275,39 @@ Updaterはレート制限をチェックし、残りリクエストが50未満�
 - `clear_all()`: 全キャッシュ削除
 - `read()`, `write()`, `exists()`: 個別キャッシュの読み書き
 
+## リリースプロセス
+
+### 自動リリースビルド
+
+タグをプッシュすると、GitHub Actionsが自動的にプラットフォーム別のバイナリをビルドしてリリースします。
+
+```bash
+# バージョン更新
+vim Cargo.toml CHANGELOG.md
+git add Cargo.toml CHANGELOG.md
+git commit -m "🔖 Bump version to 0.5.0"
+
+# タグ作成とプッシュ
+git tag v0.5.0
+git push origin main
+git push origin v0.5.0
+```
+
+### ビルド対象プラットフォーム
+
+- Linux (x86_64): `gist-cache-rs-linux-x86_64.tar.gz`
+- macOS (x86_64): `gist-cache-rs-macos-x86_64.tar.gz`
+- macOS (Apple Silicon): `gist-cache-rs-macos-aarch64.tar.gz`
+- Windows (x86_64): `gist-cache-rs-windows-x86_64.zip`
+
+### ワークフロー
+
+`.github/workflows/release.yml`で定義：
+1. `create-release`: リリースページ作成、リリースノート生成
+2. `build-release`: 並列ビルド（4プラットフォーム）、アセットアップロード
+
+詳細は [docs/SELF-UPDATE.md](docs/SELF-UPDATE.md#リリースプロセス) を参照。
+
 ## 依存関係
 
 主要なランタイム依存関係：

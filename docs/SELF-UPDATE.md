@@ -280,9 +280,11 @@ self_update = "0.41"  # GitHub Releasesからの自動更新
 
 ### Phase 4: CI/CD統合
 
-- [ ] GitHub Actionsでのリリースビルド自動化
-- [ ] プラットフォーム別バイナリの作成
-- [ ] リリースノートの自動生成
+- [x] GitHub Actionsでのリリースビルド自動化
+- [x] プラットフォーム別バイナリの作成
+- [x] リリースノートの自動生成
+- [x] Matrix buildによる並列ビルド
+- [x] 自動アセットアップロード
 
 ### Phase 5: セキュリティ強化（将来）
 
@@ -309,6 +311,70 @@ self_update = "0.41"  # GitHub Releasesからの自動更新
 
 - GitHub Releases API: https://docs.github.com/en/rest/releases
 - cargo install: https://doc.rust-lang.org/cargo/commands/cargo-install.html
+
+## リリースプロセス
+
+### 自動リリースビルド
+
+GitHub Actionsを使用して、タグをプッシュすると自動的にリリースビルドが実行されます。
+
+**手順**:
+
+1. バージョン番号を更新（Cargo.toml）
+2. CHANGELOGを更新
+3. コミットしてプッシュ
+4. タグを作成してプッシュ
+
+```bash
+# 1. バージョン更新とCHANGELOG編集
+vim Cargo.toml
+vim CHANGELOG.md
+git add Cargo.toml CHANGELOG.md
+git commit -m "🔖 Bump version to 0.5.0"
+
+# 2. タグを作成してプッシュ
+git tag v0.5.0
+git push origin main
+git push origin v0.5.0
+```
+
+### ビルドされるプラットフォーム
+
+GitHub Actionsは以下のプラットフォーム用のバイナリを自動生成します：
+
+| プラットフォーム | アーキテクチャ | アセット名 |
+|-----------------|--------------|-----------|
+| Linux | x86_64 | `gist-cache-rs-linux-x86_64.tar.gz` |
+| macOS (Intel) | x86_64 | `gist-cache-rs-macos-x86_64.tar.gz` |
+| macOS (Apple Silicon) | aarch64 | `gist-cache-rs-macos-aarch64.tar.gz` |
+| Windows | x86_64 | `gist-cache-rs-windows-x86_64.zip` |
+
+### ワークフローの詳細
+
+`.github/workflows/release.yml`で定義されたワークフロー：
+
+1. **create-release**: リリースページを作成
+   - タグからバージョンを抽出
+   - リリースノートを生成（CHANGELOGを参照）
+   - インストール手順を含める
+
+2. **build-release**: プラットフォーム別ビルド（並列実行）
+   - Rustツールチェーンのインストール
+   - リリースビルドの実行
+   - バイナリのstrip（Linux/macOS）
+   - アーカイブの作成
+   - GitHub Releasesへのアップロード
+
+### トラブルシューティング
+
+**ビルドが失敗する場合**:
+- Cargo.tomlのバージョンが正しいか確認
+- 依存関係が最新か確認（`cargo update`）
+- GitHub Actionsのログを確認
+
+**アセットがアップロードされない場合**:
+- GitHubトークンの権限を確認
+- ワークフローファイルの構文エラーを確認
 
 ## FAQ
 
