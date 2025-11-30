@@ -20,6 +20,9 @@ pub enum Commands {
     Run(RunArgs),
     /// キャッシュ管理
     Cache(CacheArgs),
+    /// アプリケーション自体を更新
+    #[command(name = "self")]
+    SelfUpdate(SelfUpdateArgs),
 }
 
 #[derive(Args)]
@@ -93,6 +96,41 @@ pub enum CacheCommands {
     Clear,
 }
 
+#[derive(Args)]
+pub struct SelfUpdateArgs {
+    #[command(subcommand)]
+    pub command: SelfUpdateCommands,
+}
+
+#[derive(Subcommand)]
+pub enum SelfUpdateCommands {
+    /// アプリケーションを最新版に更新
+    Update(SelfUpdateOptions),
+}
+
+#[derive(Args)]
+pub struct SelfUpdateOptions {
+    /// ソースからビルドして更新
+    #[arg(long)]
+    pub from_source: bool,
+
+    /// 更新の有無のみ確認（実際には更新しない）
+    #[arg(long)]
+    pub check: bool,
+
+    /// バージョンが同じでも強制的に更新
+    #[arg(short, long)]
+    pub force: bool,
+
+    /// 特定のバージョンに更新
+    #[arg(long)]
+    pub version: Option<String>,
+
+    /// 詳細な進捗情報を表示
+    #[arg(short, long)]
+    pub verbose: bool,
+}
+
 pub fn run_cli() -> Result<()> {
     let cli = Cli::parse();
     let config = Config::new()?;
@@ -119,6 +157,9 @@ pub fn run_cli() -> Result<()> {
         }
         Commands::Cache(args) => {
             handle_cache_command(config, args)?;
+        }
+        Commands::SelfUpdate(args) => {
+            handle_self_update_command(args)?;
         }
     }
 
@@ -439,6 +480,27 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
                 println!();
                 println!("{}", "キャンセルしました".cyan());
             }
+        }
+    }
+
+    Ok(())
+}
+
+pub fn handle_self_update_command(args: SelfUpdateArgs) -> Result<()> {
+    use crate::self_update::updater::{UpdateOptions, Updater};
+
+    match args.command {
+        SelfUpdateCommands::Update(opts) => {
+            let options = UpdateOptions {
+                from_source: opts.from_source,
+                check: opts.check,
+                force: opts.force,
+                version: opts.version,
+                verbose: opts.verbose,
+            };
+
+            let updater = Updater::new(options);
+            updater.update()?;
         }
     }
 

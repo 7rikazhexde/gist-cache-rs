@@ -52,6 +52,21 @@ pub enum GistCacheError {
 
     #[error("Cache directory error: {0}")]
     CacheDirectoryError(String),
+
+    #[error("Self-update error: {0}")]
+    SelfUpdate(String),
+}
+
+impl From<Box<dyn std::error::Error>> for GistCacheError {
+    fn from(error: Box<dyn std::error::Error>) -> Self {
+        GistCacheError::SelfUpdate(error.to_string())
+    }
+}
+
+impl From<self_update::errors::Error> for GistCacheError {
+    fn from(error: self_update::errors::Error) -> Self {
+        GistCacheError::SelfUpdate(error.to_string())
+    }
 }
 
 pub type Result<T> = std::result::Result<T, GistCacheError>;

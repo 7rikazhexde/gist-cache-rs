@@ -72,6 +72,12 @@ cargo run -- run --download <query>  # ダウンロードフォルダに保存
 cargo run -- cache list
 cargo run -- cache size
 cargo run -- cache clear
+
+# アプリケーション自体の更新
+cargo run -- self update --check         # 更新確認のみ
+cargo run -- self update                 # 最新版に更新（GitHub Releases）
+cargo run -- self update --from-source   # ソースからビルドして更新
+cargo run -- self update --verbose
 ```
 
 ## アーキテクチャ概要
@@ -95,13 +101,16 @@ src/
 ├── search/             # 検索機能
 │   ├── query.rs        # 検索クエリ処理 (420行)
 │   └── mod.rs
+├── self_update/        # Self-update機能
+│   ├── updater.rs      # アプリ更新ロジック
+│   └── mod.rs
 ├── cli.rs              # CLI引数処理 (967行)
 ├── config.rs           # 設定管理 (163行)
 ├── error.rs            # エラー型定義 (160行)
 ├── lib.rs              # ライブラリルート
 └── main.rs             # エントリーポイント
 
-合計: 16ファイル, 約4,465行
+合計: 18ファイル, 約4,600行
 ```
 
 ### モジュール構造
@@ -128,6 +137,14 @@ src/
 - `pwsh`（PowerShell Core）と`powershell`（Windows PowerShell）はスクリプト実行ポリシーとの互換性のためファイルベース実行を使用
 - TypeScriptインタープリタ（`ts-node`、`deno`、`bun`）はモジュール解決のためファイルベース実行を使用
 - `read`などを使用するスクリプト用のインタラクティブモード
+
+**`self_update/`** - アプリケーション自己更新機能
+- `updater.rs`: `Updater`はGitHub Releasesまたはソースからの自動更新を処理
+- **GitHub Releases更新**: `self_update` crateを使用したバイナリダウンロード
+- **ソースビルド更新**: git pull + cargo installによるビルド更新
+- 更新確認（`--check`）、強制更新（`--force`）、バージョン指定更新をサポート
+- リポジトリパス検出: 環境変数 → cargo metadata → エラー
+- トラッキング情報がない場合は自動的にorigin/mainから取得
 
 **`config.rs`** - 設定管理
 - キャッシュパスを管理（プラットフォーム別）：
@@ -258,6 +275,39 @@ Updaterはレート制限をチェックし、残りリクエストが50未満�
 - `clear_all()`: 全キャッシュ削除
 - `read()`, `write()`, `exists()`: 個別キャッシュの読み書き
 
+## リリースプロセス
+
+### 自動リリースビルド
+
+タグをプッシュすると、GitHub Actionsが自動的にプラットフォーム別のバイナリをビルドしてリリースします。
+
+```bash
+# バージョン更新
+vim Cargo.toml CHANGELOG.md
+git add Cargo.toml CHANGELOG.md
+git commit -m "🔖 Bump version to 0.5.0"
+
+# タグ作成とプッシュ
+git tag v0.5.0
+git push origin main
+git push origin v0.5.0
+```
+
+### ビルド対象プラットフォーム
+
+- Linux (x86_64): `gist-cache-rs-linux-x86_64.tar.gz`
+- macOS (x86_64): `gist-cache-rs-macos-x86_64.tar.gz`
+- macOS (Apple Silicon): `gist-cache-rs-macos-aarch64.tar.gz`
+- Windows (x86_64): `gist-cache-rs-windows-x86_64.zip`
+
+### ワークフロー
+
+`.github/workflows/release.yml`で定義：
+1. `create-release`: リリースページ作成、リリースノート生成
+2. `build-release`: 並列ビルド（4プラットフォーム）、アセットアップロード
+
+詳細は [docs/SELF-UPDATE.md](docs/SELF-UPDATE.md#リリースプロセス) を参照。
+
 ## 依存関係
 
 主要なランタイム依存関係：
@@ -269,6 +319,7 @@ Updaterはレート制限をチェックし、残りリクエストが50未満�
 - `anyhow`/`thiserror`: エラー処理
 - `dirs`: プラットフォーム固有のディレクトリ検出
 - `colored`: ターミナル出力の色付け
+- `self_update`: GitHub Releasesからの自動更新
 
 開発用依存関係：
 - `mockall`: モックライブラリ（外部依存のテスト用）
