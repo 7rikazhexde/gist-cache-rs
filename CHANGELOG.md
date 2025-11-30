@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] - 2025-11-30
 
 ### Added
 - Self-update functionality with `gist-cache-rs self update` command
@@ -84,7 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Search and execute Gists
 - Metadata caching
 
-[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.1.0...v0.2.0
