@@ -90,6 +90,31 @@ gist-cache-rs update --verbose
 gist-cache-rs update --force
 ```
 
+## 🔃 アプリケーションの更新
+
+gist-cache-rs自体を最新版に更新できます：
+
+```bash
+# 最新版をチェック
+gist-cache-rs self update --check
+
+# 最新版に更新
+gist-cache-rs self update
+
+# 詳細表示付き
+gist-cache-rs self update --verbose
+```
+
+**オプション**:
+- `--check`: 更新の有無のみ確認（実際には更新しない）
+- `--from-source`: GitHub Releasesではなく、ソースからビルドして更新（Phase 2で実装予定）
+- `--force`: バージョンが同じでも強制的に更新
+- `--version <VERSION>`: 特定のバージョンに更新
+
+詳細は [docs/SELF-UPDATE.md](docs/SELF-UPDATE.md) を参照してください。
+
+**注意**: GitHub Releasesからの更新を利用するには、プロジェクトのリリースにプラットフォーム別のバイナリが必要です。
+
 ## 💾 キャッシュの仕組み
 
 gist-cache-rsは2層のキャッシュ構造を持ちます：

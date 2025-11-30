@@ -72,6 +72,11 @@ cargo run -- run --download <query>  # ダウンロードフォルダに保存
 cargo run -- cache list
 cargo run -- cache size
 cargo run -- cache clear
+
+# アプリケーション自体の更新
+cargo run -- self update --check  # 更新確認のみ
+cargo run -- self update          # 最新版に更新
+cargo run -- self update --verbose
 ```
 
 ## アーキテクチャ概要
@@ -95,13 +100,16 @@ src/
 ├── search/             # 検索機能
 │   ├── query.rs        # 検索クエリ処理 (420行)
 │   └── mod.rs
+├── self_update/        # Self-update機能
+│   ├── updater.rs      # アプリ更新ロジック
+│   └── mod.rs
 ├── cli.rs              # CLI引数処理 (967行)
 ├── config.rs           # 設定管理 (163行)
 ├── error.rs            # エラー型定義 (160行)
 ├── lib.rs              # ライブラリルート
 └── main.rs             # エントリーポイント
 
-合計: 16ファイル, 約4,465行
+合計: 18ファイル, 約4,600行
 ```
 
 ### モジュール構造
@@ -128,6 +136,12 @@ src/
 - `pwsh`（PowerShell Core）と`powershell`（Windows PowerShell）はスクリプト実行ポリシーとの互換性のためファイルベース実行を使用
 - TypeScriptインタープリタ（`ts-node`、`deno`、`bun`）はモジュール解決のためファイルベース実行を使用
 - `read`などを使用するスクリプト用のインタラクティブモード
+
+**`self_update/`** - アプリケーション自己更新機能
+- `updater.rs`: `Updater`はGitHub Releasesからの自動更新を処理（`self_update` crateを使用）
+- 更新確認（`--check`）、強制更新（`--force`）、バージョン指定更新をサポート
+- Phase 1: GitHub Releasesからのバイナリダウンロード（実装済み）
+- Phase 2: ソースからのビルド更新（`--from-source`、未実装）
 
 **`config.rs`** - 設定管理
 - キャッシュパスを管理（プラットフォーム別）：
@@ -269,6 +283,7 @@ Updaterはレート制限をチェックし、残りリクエストが50未満�
 - `anyhow`/`thiserror`: エラー処理
 - `dirs`: プラットフォーム固有のディレクトリ検出
 - `colored`: ターミナル出力の色付け
+- `self_update`: GitHub Releasesからの自動更新
 
 開発用依存関係：
 - `mockall`: モックライブラリ（外部依存のテスト用）
