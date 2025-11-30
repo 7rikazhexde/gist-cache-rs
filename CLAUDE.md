@@ -74,8 +74,9 @@ cargo run -- cache size
 cargo run -- cache clear
 
 # アプリケーション自体の更新
-cargo run -- self update --check  # 更新確認のみ
-cargo run -- self update          # 最新版に更新
+cargo run -- self update --check         # 更新確認のみ
+cargo run -- self update                 # 最新版に更新（GitHub Releases）
+cargo run -- self update --from-source   # ソースからビルドして更新
 cargo run -- self update --verbose
 ```
 
@@ -138,10 +139,12 @@ src/
 - `read`などを使用するスクリプト用のインタラクティブモード
 
 **`self_update/`** - アプリケーション自己更新機能
-- `updater.rs`: `Updater`はGitHub Releasesからの自動更新を処理（`self_update` crateを使用）
+- `updater.rs`: `Updater`はGitHub Releasesまたはソースからの自動更新を処理
+- **GitHub Releases更新**: `self_update` crateを使用したバイナリダウンロード
+- **ソースビルド更新**: git pull + cargo installによるビルド更新
 - 更新確認（`--check`）、強制更新（`--force`）、バージョン指定更新をサポート
-- Phase 1: GitHub Releasesからのバイナリダウンロード（実装済み）
-- Phase 2: ソースからのビルド更新（`--from-source`、未実装）
+- リポジトリパス検出: 環境変数 → cargo metadata → エラー
+- トラッキング情報がない場合は自動的にorigin/mainから取得
 
 **`config.rs`** - 設定管理
 - キャッシュパスを管理（プラットフォーム別）：

@@ -258,24 +258,25 @@ self_update = "0.41"  # GitHub Releasesからの自動更新
 
 ### Phase 1: 基本実装
 
-- [ ] `self update` サブコマンドの追加
-- [ ] `self_update` crateの統合
-- [ ] GitHub Releasesからのダウンロード機能
-- [ ] バイナリ置き換え機能
-- [ ] 基本的なエラーハンドリング
+- [x] `self update` サブコマンドの追加
+- [x] `self_update` crateの統合
+- [x] GitHub Releasesからのダウンロード機能
+- [x] バイナリ置き換え機能
+- [x] 基本的なエラーハンドリング
 
 ### Phase 2: ソースビルド対応
 
-- [ ] `--from-source` オプションの実装
-- [ ] git pull + cargo install の統合
-- [ ] リポジトリパスの検出ロジック
+- [x] `--from-source` オプションの実装
+- [x] git pull + cargo install の統合
+- [x] リポジトリパスの検出ロジック
+- [x] トラッキング情報がない場合のフォールバック（origin/main）
 
 ### Phase 3: 追加機能
 
-- [ ] `--check` オプション（更新確認のみ）
-- [ ] `--version` オプション（特定バージョンへの更新）
-- [ ] `--force` オプション（強制更新）
-- [ ] プログレスバー表示
+- [x] `--check` オプション（更新確認のみ）
+- [x] `--version` オプション（特定バージョンへの更新）
+- [x] `--force` オプション（強制更新）
+- [ ] プログレスバー表示（self_update crateが対応済み）
 
 ### Phase 4: CI/CD統合
 
