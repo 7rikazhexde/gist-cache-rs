@@ -50,10 +50,17 @@ impl Updater {
 
         // Build updater
         let mut builder = self_update::backends::github::Update::configure();
+
+        // Set binary name with platform-specific extension
+        #[cfg(target_os = "windows")]
+        let bin_name = "gist-cache-rs.exe";
+        #[cfg(not(target_os = "windows"))]
+        let bin_name = "gist-cache-rs";
+
         builder
             .repo_owner("7rikazhexde")
             .repo_name("gist-cache-rs")
-            .bin_name("gist-cache-rs")
+            .bin_name(bin_name)
             .show_download_progress(true)
             .current_version(env!("CARGO_PKG_VERSION"));
 

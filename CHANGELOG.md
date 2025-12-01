@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2025-12-01
+
+### Fixed
+- Binary name detection in self-update for Windows
+  - Explicitly set `.exe` extension for Windows builds
+  - Fixed "Could not find the required path in the archive" error
+  - Archive extraction now works correctly on all platforms
+
 ## [0.5.1] - 2025-12-01
 
 ### Fixed
@@ -104,7 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Search and execute Gists
 - Metadata caching
 
-[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.3.0...v0.4.0
