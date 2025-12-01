@@ -109,7 +109,7 @@ impl Updater {
         Ok(())
     }
 
-    /// Update from source (git + cargo install)
+    /// Update from source (git + cargo build + self-replace)
     fn update_from_source(&self) -> Result<()> {
         if self.options.verbose {
             println!("{}", "ソースからビルドして更新します...".cyan());
@@ -140,9 +140,36 @@ impl Updater {
         println!("{}", "最新の変更を取得しています...".cyan());
         self.run_git_pull(&repo_path)?;
 
-        // Install from source
+        // Build from source
         println!("{}", "ソースからビルドしています...".cyan());
-        self.run_cargo_install(&repo_path)?;
+        self.run_cargo_build(&repo_path)?;
+
+        // Get current executable path
+        let current_exe = std::env::current_exe().map_err(|e| {
+            GistCacheError::SelfUpdate(format!("実行ファイルのパスを取得できませんでした: {}", e))
+        })?;
+
+        // Get path to the newly built binary
+        let new_binary =
+            repo_path
+                .join("target")
+                .join("release")
+                .join(current_exe.file_name().ok_or_else(|| {
+                    GistCacheError::SelfUpdate("実行ファイル名を取得できませんでした".to_string())
+                })?);
+
+        if !new_binary.exists() {
+            return Err(GistCacheError::SelfUpdate(format!(
+                "ビルドされたバイナリが見つかりません: {}",
+                new_binary.display()
+            )));
+        }
+
+        // Replace the current binary with the new one
+        println!("{}", "実行ファイルを置き換えています...".cyan());
+        self_replace::self_replace(&new_binary).map_err(|e| {
+            GistCacheError::SelfUpdate(format!("バイナリの置き換えに失敗しました: {}", e))
+        })?;
 
         println!("{}", "更新が完了しました".green().bold());
         println!("新しいバージョンで再起動してください。");
@@ -261,26 +288,22 @@ impl Updater {
         Ok(())
     }
 
-    /// Run cargo install from the repository
-    fn run_cargo_install(&self, repo_path: &Path) -> Result<()> {
-        let mut args = vec!["install", "--path"];
-        let path_str = repo_path
-            .to_str()
-            .ok_or_else(|| GistCacheError::SelfUpdate("無効なパスです".to_string()))?;
-        args.push(path_str);
+    /// Run cargo build --release in the repository
+    fn run_cargo_build(&self, repo_path: &Path) -> Result<()> {
+        let args = vec!["build", "--release"];
 
-        if self.options.force {
-            args.push("--force");
-        }
-
-        let output = Command::new("cargo").args(&args).output().map_err(|e| {
-            GistCacheError::SelfUpdate(format!("cargo installの実行に失敗しました: {}", e))
-        })?;
+        let output = Command::new("cargo")
+            .args(&args)
+            .current_dir(repo_path)
+            .output()
+            .map_err(|e| {
+                GistCacheError::SelfUpdate(format!("cargo buildの実行に失敗しました: {}", e))
+            })?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             return Err(GistCacheError::SelfUpdate(format!(
-                "cargo installに失敗しました: {}",
+                "cargo buildに失敗しました: {}",
                 stderr
             )));
         }

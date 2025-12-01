@@ -1,25 +1,35 @@
-# justfile
+# Default recipe (run when no recipe specified)
+default: check
 
-# 全体チェック
-check:
-    @just fmt-check
-    @just lint
-    @just test
+# Run all checks (format, lint, test)
+check: fmt-check lint test
 
-# 部分チェック
+# Check code formatting without making changes
 fmt-check:
     cargo fmt --all -- --check
 
+# Run clippy linter with all warnings as errors
 lint:
     cargo clippy --all-targets -- -D warnings
 
+# Run tests with minimal output
 test:
     cargo test --quiet
 
-# 修正付きフォーマット
+# Format code automatically
 fmt:
     cargo fmt --all
 
-# CI用（非対話モード）
+# Run all tests with verbose output
+test-verbose:
+    cargo test -- --nocapture
+
+# Build release binary
+build-release:
+    cargo build --release
+
+# CI check with stricter settings
 ci-check:
+    cargo fmt --all -- --check
+    cargo clippy --all-targets -- -D warnings
     RUSTFLAGS="-D warnings" cargo test --all
