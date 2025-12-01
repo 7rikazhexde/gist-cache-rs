@@ -76,12 +76,15 @@ jobs:
               ;;
           esac
 
+          # Change to target directory
+          cd target/${{ matrix.target }}/release
+
           # Create staging directory with version and target in name
           STAGING_DIR="gist-cache-rs-${VERSION}-${{ matrix.target }}"
           mkdir -p "$STAGING_DIR"
 
           # Copy binary to staging directory
-          cp target/${{ matrix.target }}/release/${{ matrix.artifact_name }} "$STAGING_DIR/"
+          cp ${{ matrix.artifact_name }} "$STAGING_DIR/"
 
           # Create archive from staging directory
           tar czf "$ASSET_NAME" "$STAGING_DIR"
