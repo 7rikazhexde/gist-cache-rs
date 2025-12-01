@@ -37,7 +37,7 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: gist-cache-rs.exe
-            asset_name: gist-cache-rs-windows-x86_64.zip
+            asset_name: gist-cache-rs-windows-x86_64.tar.gz
 
     steps:
       - name: Checkout code
@@ -55,19 +55,11 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: strip target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
 
-      - name: Create archive (Linux and macOS)
-        if: matrix.os != 'windows-latest'
+      - name: Create archive
         run: |
           cd target/${{ matrix.target }}/release
           tar czf ${{ matrix.asset_name }} ${{ matrix.artifact_name }}
           mv ${{ matrix.asset_name }} ${{ github.workspace }}/
-
-      - name: Create archive (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          cd target/${{ matrix.target }}/release
-          Compress-Archive -Path ${{ matrix.artifact_name }} -DestinationPath ${{ github.workspace }}/${{ matrix.asset_name }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -130,7 +122,13 @@ jobs:
             ```
 
             ### Windows
-            Download `gist-cache-rs-windows-x86_64.zip` and extract to a directory in your PATH.
+            ```powershell
+            # Download and extract (requires tar which is available in Windows 10+)
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/gist-cache-rs-windows-x86_64.tar.gz -o gist-cache-rs.tar.gz
+            tar xzf gist-cache-rs.tar.gz
+            # Move to a directory in your PATH (e.g., C:\Users\<YourName>\.cargo\bin\)
+            move gist-cache-rs.exe $env:USERPROFILE\.cargo\bin\
+            ```
 
             ## Self-Update
 
@@ -142,4 +140,4 @@ jobs:
             gist-cache-rs-linux-x86_64.tar.gz
             gist-cache-rs-macos-x86_64.tar.gz
             gist-cache-rs-macos-aarch64.tar.gz
-            gist-cache-rs-windows-x86_64.zip
+            gist-cache-rs-windows-x86_64.tar.gz
