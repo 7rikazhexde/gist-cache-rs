@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2025-12-02
+
+### Fixed
+- Self-update archive extraction
+  - Fixed directory structure in release archives
+  - Binaries now placed in versioned subdirectories (e.g., `gist-cache-rs-0.5.4-x86_64-pc-windows-msvc/`)
+  - Matches self_update crate's expected archive format
+  - Resolves "Could not find the required path in the archive" error
+
 ## [0.5.3] - 2025-12-01
 
 ### Fixed
@@ -127,7 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Search and execute Gists
 - Metadata caching
 
-[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.3...HEAD
+[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.4...HEAD
+[0.5.4]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.0...v0.5.1

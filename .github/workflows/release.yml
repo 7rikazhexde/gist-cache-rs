@@ -75,8 +75,18 @@ jobs:
               ASSET_NAME="gist-cache-rs-${VERSION}-x86_64-pc-windows-msvc.tar.gz"
               ;;
           esac
-          cd target/${{ matrix.target }}/release
-          tar czf "$ASSET_NAME" ${{ matrix.artifact_name }}
+
+          # Create staging directory with version and target in name
+          STAGING_DIR="gist-cache-rs-${VERSION}-${{ matrix.target }}"
+          mkdir -p "$STAGING_DIR"
+
+          # Copy binary to staging directory
+          cp target/${{ matrix.target }}/release/${{ matrix.artifact_name }} "$STAGING_DIR/"
+
+          # Create archive from staging directory
+          tar czf "$ASSET_NAME" "$STAGING_DIR"
+
+          # Move archive to workspace root
           mv "$ASSET_NAME" "$GITHUB_WORKSPACE"/
           echo "ASSET_NAME=$ASSET_NAME" >> $GITHUB_ENV
 
