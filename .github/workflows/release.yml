@@ -77,7 +77,7 @@ jobs:
           esac
           cd target/${{ matrix.target }}/release
           tar czf "$ASSET_NAME" ${{ matrix.artifact_name }}
-          mv "$ASSET_NAME" ${{ github.workspace }}/
+          mv "$ASSET_NAME" "$GITHUB_WORKSPACE"/
           echo "ASSET_NAME=$ASSET_NAME" >> $GITHUB_ENV
 
       - name: Upload artifact
