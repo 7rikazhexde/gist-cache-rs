@@ -162,14 +162,8 @@ gist-cache-rs run ml-script uv
 # その他のインタープリタ
 gist-cache-rs run script ruby
 gist-cache-rs run script node
-gist-cache-rs run script perl
-gist-cache-rs run script php
-gist-cache-rs run script pwsh
-
-# TypeScript実行
-gist-cache-rs run script.ts ts-node  # ts-node経由
-gist-cache-rs run script.ts deno     # Deno経由
-gist-cache-rs run script.ts bun      # Bun経由
+gist-cache-rs run script.ts deno     # TypeScript (Deno)
+# ... ruby, perl, php, pwsh, ts-node, bun も対応
 ```
 
 ### 引数の渡し方
