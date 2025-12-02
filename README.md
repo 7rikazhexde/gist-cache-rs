@@ -445,6 +445,68 @@ gist-cache-rs cache clear
     └── ...
 ```
 
+## 🛠️ 開発環境のセットアップ
+
+このプロジェクトに貢献する場合、以下のツールを使用すると開発体験が向上します。
+
+### pre-commit フックの設定
+
+コードの品質を保つため、[prek](https://github.com/j178/prek)（Rust製の高速pre-commitツール）の使用を推奨します。
+
+**prekのインストール:**
+
+```bash
+# cargoでインストール
+cargo install --locked prek
+
+# または、システムのパッケージマネージャーで
+# macOS: brew install prek
+# その他のインストール方法は https://github.com/j178/prek を参照
+```
+
+**フックの有効化:**
+
+```bash
+# リポジトリルートで実行
+prek install
+```
+
+**フックの実行内容:**
+
+- `cargo fmt` - コードフォーマット
+- `cargo check` - コンパイルチェック
+- `cargo clippy` - lint チェック
+- `markdownlint` - Markdown linting
+- TOML/YAML validation
+
+**手動実行:**
+
+```bash
+# 全てのファイルに対して実行
+prek run --all-files
+
+# 特定のフックのみ実行
+prek run fmt
+prek run clippy
+```
+
+**従来のpre-commitとの互換性:**
+
+`prek`は従来の`pre-commit`と完全互換なので、既存の`.pre-commit-config.yaml`をそのまま使用できます。
+
+### 開発コマンド
+
+```bash
+# 全チェック実行（fmt, lint, test）
+just check
+
+# テスト実行
+cargo test
+
+# リリースビルド
+cargo build --release
+```
+
 ## 📚 ドキュメント
 
 ### ユーザー向け
