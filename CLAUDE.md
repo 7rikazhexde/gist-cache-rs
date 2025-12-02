@@ -8,6 +8,7 @@
 
 **対応プラットフォーム**: Linux、macOS、Windows 10以降
 
+<!-- markdownlint-disable-next-line MD013 -->
 **サポート対象インタープリタ**: bash, sh, zsh, python3, ruby, node, php, perl, pwsh (PowerShell Core), TypeScript (ts-node, deno, bun), uv
 
 ## 開発コマンド
@@ -118,19 +119,23 @@ src/
 コードベースは明確な関心の分離を持つモジュラーアーキテクチャに従っています：
 
 **`cache/`** - キャッシュ管理層（2層キャッシング構造）
+
 - `types.rs`: コアデータ構造（`GistCache`, `GistInfo`, `GistFile`, `CacheMetadata`）
 - `update.rs`: `CacheUpdater`はGitHub APIの`since`パラメータを使用した差分メタデータキャッシュ更新を処理。Gist更新検出時に対応するコンテンツキャッシュを自動削除
 - `content.rs`: `ContentCache`は`~/.cache/gist-cache/contents/{gist_id}/{filename}`に個別のGistコンテンツファイルを管理。初回実行時に作成され、2回目以降の実行を高速化（約20倍）
 
 **`github/`** - GitHub API統合
+
 - `api.rs`: `GitHubApi`は認証、レート制限チェック、gist取得のためにGitHub CLI（`gh`）をラップ
 - 全てのGitHub操作は直接REST APIコールではなく`gh` CLIを使用
 
 **`search/`** - 検索機能
+
 - `query.rs`: 複数モード（Auto、Id、Filename、Description）を持つ`SearchQuery`を実装
 - 番号付きプロンプトを使用したインタラクティブ選択UI
 
 **`execution/`** - スクリプト実行
+
 - `runner.rs`: `ScriptRunner`は複数インタープリタ実行（bash、python、ruby、node、php、perl、pwsh、TypeScript、uv）を処理
 - stdin ベースとファイルベースの両方の実行モードをサポート
 - `uv`インタープリタはPEP 723メタデータサポートのためにファイルベース実行を使用
@@ -139,6 +144,7 @@ src/
 - `read`などを使用するスクリプト用のインタラクティブモード
 
 **`self_update/`** - アプリケーション自己更新機能
+
 - `updater.rs`: `Updater`はGitHub Releasesまたはソースからの自動更新を処理
 - **GitHub Releases更新**: `self_update` crateを使用したバイナリダウンロード
 - **ソースビルド更新**: git pull + cargo installによるビルド更新
@@ -147,6 +153,7 @@ src/
 - トラッキング情報がない場合は自動的にorigin/mainから取得
 
 **`config.rs`** - 設定管理
+
 - キャッシュパスを管理（プラットフォーム別）：
   - 環境変数`GIST_CACHE_DIR`でオーバーライド可能（テスト用）
   - Unix: `~/.cache/gist-cache/cache.json` と `~/.cache/gist-cache/contents/`
@@ -186,7 +193,10 @@ src/
 
 6. **--forceオプション**: `run`コマンドで`--force`を指定すると、実行前に自動的に`update`コマンドを実行（差分更新）し、最新のGist情報を取得してから実行。更新されたGistは自動的に最新版が取得される
 
-7. **--downloadオプション**: `run`コマンドで`--download`を指定すると、Gistファイルをダウンロードフォルダ（`~/Downloads`）に保存。実行可能なスクリプトキャッシュとは別に、個別に保存したい場合に便利。ダウンロード時にコンテンツキャッシュも自動作成され、2回目以降の実行が高速化。他のオプション（`--preview`, `--force`, `--interactive`など）と併用可能
+7. **--downloadオプション**: `run`コマンドで`--download`を指定すると、Gistファイルをダウンロードフォルダ（`~/Downloads`）に保存。
+   実行可能なスクリプトキャッシュとは別に、個別に保存したい場合に便利。
+   ダウンロード時にコンテンツキャッシュも自動作成され、2回目以降の実行が高速化。
+   他のオプション（`--preview`, `--force`, `--interactive`など）と併用可能
 
 ## 重要な実装詳細
 
@@ -219,6 +229,7 @@ src/
 ### プラットフォーム固有の実装
 
 **Windows対応**:
+
 - **パーミッション設定**: 条件付きコンパイル（`#[cfg(unix)]`）を使用し、Unix環境のみで`chmod`を実行。Windowsではファイル拡張子で実行可能性が決定されるため、パーミッション設定は不要
 - **パス設定**: `src/config.rs`でプラットフォーム別のキャッシュディレクトリを使用
   - Unix: `~/.cache/gist-cache`
@@ -227,6 +238,7 @@ src/
 - **インストールスクリプト**: PowerShell版（`script/setup.ps1`）を提供
 
 **クロスプラットフォーム設計**:
+
 - 条件付きコンパイル（`cfg`属性）で明示的に分岐
 - プラットフォーム非依存のコードを優先
 - 既存のLinux/macOS環境に影響を与えないデグレード防止
@@ -245,6 +257,7 @@ Updaterはレート制限をチェックし、残りリクエストが50未満�
 ### --forceオプションの動作
 
 `run --force`を指定すると：
+
 1. 実行前に自動的に`update`コマンドを実行（差分更新、`update --force`ではない）
 2. Gistが更新されていればコンテンツキャッシュが削除される
 3. 最新版を取得して実行
@@ -257,6 +270,7 @@ Updaterはレート制限をチェックし、残りリクエストが50未満�
 テストは非同期関数用に`tokio::test`を使用し、`#[cfg(test)]`を使ってモジュールとインラインで配置。現在`src/cache/content.rs`に最小限のテストカバレッジ。
 
 開発用依存関係：
+
 - `assert_cmd`: CLI統合テスト用
 - `tempfile`: 一時テストフィクスチャ用
 
@@ -270,6 +284,7 @@ Updaterはレート制限をチェックし、残りリクエストが50未満�
 - `cache clear`: 全コンテンツキャッシュを削除（確認プロンプト付き）
 
 `ContentCache`構造体（src/cache/content.rs）が提供するメソッド：
+
 - `list_cached_gists()`: キャッシュ済みGist IDの一覧取得
 - `total_size()`: キャッシュディレクトリの合計サイズ計算
 - `clear_all()`: 全キャッシュ削除
@@ -303,6 +318,7 @@ git push origin v0.5.0
 ### ワークフロー
 
 `.github/workflows/release.yml`で定義：
+
 1. `create-release`: リリースページ作成、リリースノート生成
 2. `build-release`: 並列ビルド（4プラットフォーム）、アセットアップロード
 
@@ -311,6 +327,7 @@ git push origin v0.5.0
 ## 依存関係
 
 主要なランタイム依存関係：
+
 - `tokio`: 非同期ランタイム
 - `reqwest`: HTTPクライアント（未使用、直接API実装時代の名残）
 - `serde`/`serde_json`: シリアライゼーション
@@ -322,6 +339,7 @@ git push origin v0.5.0
 - `self_update`: GitHub Releasesからの自動更新
 
 開発用依存関係：
+
 - `mockall`: モックライブラリ（外部依存のテスト用）
 - `tempfile`: 一時ファイル/ディレクトリ（テスト用）
 - `assert_cmd`: CLIテスト用（将来の統合テスト向け）
@@ -352,11 +370,13 @@ git push origin v0.5.0
 ### テスト方針
 
 **ユニットテストでカバー**:
+
 - ビジネスロジック（検索、キャッシュ管理、データ変換）
 - エラーハンドリング
 - モック可能な外部依存（MockGitHubClient使用）
 
 **統合テスト/手動テストで検証**:
+
 - GitHub CLI (`gh`)コマンド実行 → `#[ignore]`テストで手動検証可能
 - 実際のスクリプト実行（bash, python等） → 統合テストで検証
 - ユーザー入力を伴う処理 → E2Eテストで検証
@@ -375,16 +395,19 @@ open coverage/index.html
 cargo tarpaulin --out Stdout --output-dir coverage 2>&1 | tail -100
 ```
 
+<!-- markdownlint-disable-next-line MD013 -->
 詳細は [TESTING.md](docs/testing/TESTING.md)、[COVERAGE.md](docs/testing/COVERAGE.md)、[TEST_INVENTORY.md](docs/testing/TEST_INVENTORY.md) を参照。
 
 ### テスト構成
 
 **ユニットテスト (125個)**:
+
 - `src/` 内の `#[cfg(test)]` モジュール
 - MockGitHubClient を使用した外部依存の排除
 - 高速実行、CI/CD対応
 
 **統合テスト (43個、プラットフォーム依存18個)**:
+
 - `tests/cli_tests.rs`: CLI動作テスト (15個)
 - `tests/integration_test.rs`: インタープリタテスト (16個)
   - **Unix専用 (12個)**: Bash, Python, Node.js, Ruby, Perl, PHP, TypeScript (ts-node, deno, bun)
@@ -394,22 +417,26 @@ cargo tarpaulin --out Stdout --output-dir coverage 2>&1 | tail -100
   - **Windows専用 (6個)**: PowerShellを使用したテスト
 
 **E2Eテスト (手動)**:
+
 - `docs/tests/`: 機能検証テスト設計書 (26ケース)
 - 実際のGistを使用した包括的検証
 
 ### プラットフォーム別テスト戦略
 
 **Unix環境（Linux/macOS）**:
+
 - bashを使用した統合テスト（18個）が実行される
 - PowerShellテスト（10個）はコンパイル時に除外される（`#[cfg(windows)]`）
 - 合計: 120 + 15 + 18 = **153個のテストが実行**
 
 **Windows環境**:
+
 - PowerShellを使用した統合テスト（10個）が実行される
 - bashテスト（18個）は実行時にスキップされる（`#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]`）
 - 合計: 120 + 15 + 10 = **145個のテストが実行**
 
 **テスト対等性**:
+
 | テスト種別 | bash (Unix) | PowerShell (Windows) |
 |-----------|-------------|---------------------|
 | 統合テスト | 12個 | 4個 |
