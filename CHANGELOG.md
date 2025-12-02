@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.6] - 2025-12-02
+
+### Added
+
+- Pre-commit hooks for shell scripts and GitHub Actions workflows
+  - Added shellcheck for shell script linting
+  - Added actionlint for GitHub Actions workflow linting
+  - Improved code quality checks in development workflow
+
+### Changed
+
+- Documentation improvements
+  - Reduced documentation redundancy (~296 lines)
+  - Simplified installation instructions in README
+  - Consolidated cache information into single section
+  - Simplified self-update documentation
+  - Simplified test documentation in CLAUDE.md
+  - Removed temporary work log file
+
+### Fixed
+
+- GitHub Actions workflow improvements
+  - Fixed shellcheck warnings in release.yml
+  - Fixed shellcheck warnings in pre-commit-autoupdate.yml
+  - Proper quoting of variables in workflow scripts
+
 ## [0.5.5] - 2025-12-02
 
 ### Fixed
