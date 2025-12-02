@@ -346,119 +346,20 @@ git push origin v0.5.0
 
 ## テストとカバレッジ
 
-### 現在の状況（2025-11-07）
+**現在の状況**: 68.95%カバレッジ、163個のテスト（ユニット: 120、統合: 43）
 
-**全体カバレッジ**: 68.95% (533/773 lines)
-**テスト数**: 163個（ユニット: 120, 統合: 43、プラットフォーム別にスキップ: 18）
-**テスト実行時間**: 約15秒（Windows）、約10秒（Unix）
+**テスト構成**:
 
-### モジュール別カバレッジ
+- **ユニットテスト**: `src/`内の`#[cfg(test)]`モジュール、MockGitHubClient使用
+- **統合テスト**: CLI動作、インタープリタ実行（bash/python/node等）、プラットフォーム別テスト
+- **E2Eテスト**: `docs/tests/`に26ケースの機能検証テスト設計書
 
-| モジュール | カバレッジ | 状態 | 備考 |
-|-----------|-----------|------|------|
-| `cache/types.rs` | 100.00% | ✅ | コアデータ型 |
-| `config.rs` | 96.15% | ✅ | 設定管理 |
-| `cache/content.rs` | 83.54% | ✅ | コンテンツキャッシュ |
-| `cli.rs` | 78.16% | ✅ | CLI処理 |
-| `search/query.rs` | 70.59% | 🟡 | 検索ロジック |
-| `cache/update.rs` | 62.24% | 🟡 | 差分更新 |
-| `execution/runner.rs` | 19.88% | 🔴 | 外部プロセス依存 |
-| `github/api.rs` | 8.33% | 🔴 | gh コマンド依存 |
-| `error.rs` | 0.00% | - | 単純な型定義 |
-| `main.rs` | 0.00% | - | エントリーポイント |
-
-### テスト方針
-
-**ユニットテストでカバー**:
-
-- ビジネスロジック（検索、キャッシュ管理、データ変換）
-- エラーハンドリング
-- モック可能な外部依存（MockGitHubClient使用）
-
-**統合テスト/手動テストで検証**:
-
-- GitHub CLI (`gh`)コマンド実行 → `#[ignore]`テストで手動検証可能
-- 実際のスクリプト実行（bash, python等） → 統合テストで検証
-- ユーザー入力を伴う処理 → E2Eテストで検証
-
-### カバレッジ測定
+**カバレッジ測定**:
 
 ```bash
-# 基本測定
 cargo tarpaulin --out Stdout
-
-# HTMLレポート生成
 cargo tarpaulin --out Html --output-dir coverage
-open coverage/index.html
-
-# CI用（詳細出力）
-cargo tarpaulin --out Stdout --output-dir coverage 2>&1 | tail -100
 ```
 
 <!-- markdownlint-disable-next-line MD013 -->
 詳細は [TESTING.md](docs/testing/TESTING.md)、[COVERAGE.md](docs/testing/COVERAGE.md)、[TEST_INVENTORY.md](docs/testing/TEST_INVENTORY.md) を参照。
-
-### テスト構成
-
-**ユニットテスト (125個)**:
-
-- `src/` 内の `#[cfg(test)]` モジュール
-- MockGitHubClient を使用した外部依存の排除
-- 高速実行、CI/CD対応
-
-**統合テスト (43個、プラットフォーム依存18個)**:
-
-- `tests/cli_tests.rs`: CLI動作テスト (15個)
-- `tests/integration_test.rs`: インタープリタテスト (16個)
-  - **Unix専用 (12個)**: Bash, Python, Node.js, Ruby, Perl, PHP, TypeScript (ts-node, deno, bun)
-  - **Windows専用 (4個)**: PowerShell Core (pwsh)
-- `tests/runner_test.rs`: ランナーテスト (12個)
-  - **Unix専用 (6個)**: Bashを使用したテスト
-  - **Windows専用 (6個)**: PowerShellを使用したテスト
-
-**E2Eテスト (手動)**:
-
-- `docs/tests/`: 機能検証テスト設計書 (26ケース)
-- 実際のGistを使用した包括的検証
-
-### プラットフォーム別テスト戦略
-
-**Unix環境（Linux/macOS）**:
-
-- bashを使用した統合テスト（18個）が実行される
-- PowerShellテスト（10個）はコンパイル時に除外される（`#[cfg(windows)]`）
-- 合計: 120 + 15 + 18 = **153個のテストが実行**
-
-**Windows環境**:
-
-- PowerShellを使用した統合テスト（10個）が実行される
-- bashテスト（18個）は実行時にスキップされる（`#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]`）
-- 合計: 120 + 15 + 10 = **145個のテストが実行**
-
-**テスト対等性**:
-
-| テスト種別 | bash (Unix) | PowerShell (Windows) |
-|-----------|-------------|---------------------|
-| 統合テスト | 12個 | 4個 |
-| ランナーテスト | 6個 | 6個 |
-| **合計** | **18個** | **10個** |
-
-bashとPowerShellでテストカバレッジが対等になるよう設計されており、両プラットフォームで同等の品質保証を実現しています。
-
-### 設計判断：68.95%カバレッジの内訳
-
-以下のモジュールは外部依存が多く、統合テスト/E2Eテストで品質担保：
-
-1. **execution/runner.rs (758行, 19.88%)**
-   - 実際のプロセス実行（bash/python/node等）に依存
-   - 統合テストで12言語の実行を検証
-
-2. **github/api.rs (212行, 8.33%)**
-   - GitHub CLI (`gh`コマンド)に依存
-   - MockGitHubClientでビジネスロジックをカバー
-
-3. **main.rs / error.rs**
-   - エントリーポイント、単純な型定義
-   - E2Eテストで検証
-
-**結論**: コアビジネスロジックは高カバレッジ（types 100%, config 96%, content 83%, cli 78%）を達成。CLIツールの標準的な60-70%目標を達成し、適切なテスト戦略を実現。

@@ -20,7 +20,8 @@ gh auth status
 ## ステップ2: 📥 インストール
 
 ```bash
-# プロジェクトディレクトリで実行
+# リポジトリをクローン
+git clone https://github.com/7rikazhexde/gist-cache-rs.git
 cd gist-cache-rs
 
 # ビルドとインストール
@@ -30,6 +31,8 @@ cargo install --path .
 # インストール確認
 gist-cache-rs --version
 ```
+
+その他のインストール方法は [INSTALL.md](INSTALL.md) を参照してください。
 
 ## ステップ3: 🔄 初回キャッシュ作成
 

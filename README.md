@@ -21,47 +21,25 @@ GitHubのGistを効率的にキャッシュ・検索・実行するためのCLI�
 - Rust toolchain (1.85以降)
 - GitHub CLI (`gh`) - 認証済み
 
-## 🔧 [インストール](docs/INSTALL.md)
+## 🔧 インストール
 
-### セットアップスクリプト（推奨）
-
-#### Linux / macOS
+**セットアップスクリプト（推奨）:**
 
 ```bash
-# リポジトリをクローン
+# Linux / macOS
 git clone https://github.com/7rikazhexde/gist-cache-rs.git
 cd gist-cache-rs
-
-# セットアップスクリプトを実行
 ./script/setup.sh install
-```
 
-#### Windows
-
-```powershell
-# リポジトリをクローン
+# Windows
 git clone https://github.com/7rikazhexde/gist-cache-rs.git
 cd gist-cache-rs
-
-# セットアップスクリプトを実行
 .\script\setup.ps1 install
 ```
 
-対話的に以下を実行：
+対話的に前提条件チェック、ビルド、インストール、初回キャッシュ作成を実行します。
 
-- ✅ 前提条件チェック
-- 🔨 リリースビルド
-- 📦 インストール方法選択
-- 🔄 初回キャッシュ作成
-- ⌨️ エイリアス設定（オプション、Linux/macOSのみ）
-
-### 手動インストール
-
-```bash
-# すべてのプラットフォーム共通
-cargo build --release
-cargo install --path .
-```
+**その他のインストール方法:** [INSTALL.md](docs/INSTALL.md) を参照してください。
 
 ## 🚀 [クイックスタート](docs/QUICKSTART.md)
 
@@ -96,42 +74,17 @@ gist-cache-rs update --force
 gist-cache-rs自体を最新版に更新できます：
 
 ```bash
-# 最新版をチェック
-gist-cache-rs self update --check
-
 # 最新版に更新
 gist-cache-rs self update
 
-# 詳細表示付き
-gist-cache-rs self update --verbose
-```
+# 更新確認のみ
+gist-cache-rs self update --check
 
-**オプション**:
-
-- `--check`: 更新の有無のみ確認（実際には更新しない）
-- `--from-source`: GitHub Releasesではなく、ソースからビルドして更新
-- `--force`: バージョンが同じでも強制的に更新
-- `--version <VERSION>`: 特定のバージョンに更新
-
-**使用例**:
-
-```bash
-# ソースからビルドして更新（開発者向け）
+# ソースからビルドして更新
 gist-cache-rs self update --from-source
-
-# 強制的にソースから再ビルド
-gist-cache-rs self update --from-source --force
-
-# 詳細表示付き
-gist-cache-rs self update --from-source --verbose
 ```
 
-詳細は [docs/SELF-UPDATE.md](docs/SELF-UPDATE.md) を参照してください。
-
-**注意**:
-
-- GitHub Releasesからの更新を利用するには、プロジェクトのリリースにプラットフォーム別のバイナリが必要です
-- `--from-source`を使用するには、gitとRust toolchainがインストールされている必要があります
+詳細は [SELF-UPDATE.md](docs/SELF-UPDATE.md) を参照してください。
 
 ## 💾 キャッシュの仕組み
 
@@ -139,20 +92,42 @@ gist-cache-rsは2層のキャッシュ構造を持ちます：
 
 ### メタデータキャッシュ
 
-- **場所**:
-  - Linux/macOS: `~/.cache/gist-cache/cache.json`
-  - Windows: `%LOCALAPPDATA%\gist-cache\cache.json`
 - **内容**: Gist ID、ファイル名、説明文、更新日時などのメタ情報
 - **更新**: `update`コマンドで差分または全件更新
 
 ### コンテンツキャッシュ
 
-- **場所**:
-  - Linux/macOS: `~/.cache/gist-cache/contents/{gist_id}/{filename}`
-  - Windows: `%LOCALAPPDATA%\gist-cache\contents\{gist_id}\{filename}`
 - **内容**: 実際のスクリプト本文
 - **更新**: 初回実行時に自動作成、Gist更新検出時に自動削除
 - **利点**: 2回目以降の実行が約20倍高速化（ネットワークアクセス不要）
+
+### キャッシュの保存場所
+
+**Linux / macOS:**
+
+```text
+~/.cache/gist-cache/
+├── cache.json                    # メタデータキャッシュ
+└── contents/                     # コンテンツキャッシュ
+    ├── {gist_id_1}/
+    │   └── {filename_1}
+    ├── {gist_id_2}/
+    │   └── {filename_2}
+    └── ...
+```
+
+**Windows:**
+
+```text
+%LOCALAPPDATA%\gist-cache\
+├── cache.json                    # メタデータキャッシュ
+└── contents\                     # コンテンツキャッシュ
+    ├── {gist_id_1}\
+    │   └── {filename_1}
+    ├── {gist_id_2}\
+    │   └── {filename_2}
+    └── ...
+```
 
 ## 🔍 Gistの検索と実行
 
@@ -187,14 +162,8 @@ gist-cache-rs run ml-script uv
 # その他のインタープリタ
 gist-cache-rs run script ruby
 gist-cache-rs run script node
-gist-cache-rs run script perl
-gist-cache-rs run script php
-gist-cache-rs run script pwsh
-
-# TypeScript実行
-gist-cache-rs run script.ts ts-node  # ts-node経由
-gist-cache-rs run script.ts deno     # Deno経由
-gist-cache-rs run script.ts bun      # Bun経由
+gist-cache-rs run script.ts deno     # TypeScript (Deno)
+# ... ruby, perl, php, pwsh, ts-node, bun も対応
 ```
 
 ### 引数の渡し方
@@ -424,36 +393,6 @@ gist-cache-rs cache clear
 2. **2回目以降**: キャッシュから高速に読み込んで実行（約20倍高速）
 3. **Gist更新時**: `update`コマンドが更新を検出し、自動的にキャッシュを削除
 4. **更新後の初回実行**: 最新版をAPIから取得し、新しいキャッシュを作成
-
-## 💾 キャッシュの保存場所
-
-キャッシュファイルは以下の場所に保存されます：
-
-### Linux / macOS
-
-```bash
-~/.cache/gist-cache/
-├── cache.json                    # メタデータキャッシュ
-└── contents/                     # コンテンツキャッシュ
-    ├── {gist_id_1}/
-    │   └── {filename_1}
-    ├── {gist_id_2}/
-    │   └── {filename_2}
-    └── ...
-```
-
-### Windows
-
-```bash
-%LOCALAPPDATA%\gist-cache\
-├── cache.json                    # メタデータキャッシュ
-└── contents\                     # コンテンツキャッシュ
-    ├── {gist_id_1}\
-    │   └── {filename_1}
-    ├── {gist_id_2}\
-    │   └── {filename_2}
-    └── ...
-```
 
 ## 🛠️ 開発環境のセットアップ
 
