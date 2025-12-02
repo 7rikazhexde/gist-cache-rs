@@ -84,14 +84,14 @@ jobs:
           mkdir -p "$STAGING_DIR"
 
           # Copy binary to staging directory
-          cp ${{ matrix.artifact_name }} "$STAGING_DIR/"
+          cp "${{ matrix.artifact_name }}" "$STAGING_DIR/"
 
           # Create archive from staging directory
           tar czf "$ASSET_NAME" "$STAGING_DIR"
 
           # Move archive to workspace root
           mv "$ASSET_NAME" "$GITHUB_WORKSPACE"/
-          echo "ASSET_NAME=$ASSET_NAME" >> $GITHUB_ENV
+          echo "ASSET_NAME=$ASSET_NAME" >> "$GITHUB_ENV"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5

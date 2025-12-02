@@ -47,6 +47,20 @@ repos:
       - id: mixed-line-ending
         args: [--fix=lf]
 
+  # Shell script linting
+  # https://github.com/shellcheck-py/shellcheck-py?tab=readme-ov-file#usage
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        exclude: ^tests/fixtures/
+
+  # GitHub Actions workflow linting
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.9
+    hooks:
+      - id: actionlint
+
   # Markdown linting
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.46.0

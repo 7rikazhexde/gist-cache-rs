@@ -211,4 +211,3 @@ switch ($Command) {
         Uninstall-GistCache
     }
 }
-

@@ -107,7 +107,7 @@ print_info() {
 confirm() {
     local prompt="$1"
     local default="${2:-n}"
-    
+
     # Non-interactive mode: use default
     if [ "$IS_INTERACTIVE" = false ]; then
         if [ "$default" = "y" ]; then
@@ -116,7 +116,7 @@ confirm() {
             return 1
         fi
     fi
-    
+
     # Interactive mode: ask user
     local response
     if [ "$default" = "y" ]; then
@@ -124,10 +124,10 @@ confirm() {
     else
         prompt="$prompt [y/N]: "
     fi
-    
+
     read -r -p "$(echo -e "${YELLOW}${prompt}${NC}")" response
     response="${response:-$default}"
-    
+
     case "$response" in
         [yY][eE][sS]|[yY]) return 0 ;;
         *) return 1 ;;
@@ -147,7 +147,7 @@ check_command() {
 check_version() {
     local cmd="$1"
     local version_flag="${2:---version}"
-    
+
     echo -e "  ${BLUE}バージョン:${NC} $($cmd "$version_flag" 2>&1 | head -n 1)"
 }
 
@@ -156,12 +156,12 @@ uninstall_gist_cache_rs() {
     clear
     echo -e "${RED}${BOLD}"
     cat << "EOF"
-   ____ _     _        ____           _          
-  / ___(_)___| |_     / ___|__ _  ___| |__   ___ 
+   ____ _     _        ____           _
+  / ___(_)___| |_     / ___|__ _  ___| |__   ___
  | |  _| / __| __|   | |   / _` |/ __| '_ \ / _ \
  | |_| | \__ \ |_    | |__| (_| | (__| | | |  __/
   \____|_|___/\__|____\____\__,_|\___|_| |_|\___|
-              |_____|                             
+              |_____|
               Uninstall Script
 EOF
     echo -e "${NC}"
@@ -226,7 +226,7 @@ EOF
     echo ""
     if [ -d "$CACHE_DIR" ]; then
         print_info "キャッシュディレクトリを検出: $CACHE_DIR"
-        
+
         SHOULD_DELETE_CACHE=false
         if [ "$IS_INTERACTIVE" = false ]; then
             # 非対話モードでは削除
@@ -235,7 +235,7 @@ EOF
         elif confirm "キャッシュディレクトリを削除しますか？" "n"; then
             SHOULD_DELETE_CACHE=true
         fi
-        
+
         if [ "$SHOULD_DELETE_CACHE" = true ]; then
             if rm -rf "$CACHE_DIR"; then
                 print_success "キャッシュディレクトリを削除しました"
@@ -250,15 +250,15 @@ EOF
     # Ask about aliases
     echo ""
     print_info "エイリアス設定の確認"
-    
+
     for rcfile in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.config/fish/config.fish"; do
         if [ ! -f "$rcfile" ]; then
             continue
         fi
-        
+
         # gist-cache-rs 関連のエイリアスを検出（コマンド内容で検索）
         FOUND_ALIASES=()
-        
+
         # 'gist-cache-rs update' を含むエイリアスを検索
         while IFS= read -r line; do
             if [[ "$line" =~ ^[[:space:]]*alias[[:space:]]+([^=]+)=[[:space:]]*[\'\"]*gist-cache-rs[[:space:]]+update ]]; then
@@ -266,7 +266,7 @@ EOF
                 FOUND_ALIASES+=("${ALIAS_NAME}:update")
             fi
         done < "$rcfile"
-        
+
         # 'gist-cache-rs run' を含むエイリアスを検索
         while IFS= read -r line; do
             if [[ "$line" =~ ^[[:space:]]*alias[[:space:]]+([^=]+)=[[:space:]]*[\'\"]*gist-cache-rs[[:space:]]+run ]]; then
@@ -274,11 +274,11 @@ EOF
                 FOUND_ALIASES+=("${ALIAS_NAME}:run")
             fi
         done < "$rcfile"
-        
+
         # エイリアスが見つかった場合
         if [ ${#FOUND_ALIASES[@]} -gt 0 ]; then
             print_warning "$rcfile にエイリアス設定が残っています"
-            
+
             # 検出されたエイリアスを表示
             echo "  検出されたエイリアス:"
             for alias_entry in "${FOUND_ALIASES[@]}"; do
@@ -291,7 +291,7 @@ EOF
                 fi
             done
             echo ""
-            
+
             SHOULD_DELETE_ALIAS=false
             if [ "$IS_INTERACTIVE" = false ]; then
                 # 非対話モードでは削除
@@ -300,15 +300,15 @@ EOF
             elif confirm "$rcfile からエイリアスを削除しますか？" "n"; then
                 SHOULD_DELETE_ALIAS=true
             fi
-            
+
             if [ "$SHOULD_DELETE_ALIAS" = true ]; then
                 # Create backup
                 BACKUP_FILE="${rcfile}.backup.$(date +%Y%m%d%H%M%S)"
                 cp "$rcfile" "$BACKUP_FILE"
-                
+
                 # マーカーコメントを削除（複数パターンに対応）
                 sed -i.tmp '/# gist-cache-rs aliases/d' "$rcfile"
-                
+
                 # 検出された各エイリアスを削除
                 for alias_entry in "${FOUND_ALIASES[@]}"; do
                     ALIAS_NAME="${alias_entry%%:*}"
@@ -316,10 +316,10 @@ EOF
                     ESCAPED_ALIAS=$(printf '%s\n' "$ALIAS_NAME" | sed 's/[]\/$*.^[]/\\&/g')
                     sed -i.tmp "/^[[:space:]]*alias[[:space:]]\+${ESCAPED_ALIAS}=/d" "$rcfile"
                 done
-                
+
                 # 一時ファイルを削除
                 rm -f "${rcfile}.tmp"
-                
+
                 print_success "エイリアスを削除しました（バックアップ: $BACKUP_FILE）"
             fi
         fi
@@ -363,12 +363,12 @@ esac
 clear
 echo -e "${CYAN}${BOLD}"
 cat << "EOF"
-   ____ _     _        ____           _          
-  / ___(_)___| |_     / ___|__ _  ___| |__   ___ 
+   ____ _     _        ____           _
+  / ___(_)___| |_     / ___|__ _  ___| |__   ___
  | |  _| / __| __|   | |   / _` |/ __| '_ \ / _ \
  | |_| | \__ \ |_    | |__| (_| | (__| | | |  __/
   \____|_|___/\__|____\____\__,_|\___|_| |_|\___|
-              |_____|                             
+              |_____|
                   Setup Script
 EOF
 echo -e "${NC}"
@@ -402,7 +402,7 @@ echo -e "${BOLD}Rust Toolchain:${NC}"
 if check_command "rustc" && check_command "cargo"; then
     check_version "rustc" "--version"
     check_version "cargo" "--version"
-    
+
     # Check minimum version (1.85)
     RUST_VERSION=$(rustc --version | grep -oP '\d+\.\d+' | head -1)
     if [ "$(echo "$RUST_VERSION >= 1.85" | bc -l 2>/dev/null || echo 0)" -eq 1 ] 2>/dev/null; then
@@ -423,7 +423,7 @@ echo ""
 echo -e "${BOLD}GitHub CLI:${NC}"
 if check_command "gh"; then
     check_version "gh" "--version"
-    
+
     # Check authentication
     if gh auth status &> /dev/null; then
         print_success "GitHub CLI は認証済みです"
@@ -478,7 +478,7 @@ elif [ -f "./Cargo.toml" ]; then
 else
     print_warning "Cargo.toml が見つかりません"
     echo ""
-    
+
     # Non-interactive mode: automatically clone
     if [ "$IS_INTERACTIVE" = false ]; then
         print_info "非対話モード: 自動的にリポジトリをクローンします"
@@ -490,7 +490,7 @@ else
             SHOULD_CLONE=false
         fi
     fi
-    
+
     if [ "$SHOULD_CLONE" = true ]; then
         # Check if git is available
         if ! command -v git &> /dev/null; then
@@ -498,11 +498,11 @@ else
             print_info "git をインストールしてから再実行してください"
             exit 1
         fi
-        
+
         # Create temp directory
         TEMP_DIR=$(mktemp -d)
         print_info "一時ディレクトリ: $TEMP_DIR"
-        
+
         # Clone repository
         echo ""
         print_info "リポジトリをクローン中..."
@@ -518,7 +518,7 @@ else
     else
         echo ""
         read -r -p "$(echo -e "${YELLOW}プロジェクトディレクトリのパスを入力してください: ${NC}")" PROJECT_DIR
-        
+
         if [ ! -f "$PROJECT_DIR/Cargo.toml" ]; then
             print_error "指定されたディレクトリに Cargo.toml が見つかりません"
             exit 1
@@ -550,10 +550,10 @@ if [ "$SHOULD_BUILD" = true ]; then
     echo ""
     print_info "ビルドを開始します (時間がかかる場合があります)..."
     echo ""
-    
+
     if cargo build --release; then
         print_success "ビルドが完了しました"
-        
+
         # バイナリのサイズを表示
         if [ -f "target/release/gist-cache-rs" ]; then
             BINARY_SIZE=$(du -h target/release/gist-cache-rs | cut -f1)
@@ -565,7 +565,7 @@ if [ "$SHOULD_BUILD" = true ]; then
     fi
 else
     print_warning "ビルドをスキップしました"
-    
+
     if [ ! -f "target/release/gist-cache-rs" ]; then
         print_error "ビルド済みバイナリが見つかりません"
         exit 1
@@ -588,9 +588,9 @@ else
     echo "  4) シンボリックリンク - 開発者向け"
     echo "  5) スキップ"
     echo ""
-    
+
     read -r -p "$(echo -e "${YELLOW}選択 [1-5]: ${NC}")" INSTALL_CHOICE
-    
+
     # Validate input
     if [[ ! "$INSTALL_CHOICE" =~ ^[1-5]$ ]]; then
         print_error "無効な選択です"
@@ -604,7 +604,7 @@ case $INSTALL_CHOICE in
         if cargo install --path .; then
             print_success "インストールが完了しました"
             print_info "インストール先: ~/.cargo/bin/gist-cache-rs"
-            
+
             # PATH確認
             if echo "$PATH" | grep -q ".cargo/bin"; then
                 print_success "$HOME/.cargo/bin はPATHに含まれています"
@@ -634,7 +634,7 @@ case $INSTALL_CHOICE in
         if cp target/release/gist-cache-rs ~/bin/; then
             print_success "インストールが完了しました"
             print_info "インストール先: ~/bin/gist-cache-rs"
-            
+
             # PATH確認
             if echo "$PATH" | grep -q "$HOME/bin"; then
                 print_success "$HOME/bin はPATHに含まれています"
@@ -650,7 +650,7 @@ case $INSTALL_CHOICE in
         ;;
     4)
         print_info "シンボリックリンクを作成します..."
-        
+
         if [ "$IS_INTERACTIVE" = false ]; then
             # Non-interactive: default to ~/bin
             LINK_CHOICE=2
@@ -659,7 +659,7 @@ case $INSTALL_CHOICE in
             echo "  2) ~/bin"
             read -r -p "$(echo -e "${YELLOW}選択 [1-2]: ${NC}")" LINK_CHOICE
         fi
-        
+
         case $LINK_CHOICE in
             1)
                 if sudo ln -sf "$(pwd)/target/release/gist-cache-rs" /usr/local/bin/gist-cache-rs; then
@@ -720,12 +720,12 @@ else
             SHOULD_UPDATE=false
         fi
     fi
-    
+
     if [ "$SHOULD_UPDATE" = true ]; then
         echo ""
         print_info "キャッシュ更新を開始します..."
         echo ""
-        
+
         if gist-cache-rs update --verbose; then
             print_success "キャッシュ更新が完了しました"
         else
@@ -750,7 +750,7 @@ else
             # 自動設定を実行
             print_info "非対話モード: エイリアス自動設定を実行します"
             echo ""
-            
+
             # シェルの検出（環境変数SHELLから判定）
             if [[ "$SHELL" == *"zsh"* ]]; then
                 SHELL_RC="$HOME/.zshrc"
@@ -759,17 +759,17 @@ else
             else
                 SHELL_RC="$HOME/.bashrc"
             fi
-            
+
             print_info "設定ファイル: $SHELL_RC"
             print_info "設定するエイリアス:"
             echo -e "  ${CYAN}alias ${ALIAS_UPDATE}='gist-cache-rs update'${NC}"
             echo -e "  ${CYAN}alias ${ALIAS_RUN}='gist-cache-rs run'${NC}"
             echo ""
-            
+
             # 既存のエイリアスをチェック
             UPDATE_EXISTS=false
             RUN_EXISTS=false
-            
+
             if [ -f "$SHELL_RC" ]; then
                 if grep -q "^[[:space:]]*alias[[:space:]]\+${ALIAS_UPDATE}=" "$SHELL_RC"; then
                     UPDATE_EXISTS=true
@@ -778,17 +778,17 @@ else
                     RUN_EXISTS=true
                 fi
             fi
-            
+
             # エイリアスを追加（既存のものはスキップ）
             ADDED=false
             SKIPPED=false
-            
+
             # マーカーコメントを追加（新規追加がある場合のみ）
             if [ "$UPDATE_EXISTS" = false ] || [ "$RUN_EXISTS" = false ]; then
                 echo "" >> "$SHELL_RC"
                 echo "# gist-cache-rs aliases: ${ALIAS_UPDATE}, ${ALIAS_RUN} (added on $(date +%Y-%m-%d))" >> "$SHELL_RC"
             fi
-            
+
             # update エイリアスを追加
             if [ "$UPDATE_EXISTS" = true ]; then
                 print_warning "エイリアス '${ALIAS_UPDATE}' は既に存在します（スキップ）"
@@ -797,7 +797,7 @@ else
                 echo "alias ${ALIAS_UPDATE}='gist-cache-rs update'" >> "$SHELL_RC"
                 ADDED=true
             fi
-            
+
             # run エイリアスを追加
             if [ "$RUN_EXISTS" = true ]; then
                 print_warning "エイリアス '${ALIAS_RUN}' は既に存在します（スキップ）"
@@ -806,7 +806,7 @@ else
                 echo "alias ${ALIAS_RUN}='gist-cache-rs run'" >> "$SHELL_RC"
                 ADDED=true
             fi
-            
+
             # 結果を表示
             if [ "$ADDED" = true ]; then
                 print_success "エイリアスを追加しました"
@@ -832,7 +832,7 @@ else
         echo -e "  ${CYAN}alias gcrsu='gist-cache-rs update'${NC}"
         echo -e "  ${CYAN}alias gcrsr='gist-cache-rs run'${NC}"
         echo ""
-        
+
         # シェルの検出
         if [ -n "$BASH_VERSION" ]; then
             SHELL_RC="$HOME/.bashrc"
@@ -841,10 +841,10 @@ else
         else
             SHELL_RC="$HOME/.bashrc"
         fi
-        
+
         print_info "設定ファイル: $SHELL_RC"
         echo ""
-        
+
         # 推奨エイリアスを使うか確認
         if confirm "推奨エイリアス名（gcrsu, gcrsr）を使用しますか？" "y"; then
             ALIAS_UPDATE="gcrsu"
@@ -854,31 +854,31 @@ else
             echo ""
             print_info "カスタムエイリアス名を入力してください"
             echo ""
-            
+
             read -r -p "$(echo -e "${YELLOW}gist-cache-rs update 用のエイリアス名: ${NC}")" ALIAS_UPDATE
             if [ -z "$ALIAS_UPDATE" ]; then
                 ALIAS_UPDATE="gcrsu"
                 print_warning "入力がないため、デフォルト名 'gcrsu' を使用します"
             fi
-            
+
             read -r -p "$(echo -e "${YELLOW}gist-cache-rs run 用のエイリアス名: ${NC}")" ALIAS_RUN
             if [ -z "$ALIAS_RUN" ]; then
                 ALIAS_RUN="gcrsr"
                 print_warning "入力がないため、デフォルト名 'gcrsr' を使用します"
             fi
-            
+
             echo ""
             print_info "設定するエイリアス:"
             echo -e "  ${CYAN}alias ${ALIAS_UPDATE}='gist-cache-rs update'${NC}"
             echo -e "  ${CYAN}alias ${ALIAS_RUN}='gist-cache-rs run'${NC}"
         fi
-        
+
         echo ""
         if confirm "これらのエイリアスを $SHELL_RC に追加しますか？" "y"; then
             # 既存のエイリアスをチェック
             UPDATE_EXISTS=false
             RUN_EXISTS=false
-            
+
             if [ -f "$SHELL_RC" ]; then
                 if grep -q "^[[:space:]]*alias[[:space:]]\+${ALIAS_UPDATE}=" "$SHELL_RC"; then
                     UPDATE_EXISTS=true
@@ -887,17 +887,17 @@ else
                     RUN_EXISTS=true
                 fi
             fi
-            
+
             # エイリアスを追加（既存のものはスキップ）
             ADDED=false
             SKIPPED=false
-            
+
             # マーカーコメントを追加（新規追加がある場合のみ）
             if [ "$UPDATE_EXISTS" = false ] || [ "$RUN_EXISTS" = false ]; then
                 echo "" >> "$SHELL_RC"
                 echo "# gist-cache-rs aliases: ${ALIAS_UPDATE}, ${ALIAS_RUN} (added on $(date +%Y-%m-%d))" >> "$SHELL_RC"
             fi
-            
+
             # update エイリアスを追加
             if [ "$UPDATE_EXISTS" = true ]; then
                 print_warning "エイリアス '${ALIAS_UPDATE}' は既に存在します（スキップ）"
@@ -906,7 +906,7 @@ else
                 echo "alias ${ALIAS_UPDATE}='gist-cache-rs update'" >> "$SHELL_RC"
                 ADDED=true
             fi
-            
+
             # run エイリアスを追加
             if [ "$RUN_EXISTS" = true ]; then
                 print_warning "エイリアス '${ALIAS_RUN}' は既に存在します（スキップ）"
@@ -915,7 +915,7 @@ else
                 echo "alias ${ALIAS_RUN}='gist-cache-rs run'" >> "$SHELL_RC"
                 ADDED=true
             fi
-            
+
             # 結果を表示
             if [ "$ADDED" = true ]; then
                 print_success "エイリアスを追加しました"
@@ -923,7 +923,7 @@ else
             if [ "$SKIPPED" = true ]; then
                 print_info "既存のエイリアスは保持されました"
             fi
-            
+
             if [ "$ADDED" = true ]; then
                 print_info "反映するには以下を実行してください:"
                 echo -e "  ${CYAN}source $SHELL_RC${NC}"
