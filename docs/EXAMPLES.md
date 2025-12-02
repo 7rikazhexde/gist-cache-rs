@@ -309,27 +309,6 @@ $ gist-cache-rs run --id [your_gist_id] uv input.csv
 
 ---
 
-## 💡 便利なエイリアス
-
-```bash
-# ~/.bashrc または ~/.zshrc に追加
-alias gcrsu='gist-cache-rs update'
-alias gcrsr='gist-cache-rs run'
-alias gcrsr-p='gist-cache-rs run -p'
-alias gcrsr-i='gist-cache-rs run -i'
-alias gcrsr-dl='gist-cache-rs run --download'
-
-# 使用例
-gcrsu                        # キャッシュ更新
-gcrsr-p data                 # プレビュー
-gcrsr-i setup                # 対話モード実行
-gcrsr backup bash /src /dst  # 引数付き実行
-gcrsr-dl backup bash         # ダウンロード
-gcrsr-p --download script    # プレビュー後ダウンロード
-```
-
----
-
 ## 🗂️ キャッシュ管理の例
 
 ### キャッシュ一覧の確認
