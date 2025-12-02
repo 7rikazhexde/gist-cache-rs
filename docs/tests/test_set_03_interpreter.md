@@ -31,19 +31,23 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: Bashスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args.sh (ID: 7bcb324e9291fa350334df8efb7f0deb) が存在する
 
 **手順**:
+
 1. Bashで実行: `gist-cache-rs run --id 7bcb324e9291fa350334df8efb7f0deb bash arg1 arg2 arg3`
 2. 実行結果を確認
 
 **期待結果**:
+
 - Bashバージョンが表示される
 - 引数の数「3」が表示される
 - 引数が正しく表示される（arg1, arg2, arg3）
 - 数値以外のため「数値として計算できませんでした」が表示される
 
 **検証項目**:
+
 - Bashインタープリタが正しく起動する
 - 引数が正しく渡される
 - スクリプトが正常に実行される
@@ -55,19 +59,23 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: Pythonスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args.py が存在する
 
 **手順**:
+
 1. Pythonで実行: `gist-cache-rs run --filename hello_args.py python3 10 20 30`
 2. 実行結果を確認
 
 **期待結果**:
+
 - Pythonバージョンが表示される
 - 引数の数「3」が表示される
 - 引数が正しく表示される（10, 20, 30）
 - 数値のため合計「60」が表示される（Pythonスクリプトが合計計算機能を持つ場合）
 
 **検証項目**:
+
 - Pythonインタープリタが正しく起動する
 - 引数が正しく渡される
 - スクリプトが正常に実行される
@@ -79,18 +87,22 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: Rubyスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args.rb が存在する
 
 **手順**:
+
 1. Rubyで実行: `gist-cache-rs run --filename hello_args.rb ruby test1 test2`
 2. 実行結果を確認
 
 **期待結果**:
+
 - Rubyバージョンが表示される
 - 引数の数「2」が表示される
 - 引数が正しく表示される（test1, test2）
 
 **検証項目**:
+
 - Rubyインタープリタが正しく起動する
 - 引数が正しく渡される
 - スクリプトが正常に実行される
@@ -102,18 +114,22 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: Node.jsスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args.js または hello_args_2.js が存在する
 
 **手順**:
+
 1. Node.jsで実行: `gist-cache-rs run --filename hello_args.js node hello world`
 2. 実行結果を確認
 
 **期待結果**:
+
 - Node.jsバージョンが表示される
 - 引数の数「2」が表示される
 - 引数が正しく表示される（hello, world）
 
 **検証項目**:
+
 - Node.jsインタープリタが正しく起動する
 - 引数が正しく渡される
 - スクリプトが正常に実行される
@@ -125,18 +141,22 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: PHPスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args.php が存在する
 
 **手順**:
+
 1. PHPで実行: `gist-cache-rs run --filename hello_args.php php 100 200`
 2. 実行結果を確認
 
 **期待結果**:
+
 - PHPバージョンが表示される
 - 引数の数「2」が表示される
 - 引数が正しく表示される（100, 200）
 
 **検証項目**:
+
 - PHPインタープリタが正しく起動する
 - 引数が正しく渡される
 - スクリプトが正常に実行される
@@ -148,18 +168,22 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: Perlスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args.pl が存在する
 
 **手順**:
+
 1. Perlで実行: `gist-cache-rs run --filename hello_args.pl perl foo bar baz`
 2. 実行結果を確認
 
 **期待結果**:
+
 - Perlバージョンが表示される
 - 引数の数「3」が表示される
 - 引数が正しく表示される（foo, bar, baz）
 
 **検証項目**:
+
 - Perlインタープリタが正しく起動する
 - 引数が正しく渡される
 - スクリプトが正常に実行される
@@ -171,25 +195,30 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: PowerShellスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args.ps1 (ID: 2cb45541fee10264b615fd641c577a20) が存在する
 - pwshコマンドがインストール済み（PowerShell Core）
 
 **手順**:
+
 1. PowerShellで実行: `gist-cache-rs run --id 2cb45541fee10264b615fd641c577a20 pwsh test1 test2 test3`
 2. 実行結果を確認
 
 **期待結果**:
+
 - PowerShellバージョンが表示される
 - 引数の数「3」が表示される
 - 引数が正しく表示される（test1, test2, test3）
 - 数値以外のため「数値以外が含まれているため、計算できませんでした」が表示される
 
 **検証項目**:
+
 - PowerShellインタープリタ（pwsh）が正しく起動する
 - 引数が正しく渡される
 - スクリプトが正常に実行される
 
 **数値引数のテスト**:
+
 1. PowerShellで実行: `gist-cache-rs run --filename hello_args.ps1 pwsh 10 20 30`
 2. 期待結果: 合計「60」が表示される
 
@@ -200,16 +229,19 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: DenoでTypeScriptスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args_deno.ts (ID: 9b0e7e1bdf7d24c3f28a80d18f6aaafe) が存在する
 - denoコマンドがインストール済み
 
 **手順**:
+
 1. Denoで実行（引数なし）: `gist-cache-rs run --filename hello_args_deno.ts deno`
 2. Denoで実行（文字列引数）: `gist-cache-rs run --filename hello_args_deno.ts deno test1 test2 test3`
 3. Denoで実行（数値引数）: `gist-cache-rs run --filename hello_args_deno.ts deno 10 20 30`
 4. 各実行結果を確認
 
 **期待結果**:
+
 - Denoバージョンが表示される
 - TypeScriptバージョンが表示される
 - V8バージョンが表示される
@@ -218,6 +250,7 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 - 数値引数: 引数の数「3」、引数が正しく表示される（10, 20, 30）、合計「60」が表示される
 
 **検証項目**:
+
 - Denoインタープリタが正しく起動する
 - TypeScriptファイル（.ts）が正しく認識される
 - `deno run`コマンドが正しく使用される
@@ -231,14 +264,17 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: ts-nodeでTypeScriptスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args.ts (ID: c3c925384cc8241d8cd30f269af84332) が存在する
 - ts-nodeコマンドがインストール済み（`npm install -g ts-node typescript`）
 
 **手順**:
+
 1. ts-nodeで実行: `gist-cache-rs run --filename hello_args.ts ts-node hello world`
 2. 実行結果を確認
 
 **期待結果**:
+
 - TypeScriptバージョンが表示される
 - Node.jsバージョンが表示される
 - 引数の数「2」が表示される
@@ -246,12 +282,14 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 - 数値以外のため「数値以外が含まれているため、計算できませんでした」が表示される
 
 **検証項目**:
+
 - ts-nodeインタープリタが正しく起動する
 - TypeScriptファイル（.ts）が正しく認識される
 - 引数が正しく渡される
 - スクリプトが正常に実行される
 
 **注意事項**:
+
 - ts-nodeはNode.js上でTypeScriptを実行するため、`npm install -g ts-node typescript`が必要
 - インストールされていない場合はこのテストケースをスキップ
 
@@ -262,26 +300,31 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: BunでTypeScriptスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args_bun.ts (ID: a3d74a884ff923fc83c047c2cf3d6f08) が存在する
 - bunコマンドがインストール済み
 
 **手順**:
+
 1. Bunで実行: `gist-cache-rs run --filename hello_args_bun.ts bun 100 200`
 2. 実行結果を確認
 
 **期待結果**:
+
 - Bunバージョンが表示される
 - 引数の数「2」が表示される
 - 引数が正しく表示される（100, 200）
 - 合計「300」が表示される
 
 **検証項目**:
+
 - Bunインタープリタが正しく起動する
 - TypeScriptファイル（.ts）が正しく認識される
 - 引数が正しく渡される
 - スクリプトが正常に実行される
 
 **注意事項**:
+
 - Bunは高速なJavaScript/TypeScriptランタイム
 - インストールされていない場合はこのテストケースをスキップ
 
@@ -292,20 +335,24 @@ gist-cache-rsが各インタープリタを正しく起動し、引数を渡し�
 **目的**: UV（PEP 723対応）でPythonスクリプトが正しく実行されることを確認
 
 **前提条件**:
+
 - hello_args.py が存在する
 - uvコマンドがインストール済み
 
 **手順**:
+
 1. UVで実行: `gist-cache-rs run --filename hello_args.py uv 5 10 15`
 2. 実行結果を確認
 
 **期待結果**:
+
 - Pythonバージョンが表示される（uvが管理するPython環境）
 - 引数の数「3」が表示される
 - 引数が正しく表示される（5, 10, 15）
 - 数値のため合計「30」が表示される（スクリプトが合計計算機能を持つ場合）
 
 **検証項目**:
+
 - UVインタープリタ（`uv run`）が正しく起動する
 - PEP 723メタデータが正しく処理される
 - 引数が正しく渡される

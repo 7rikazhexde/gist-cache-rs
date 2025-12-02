@@ -48,6 +48,7 @@ cd gist-cache-rs
 ```
 
 対話的に以下を実行：
+
 - ✅ 前提条件チェック
 - 🔨 リリースビルド
 - 📦 インストール方法選択
@@ -106,12 +107,14 @@ gist-cache-rs self update --verbose
 ```
 
 **オプション**:
+
 - `--check`: 更新の有無のみ確認（実際には更新しない）
 - `--from-source`: GitHub Releasesではなく、ソースからビルドして更新
 - `--force`: バージョンが同じでも強制的に更新
 - `--version <VERSION>`: 特定のバージョンに更新
 
 **使用例**:
+
 ```bash
 # ソースからビルドして更新（開発者向け）
 gist-cache-rs self update --from-source
@@ -126,6 +129,7 @@ gist-cache-rs self update --from-source --verbose
 詳細は [docs/SELF-UPDATE.md](docs/SELF-UPDATE.md) を参照してください。
 
 **注意**:
+
 - GitHub Releasesからの更新を利用するには、プロジェクトのリリースにプラットフォーム別のバイナリが必要です
 - `--from-source`を使用するには、gitとRust toolchainがインストールされている必要があります
 
@@ -235,11 +239,13 @@ gist-cache-rs run -p --filename setup.sh
 ```
 
 **プレビュー表示内容**:
+
 - 説明（Description）
 - ファイル名（Files）
 - スクリプト全文（構文ハイライトなし）
 
 **用途**:
+
 - スクリプトの内容を確認してから実行
 - 引数や設定を確認
 - 間違ったスクリプトの実行を防止
@@ -260,12 +266,14 @@ gist-cache-rs run --download --id abc123def456
 ```
 
 **特徴**:
+
 - ダウンロードフォルダ（`~/Downloads`）に保存
 - 実行可能なスクリプトとは別に、個別に保存したい場合に便利
 - ダウンロード時にキャッシュも自動作成され、2回目以降の実行が高速化
 - 他のオプション（`--preview`, `--force`, `--interactive`など）と併用可能
 
 **ダウンロードの動作順序**:
+
 1. `--preview --download`: プレビュー表示 → ダウンロード
 2. `--force --download`: キャッシュ更新 → 実行 → ダウンロード
 3. `--download` のみ: 実行 → ダウンロード
@@ -288,6 +296,7 @@ gist-cache-rs run --force --description "data processor" python3
 ### 自動設定（setup.sh使用時）
 
 インストール時に対話的に設定：
+
 - 推奨エイリアス（`gcrsu`, `gcrsr`）
 - カスタムエイリアス名
 
@@ -365,6 +374,7 @@ gist-cache-rs run --help
 ### command not found: gist-cache-rs
 
 **解決方法:**
+
 - `~/.cargo/bin` がPATHに含まれているか確認
 - または `/usr/local/bin` にバイナリをコピー
 
@@ -443,6 +453,68 @@ gist-cache-rs cache clear
     ├── {gist_id_2}\
     │   └── {filename_2}
     └── ...
+```
+
+## 🛠️ 開発環境のセットアップ
+
+このプロジェクトに貢献する場合、以下のツールを使用すると開発体験が向上します。
+
+### pre-commit フックの設定
+
+コードの品質を保つため、[prek](https://github.com/j178/prek)（Rust製の高速pre-commitツール）の使用を推奨します。
+
+**prekのインストール:**
+
+```bash
+# cargoでインストール
+cargo install --locked prek
+
+# または、システムのパッケージマネージャーで
+# macOS: brew install prek
+# その他のインストール方法は https://github.com/j178/prek を参照
+```
+
+**フックの有効化:**
+
+```bash
+# リポジトリルートで実行
+prek install
+```
+
+**フックの実行内容:**
+
+- `cargo fmt` - コードフォーマット
+- `cargo check` - コンパイルチェック
+- `cargo clippy` - lint チェック
+- `markdownlint` - Markdown linting
+- TOML/YAML validation
+
+**手動実行:**
+
+```bash
+# 全てのファイルに対して実行
+prek run --all-files
+
+# 特定のフックのみ実行
+prek run fmt
+prek run clippy
+```
+
+**従来のpre-commitとの互換性:**
+
+`prek`は従来の`pre-commit`と完全互換なので、既存の`.pre-commit-config.yaml`をそのまま使用できます。
+
+### 開発コマンド
+
+```bash
+# 全チェック実行（fmt, lint, test）
+just check
+
+# テスト実行
+cargo test
+
+# リリースビルド
+cargo build --release
 ```
 
 ## 📚 ドキュメント

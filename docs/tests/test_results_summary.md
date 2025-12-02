@@ -3,6 +3,7 @@
 ### 機能検証テスト実行結果（2025-11-01）
 
 **テスト対象Gist**:
+
 - ID: 7bcb324e9291fa350334df8efb7f0deb
 - ファイル名: hello_args.sh
 - URL: https://gist.github.com/7rikazhexde/7bcb324e9291fa350334df8efb7f0deb
@@ -25,22 +26,26 @@
 #### 主要な確認事項
 
 ✅ **コンテンツキャッシュの基本動作**
+
 - 初回実行時にGitHub APIから取得し、`~/.cache/gist-cache/contents/{gist_id}/{filename}`にキャッシュを作成
 - メッセージ「情報: キャッシュが存在しないため、GitHub APIから取得します...」が正しく表示
 - 2回目以降はキャッシュから即座に読み込み（ネットワークアクセスなし、約20倍高速）
 
 ✅ **メタデータ更新とキャッシュ鮮度管理**
+
 - `update`コマンドでGist更新を検出：「Gist更新を検出: 7bcb324e9291fa350334df8efb7f0deb」
 - 更新されたGistのコンテンツキャッシュディレクトリが自動削除
 - 変更のないGistはキャッシュが維持される
 
 ✅ **Gist更新後の動作（TC4）**
+
 - GitHub上でGistを編集（コメント追加: `# TEST MODIFICATION 1`）
 - `update --verbose`で「更新: 1件」を確認
 - コンテンツキャッシュディレクトリが削除されることを確認
 - 次回実行時に最新版が取得され、新しいキャッシュに反映
 
 ✅ **--forceオプションの動作（TC5）**
+
 - updateコマンドを手動実行せずに、`run --force`のみで実行
 - 実行前に自動的にupdateが実行される（出力：「Gistキャッシュを更新しています...」）
 - Gist更新が検出され、キャッシュが自動削除（出力：「更新: 1件」「キャッシュ削除: 1件」）
@@ -48,6 +53,7 @@
 - 開発中のGistを常に最新版で実行できることを確認
 
 ✅ **cacheコマンドの動作（TC6-8）**
+
 - `cache list`: キャッシュ済みGistの一覧表示（ID、説明、ファイル名、更新日時、合計数）
 - `cache size`: キャッシュサイズ情報表示（Gist数、合計サイズ、ディレクトリパス）
 - `cache clear`: 確認プロンプト付きで全キャッシュを削除
@@ -66,6 +72,7 @@
 **テスト設計書**: `request/functional_verification_test_design_search.md`
 
 **テスト対象Gist**:
+
 - 複数のhello_args系Gist（合計7件）
 - テスト用ID: 7bcb324e9291fa350334df8efb7f0deb (hello_args.sh)
 
@@ -85,34 +92,40 @@
 #### 主要な確認事項
 
 ✅ **Auto検索（TC1）**
+
 - キーワード「hello」で7件のGistがヒット
 - 複数候補の選択UI（番号付きリスト）が正しく表示
 - 各Gistの説明文とファイル名が表示される
 - 番号選択後、対応するGistが実行される
 
 ✅ **ID直接指定（TC2）**
+
 - `--id 7bcb324e9291fa350334df8efb7f0deb`で直接Gistを指定
 - 検索プロセスをスキップして直接実行
 - 「ID指定モード」のメッセージが表示される
 
 ✅ **ファイル名検索（TC3）**
+
 - `--filename hello_args.sh`で完全一致検索
 - 単一結果のため選択UIをスキップして直接実行
 - ファイル名のみが検索対象となり、説明文は除外される
 
 ✅ **説明文検索（TC4）**
+
 - `--description "#bash"`でタグ検索
 - 説明文に「#bash」を含むGistのみヒット（2件）
 - ファイル名は検索対象外となる
 - タグを使った絞り込みが有効に機能
 
 ✅ **複数候補の選択UI（TC5）**
+
 - キーワード「hello」で7件の候補が表示
 - 番号7を選択してPythonスクリプト（hello_args.py）が実行される
 - キャッシュ不在時のメッセージ「情報: キャッシュが存在しないため、GitHub APIから取得します...」を確認
 - 引数が正しく渡される
 
 ✅ **検索結果0件のエラーハンドリング（TC6）**
+
 - 存在しないキーワード「nonexistent_gist_xyz」で検索
 - 明確なエラーメッセージ「No search results for query: nonexistent_gist_xyz」が表示
 - 終了コード1（非0）で終了
@@ -134,6 +147,7 @@
 **テスト設計書**: `request/functional_verification_test_design_interpreter.md`
 
 **テスト対象Gist**:
+
 - 各言語のhello_args系スクリプト（Bash, Python, Ruby, Node.js, PHP, Perl）
 - テスト用Bash ID: 7bcb324e9291fa350334df8efb7f0deb (hello_args.sh)
 
@@ -154,29 +168,34 @@
 #### 主要な確認事項
 
 ✅ **Bash実行（TC1）**
+
 - ID直接指定（`--id 7bcb324e9291fa350334df8efb7f0deb`）で実行
 - Bashバージョン表示: `5.1.16(1)-release`
 - 引数3個（arg1, arg2, arg3）が正しく渡される
 - 数値でないため「数値として計算できませんでした」が表示
 
 ✅ **Python実行（TC2）**
+
 - ファイル名指定（`--filename hello_args.py`）で実行
 - Pythonバージョン表示: `3.12.4`
 - 引数3個（10, 20, 30）が正しく渡される
 
 ✅ **Ruby実行（TC3）**
+
 - ファイル名指定（`--filename hello_args.rb`）で実行
 - キャッシュ不在のためGitHub APIから取得
 - Rubyバージョン表示: `3.3.5`
 - 引数2個（test1, test2）が正しく渡される
 
 ✅ **Node.js実行（TC4）**
+
 - ファイル名指定（`--filename hello_args.js`）で実行
 - キャッシュ不在のためGitHub APIから取得
 - Node.jsバージョン表示: `v22.13.0`
 - 引数2個（hello, world）が正しく渡される
 
 ✅ **PHP実行（TC5）**
+
 - ファイル名指定（`--filename hello_args.php`）で実行
 - キャッシュ不在のためGitHub APIから取得
 - PHPバージョン表示: `8.1.2-1ubuntu2.22`
@@ -184,12 +203,14 @@
 - 数値計算機能を確認: `100 + 200 = 300`
 
 ✅ **Perl実行（TC6）**
+
 - ファイル名指定（`--filename hello_args.pl`）で実行
 - キャッシュ不在のためGitHub APIから取得
 - Perlバージョン表示: `v5.34.0`
 - 引数3個（foo, bar, baz）が正しく渡される
 
 ✅ **UV実行 - PEP 723対応（TC7）**
+
 - ファイル名指定（`--filename hello_args.py`）で実行
 - インタープリタ指定: `uv`
 - Pythonバージョン表示: `3.12.5` (uvが管理する環境)
@@ -211,6 +232,7 @@
 **テスト設計書**: `request/functional_verification_test_design_preview.md`
 
 **テスト対象Gist**:
+
 - create_folders.sh (ID: 587558d7c6a9d11b6ec648db364844da)
 - 各言語のhello_args系スクリプト（Python, Bash, Ruby）
 
@@ -229,11 +251,13 @@
 #### 主要な確認事項
 
 ✅ **Auto検索でのプレビュー（TC1）**
+
 - キーワード検索で複数候補が表示される
 - 番号選択後、Gist内容がプレビュー表示される
 - スクリプトは実行されない（プレビューのみ）
 
 ✅ **ID直接指定でのプレビュー（TC2）**
+
 - `--id 587558d7c6a9d11b6ec648db364844da`で直接指定
 - 「ID指定モード」メッセージが表示される
 - Description: 指定パスに連番付き（開始番号〜終了番号）のフォルダを100件単位で作成するスクリプト
@@ -244,6 +268,7 @@
 - スクリプトは実行されない
 
 ✅ **ファイル名指定でのプレビュー（TC3）**
+
 - `--filename hello_args.py`で検索
 - 単一結果のため直接プレビュー表示
 - Description: hello_args.py - Python引数テストスクリプト #python #test
@@ -251,6 +276,7 @@
 - スクリプトは実行されない
 
 ✅ **キャッシュありでのプレビュー（TC4）**
+
 - hello_args.shのキャッシュが既に存在
 - `--id 7bcb324e9291fa350334df8efb7f0deb`で実行
 - 「情報: キャッシュが存在しないため...」メッセージは表示されない
@@ -259,6 +285,7 @@
 - スクリプトは実行されない
 
 ✅ **--previewロングオプション（TC5）**
+
 - `--preview --filename hello_args.rb`で実行
 - `-p`と同じプレビューモード動作
 - Description: hello_args.rb - Ruby引数テストスクリプト #ruby #test #gist-cache-rs

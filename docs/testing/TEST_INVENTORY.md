@@ -321,6 +321,7 @@
 **カバレッジへの貢献**: execution/runner.rs +30-40%
 
 **Windows対応**: ⚠️ 条件付き
+
 - bash: Git Bash または WSL必要
 - python3: Windows版Python必要
 - node: Windows版Node.js必要
@@ -373,6 +374,7 @@ tests/e2e/
 ```
 
 **期待効果**:
+
 - ユーザー体験の完全な保証
 - モジュール間の統合確認
 - 手動テストの自動化

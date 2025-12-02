@@ -72,6 +72,7 @@ cd gist-cache-rs
 ```
 
 **実行される処理:**
+
 1. ✅ 前提条件の確認
 2. 📁 プロジェクトディレクトリの検出
 3. 🔨 リリースビルド
@@ -92,12 +93,14 @@ cd gist-cache-rs
 ```
 
 **実行される処理:**
+
 1. ✅ 前提条件の確認（Rust、GitHub CLI）
 2. 🔨 リリースビルド
 3. 📦 cargoインストール実行
 4. 🔄 初回キャッシュ作成（オプション）
 
 **インストール先:**
+
 - バイナリ: `%USERPROFILE%\.cargo\bin\gist-cache-rs.exe`
 - キャッシュ: `%LOCALAPPDATA%\gist-cache\`
 
@@ -109,6 +112,7 @@ cargo install --path .
 ```
 
 **インストール先:**
+
 - Linux/macOS: `~/.cargo/bin/gist-cache-rs`
 - Windows: `%USERPROFILE%\.cargo\bin\gist-cache-rs.exe`
 
@@ -125,6 +129,7 @@ source ~/.bashrc
 
 **Windows:**
 Cargoのbinディレクトリが自動的にPATHに追加されます。未設定の場合：
+
 1. 「システム環境変数の編集」を開く
 2. 「環境変数」ボタンをクリック
 3. ユーザー環境変数の「Path」を編集
@@ -137,7 +142,7 @@ cargo build --release
 sudo cp target/release/gist-cache-rs /usr/local/bin/
 ```
 
-**インストール先:** `/usr/local/bin/gist-cache-rs`  
+**インストール先:** `/usr/local/bin/gist-cache-rs`
 **特徴:** 全ユーザーで共有、sudo権限が必要
 
 ### 方法4: ユーザーディレクトリ
@@ -346,6 +351,7 @@ gist-cache-rs update --verbose
 **警告:** `レートリミット残量が低いです`
 
 **解決方法:**
+
 - しばらく待ってから再試行
 - `--force` オプションを避ける
 - 差分更新を使用
@@ -361,6 +367,7 @@ gist-cache-rs update --verbose
 ```
 
 対話的に以下を選択：
+
 - バイナリ削除
 - キャッシュディレクトリ削除
 - エイリアス削除
@@ -372,6 +379,7 @@ gist-cache-rs update --verbose
 ```
 
 対話的に以下を選択：
+
 - バイナリ削除
 - キャッシュディレクトリ削除
 

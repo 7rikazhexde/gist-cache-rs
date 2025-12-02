@@ -172,34 +172,34 @@ import os
 def main() -> None:
     print(f"Pandas version: {pd.__version__}")
     print(f"NumPy version: {np.__version__}")
-    
+
     if len(sys.argv) < 2:
         print("エラー: CSVファイルのパスを指定してください (例: input.csv)")
         sys.exit(1)
-    
+
     csv_file = sys.argv[1]
-    
+
     if not os.path.exists(csv_file):
         print(f"エラー: ファイル '{csv_file}' が見つかりません。")
         sys.exit(1)
-    
+
     # CSVファイルを読み込み
     try:
         df = pd.read_csv(csv_file)
         print(f"\nCSVファイル '{csv_file}' を読み込みました (行数: {len(df)})")
         print("\nDataFrame (最初の5行):")
         print(df.head())
-        
+
         # 簡単なデータ分析
         print(f"\n列の数: {len(df.columns)}")
         print(f"\n平均値:\n{df.mean(numeric_only=True)}")
-        
+
         # ランダムデータを追加例として生成（オプション）
         if len(df) > 0:
             print(f"\nランダム列 'Random' を追加:")
             df["Random"] = np.random.randint(1, 100, len(df))
             print(df[["Random"]].head())
-            
+
     except Exception as e:
         print(f"エラー: CSV処理中に例外が発生しました: {e}")
         sys.exit(1)
@@ -404,6 +404,7 @@ $ gist-cache-rs run --force --filename deploy.sh bash
 ```
 
 **ポイント:**
+
 - 📡 実行前に自動的に`update`を実行（差分更新）
 - ⚡ Gistが更新されていなければ、既存のキャッシュを使用して高速実行
 - 🔄 更新されている場合のみ、新しいバージョンを取得
@@ -494,12 +495,14 @@ Files: utility.sh
 ```
 
 **ポイント:**
+
 - 📥 ダウンロードフォルダ（`~/Downloads`）に保存
 - 🔄 ダウンロード時にキャッシュも自動作成され、2回目以降の実行が高速化
 - 🎯 他のオプション（`--preview`, `--force`, `--interactive`など）と併用可能
 - 💾 実行可能なスクリプトとは別に、個別に保存したい場合に便利
 
 **動作順序:**
+
 1. `--preview --download`: プレビュー表示 → ダウンロード
 2. `--force --download`: キャッシュ更新 → 実行 → ダウンロード
 3. `--download` のみ: 実行 → ダウンロード

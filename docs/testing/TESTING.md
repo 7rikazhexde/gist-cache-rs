@@ -20,6 +20,7 @@ gist-cache-rsは、ユニットテスト、統合テスト、E2Eテストの3層
 | **合計** | **153個** | - | - |
 
 **テストピラミッドの原則**:
+
 - ユニットテストが最も多い（78%）- 高速、外部依存なし
 - 統合テストは中間（22%）- 実際のプロセス実行を検証
 - E2Eテストは最小（手動）- ユーザー視点の包括的検証
@@ -72,6 +73,7 @@ cargo tarpaulin --out Html --output-dir coverage
 **場所**: `src/` 内の `#[cfg(test)]` モジュール
 
 **カバレッジ対象**:
+
 - データ構造とシリアライゼーション (`cache/types.rs`)
 - キャッシュ管理ロジック (`cache/content.rs`, `cache/update.rs`)
 - 検索ロジック (`search/query.rs`)
@@ -82,6 +84,7 @@ cargo tarpaulin --out Html --output-dir coverage
 - GitHub API モック (`github/client.rs`)
 
 **特徴**:
+
 - 高速実行（外部依存なし）
 - MockGitHubClientでGitHub API依存を排除
 - 自動CI/CD実行可能
@@ -114,6 +117,7 @@ cargo tarpaulin --out Html --output-dir coverage
 - 複数ファイルGistの選択ロジック
 
 **特徴**:
+
 - 実際のプロセス実行を検証
 - Unix環境のみ実行 (`#[cfg_attr]`で制御)
 - インタープリタ未インストール時は自動スキップ
@@ -123,12 +127,14 @@ cargo tarpaulin --out Html --output-dir coverage
 **場所**: `docs/tests/`
 
 **テストセット**:
+
 1. キャッシング機能 (`test_set_01_caching.md`) - 8ケース
 2. 検索機能 (`test_set_02_search.md`) - 6ケース
 3. インタープリタ (`test_set_03_interpreter.md`) - 7ケース
 4. プレビュー機能 (`test_set_04_preview.md`) - 5ケース
 
 **特徴**:
+
 - 実際のGistを使用した包括的検証
 - ユーザー視点のワークフロー確認
 - 再実行可能な詳細手順付き
@@ -140,12 +146,14 @@ cargo tarpaulin --out Html --output-dir coverage
 ### 何をユニットテストでカバーするか
 
 ✅ **対象**:
+
 - ビジネスロジック
 - データ変換・シリアライゼーション
 - エラーハンドリング
 - モック可能な外部依存
 
 ❌ **対象外**:
+
 - 外部プロセス実行（bash, python等） → 統合テストで検証
 - GitHub CLI (`gh`コマンド) → MockGitHubClientで代替、または #[ignore] テスト
 - ユーザー入力処理 → E2Eテストで検証
@@ -156,6 +164,7 @@ cargo tarpaulin --out Html --output-dir coverage
 **現在のカバレッジ**: 68.95% ✅ 目標達成
 
 **達成理由**:
+
 - コアロジックは高カバレッジ (types 100%, config 96%, content 83%, cli 78%)
 - 外部プロセス依存コード (runner.rs 20%, api.rs 8%) は統合テストで検証
 - thin wrapperは低カバレッジで妥当
@@ -169,6 +178,7 @@ cargo tarpaulin --out Html --output-dir coverage
 **原因**: Unix環境以外で実行、またはインタープリタが未インストール
 
 **解決策**:
+
 - 統合テストはUnix環境を推奨
 - インタープリタ (bash, python, node等) をインストール
 - または、自動スキップされるのは正常動作
@@ -188,6 +198,7 @@ cargo install cargo-tarpaulin
 **原因**: インタープリタ (bash, python, node等) が未インストール
 
 **解決策**:
+
 - 必要なインタープリタをインストール
 - または、スキップされるのは正常動作
 
