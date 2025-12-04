@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Crate publishing settings
 
-## [0.5.7] - 2025-12-02
+## [0.5.7] - 2025-12-04
 
 ### Fixed
 
@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Matches self_update crate's expected archive format
   - Resolves "Could not find the required path in the archive" error
 
-## [0.5.3] - 2025-12-01
+## [0.5.3] - 2025-12-02
 
 ### Fixed
 
@@ -145,7 +145,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Git pull now gracefully handles missing tracking information
   - Automatic fallback to `origin/main`
 
-## [0.4.0] - 2025-01-30
+## [0.4.0] - 2025-11-07
 
 ### Added
 
@@ -169,7 +169,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Platform-specific permission handling (Unix vs Windows)
 - Path handling for cross-platform compatibility
 
-## [0.3.0] - 2024-XX-XX
+## [0.3.0] - 2025-11-03
 
 ### Added
 
@@ -184,7 +184,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved search query handling
 - Enhanced error messages
 
-## [0.2.0] - 2024-XX-XX
+## [0.2.0] - 2025-11-03
 
 ### Added
 
@@ -198,7 +198,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migrated from direct API calls to GitHub CLI (`gh`)
 - Optimized cache update performance
 
-## [0.1.0] - 2024-XX-XX
+## [0.1.0]
 
 ### Added
 
