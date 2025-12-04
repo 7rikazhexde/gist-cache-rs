@@ -51,10 +51,16 @@ impl Updater {
         // Build updater
         let mut builder = self_update::backends::github::Update::configure();
 
+        // On Windows, binary name includes .exe extension
+        #[cfg(windows)]
+        let bin_name = "gist-cache-rs.exe";
+        #[cfg(not(windows))]
+        let bin_name = "gist-cache-rs";
+
         builder
             .repo_owner("7rikazhexde")
             .repo_name("gist-cache-rs")
-            .bin_name("gist-cache-rs")
+            .bin_name(bin_name)
             .bin_path_in_archive("gist-cache-rs-{{ version }}-{{ target }}/{{ bin }}")
             .show_download_progress(true)
             .no_confirm(false)
