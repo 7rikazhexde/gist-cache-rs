@@ -135,14 +135,15 @@ gist-cache-rs self update --version 0.5.0
 ### ソースからの更新
 
 ```text
-1. 現在のバージョンを取得
-2. git コマンドの存在を確認
-3. リポジトリの場所を確認
+1. git コマンドと cargo コマンドの存在を確認
+2. リポジトリの場所を確認
    a. 環境変数 GIST_CACHE_REPO でオーバーライド可能
    b. デフォルト: cargo metadata から取得
-   c. フォールバック: git clone
-4. git pull で最新版を取得
-5. cargo install --path . でビルド＆インストール
+   c. フォールバック: git clone を促すエラーを表示
+3. git pull --ff-only で最新版を取得
+   - 注意: ローカルリポジトリの状態によっては、fast-forwardマージができずエラーになる場合があります。その場合は、リポジトリをクリーンな状態にする（例: `GIST_CACHE_REPO`で指定されたディレクトリを削除して再クローンする）か、GitHub Releasesからの更新（`--from-source`なし）を利用してください。
+4. cargo build --release でビルド
+5. ビルドされたバイナリで現在の実行ファイルを置き換え (self-replace)
 6. 完了メッセージを表示
 ```
 
