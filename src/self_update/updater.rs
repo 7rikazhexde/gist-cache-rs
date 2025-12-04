@@ -55,7 +55,7 @@ impl Updater {
             .repo_owner("7rikazhexde")
             .repo_name("gist-cache-rs")
             .bin_name("gist-cache-rs")
-            .bin_path_in_archive("{{ bin }}-{{ version }}-{{ target }}/{{ bin }}")
+            .bin_path_in_archive("gist-cache-rs-{{ version }}-{{ target }}/{{ bin }}")
             .show_download_progress(true)
             .no_confirm(false)
             .current_version(env!("CARGO_PKG_VERSION"));

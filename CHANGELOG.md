@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.7] - 2025-12-02
+
+### Fixed
+
+- Self-update archive path detection
+  - Fixed incorrect directory name in archive path (was using `{{ bin }}` which includes `.exe` on Windows)
+  - Changed from `{{ bin }}-{{ version }}-{{ target }}/{{ bin }}` to `gist-cache-rs-{{ version }}-{{ target }}/{{ bin }}`
+  - Resolves "Could not find the required path in the archive" error on both Windows and Linux
+
 ## [0.5.6] - 2025-12-02
 
 ### Added
