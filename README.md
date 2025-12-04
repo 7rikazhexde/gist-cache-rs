@@ -410,7 +410,7 @@ cargo install --locked prek
 
 # または、システムのパッケージマネージャーで
 # macOS: brew install prek
-# その他のインストール方法は https://github.com/j178/prek を参照
+# その他のインストール方法: https://github.com/j178/prek
 ```
 
 **フックの有効化:**

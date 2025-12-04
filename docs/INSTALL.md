@@ -24,7 +24,7 @@
   rustc --version  # 確認
   ```
 
-  インストール方法: https://rustup.rs/ からダウンロード
+  インストール方法: [rustup.rs](https://rustup.rs/) からダウンロード
 
 - **GitHub CLI** (`gh`) - 認証済み
 
@@ -48,7 +48,7 @@
   gh auth login
   ```
 
-  インストール: https://cli.github.com/
+  インストール: [GitHub CLI](https://cli.github.com/)
 
 ### 推奨
 

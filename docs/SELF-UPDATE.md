@@ -46,7 +46,7 @@
 
 **実装方法**:
 
-- `self_update` crate を使用（https://crates.io/crates/self_update）
+- [`self_update`](https://crates.io/crates/self_update) crateを使用
 - GitHub Releasesから対応するプラットフォームのバイナリをダウンロード
 - 現在実行中のバイナリを置き換え
 
@@ -311,15 +311,15 @@ self_update = "0.41"  # GitHub Releasesからの自動更新
 
 ### 使用するcrate
 
-- **self_update** (https://crates.io/crates/self_update)
+- [**self_update**](https://crates.io/crates/self_update)
   - GitHub Releasesからの自動更新をサポート
   - プラットフォーム検出
   - バイナリ置き換え
 
 ### ドキュメント
 
-- GitHub Releases API: https://docs.github.com/en/rest/releases
-- cargo install: https://doc.rust-lang.org/cargo/commands/cargo-install.html
+- [GitHub Releases API](https://docs.github.com/en/rest/releases)
+- [cargo install](https://doc.rust-lang.org/cargo/commands/cargo-install.html)
 
 ## リリースプロセス
 
