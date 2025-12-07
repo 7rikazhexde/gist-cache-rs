@@ -139,7 +139,7 @@ check_command() {
         print_success "$1 is installed ($(command -v "$1"))"
         return 0
     else
-        print_error "$1 が見つかりません"
+        print_error "$1 not found"
         return 1
     fi
 }
@@ -148,7 +148,7 @@ check_version() {
     local cmd="$1"
     local version_flag="${2:---version}"
 
-    echo -e "  ${BLUE}バージョン:${NC} $($cmd "$version_flag" 2>&1 | head -n 1)"
+    echo -e "  ${BLUE}Version:${NC} $($cmd "$version_flag" 2>&1 | head -n 1)"
 }
 
 # Uninstall function
@@ -166,33 +166,33 @@ uninstall_gist_cache_rs() {
 EOF
     echo -e "${NC}"
 
-    print_warning "このスクリプトは gist-cache-rs をアンインストールします"
+    print_warning "This script will uninstall gist-cache-rs"
     echo ""
 
-    # 非対話モードでは確認をスキップ
+    # Skip confirmation in non-interactive mode
     if [ "$IS_INTERACTIVE" = true ]; then
-        if ! confirm "アンインストールを開始しますか？" "n"; then
-            echo "アンインストールを中止しました"
+        if ! confirm "Start uninstallation?" "n"; then
+            echo "Uninstallation cancelled"
             exit 0
         fi
     else
-        print_info "非対話モード: アンインストールを開始します"
+        print_info "Non-interactive mode: Starting uninstallation"
     fi
 
-    print_header "アンインストール処理"
+    print_header "Uninstallation Process"
 
     UNINSTALLED=false
 
     # Check and remove from cargo install
     if [ -f "$HOME/.cargo/bin/$BINARY_NAME" ]; then
-        print_info "cargo でインストールされたバイナリを削除中..."
+        print_info "Deleting binary installed with cargo..."
         if cargo uninstall "$BINARY_NAME" 2>/dev/null; then
-            print_success "cargo uninstall が完了しました"
+            print_success "cargo uninstall completed"
             UNINSTALLED=true
         else
-            print_warning "cargo uninstall に失敗しました（手動削除を試みます）"
+            print_warning "cargo uninstall failed (attempting manual deletion)"
             if rm -f "$HOME/.cargo/bin/$BINARY_NAME"; then
-                print_success "$HOME/.cargo/bin/$BINARY_NAME を削除しました"
+                print_success "$HOME/.cargo/bin/$BINARY_NAME deleted"
                 UNINSTALLED=true
             fi
         fi
@@ -200,66 +200,66 @@ EOF
 
     # Check and remove from /usr/local/bin
     if [ -f "/usr/local/bin/$BINARY_NAME" ]; then
-        print_info "/usr/local/bin からバイナリを削除中..."
+        print_info "Deleting binary from /usr/local/bin..."
         if sudo rm -f "/usr/local/bin/$BINARY_NAME"; then
-            print_success "/usr/local/bin/$BINARY_NAME を削除しました"
+            print_success "/usr/local/bin/$BINARY_NAME deleted"
             UNINSTALLED=true
         else
-            print_error "削除に失敗しました（権限が必要です）"
+            print_error "Deletion failed (permissions required)"
         fi
     fi
 
     # Check and remove from ~/bin
     if [ -f "$HOME/bin/$BINARY_NAME" ]; then
-        print_info "$HOME/bin からバイナリを削除中..."
+        print_info "Deleting binary from $HOME/bin..."
         if rm -f "$HOME/bin/$BINARY_NAME"; then
-            print_success "$HOME/bin/$BINARY_NAME を削除しました"
+            print_success "$HOME/bin/$BINARY_NAME deleted"
             UNINSTALLED=true
         fi
     fi
 
     if [ "$UNINSTALLED" = false ]; then
-        print_warning "$BINARY_NAME のインストールが見つかりませんでした"
+        print_warning "No installation of $BINARY_NAME found"
     fi
 
     # Ask about cache directory
     echo ""
     if [ -d "$CACHE_DIR" ]; then
-        print_info "キャッシュディレクトリを検出: $CACHE_DIR"
+        print_info "Cache directory detected: $CACHE_DIR"
 
         SHOULD_DELETE_CACHE=false
         if [ "$IS_INTERACTIVE" = false ]; then
-            # 非対話モードでは削除
-            print_info "非対話モード: キャッシュディレクトリを削除します"
+            # Delete in non-interactive mode
+            print_info "Non-interactive mode: Deleting cache directory"
             SHOULD_DELETE_CACHE=true
-        elif confirm "キャッシュディレクトリを削除しますか？" "n"; then
+        elif confirm "Delete cache directory?" "n"; then
             SHOULD_DELETE_CACHE=true
         fi
 
         if [ "$SHOULD_DELETE_CACHE" = true ]; then
             if rm -rf "$CACHE_DIR"; then
-                print_success "キャッシュディレクトリを削除しました"
+                print_success "Cache directory deleted"
             else
-                print_error "キャッシュディレクトリの削除に失敗しました"
+                print_error "Failed to delete cache directory"
             fi
         else
-            print_info "キャッシュディレクトリは保持されます"
+            print_info "Cache directory retained"
         fi
     fi
 
     # Ask about aliases
     echo ""
-    print_info "エイリアス設定の確認"
+    print_info "Checking alias settings"
 
     for rcfile in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.config/fish/config.fish"; do
         if [ ! -f "$rcfile" ]; then
             continue
         fi
 
-        # gist-cache-rs 関連のエイリアスを検出（コマンド内容で検索）
+        # Detect gist-cache-rs related aliases (search by command content)
         FOUND_ALIASES=()
 
-        # 'gist-cache-rs update' を含むエイリアスを検索
+        # Search for aliases containing 'gist-cache-rs update'
         while IFS= read -r line; do
             if [[ "$line" =~ ^[[:space:]]*alias[[:space:]]+([^=]+)=[[:space:]]*[\'\"]*gist-cache-rs[[:space:]]+update ]]; then
                 ALIAS_NAME="${BASH_REMATCH[1]}"
@@ -267,7 +267,7 @@ EOF
             fi
         done < "$rcfile"
 
-        # 'gist-cache-rs run' を含むエイリアスを検索
+        # Search for aliases containing 'gist-cache-rs run'
         while IFS= read -r line; do
             if [[ "$line" =~ ^[[:space:]]*alias[[:space:]]+([^=]+)=[[:space:]]*[\'\"]*gist-cache-rs[[:space:]]+run ]]; then
                 ALIAS_NAME="${BASH_REMATCH[1]}"
@@ -275,29 +275,28 @@ EOF
             fi
         done < "$rcfile"
 
-        # エイリアスが見つかった場合
+        # If aliases are found
         if [ ${#FOUND_ALIASES[@]} -gt 0 ]; then
-            print_warning "$rcfile にエイリアス設定が残っています"
+            print_warning "Alias settings remain in $rcfile"
 
-            # 検出されたエイリアスを表示
-            echo "  検出されたエイリアス:"
+            echo "  Detected aliases:"
             for alias_entry in "${FOUND_ALIASES[@]}"; do
                 ALIAS_NAME="${alias_entry%%:*}"
                 ALIAS_TYPE="${alias_entry##*:}"
                 if [ "$ALIAS_TYPE" = "update" ]; then
-                    echo "    - ${ALIAS_NAME} → gist-cache-rs update"
+                    echo "    - ${ALIAS_NAME} -> gist-cache-rs update"
                 else
-                    echo "    - ${ALIAS_NAME} → gist-cache-rs run"
+                    echo "    - ${ALIAS_NAME} -> gist-cache-rs run"
                 fi
             done
             echo ""
 
             SHOULD_DELETE_ALIAS=false
             if [ "$IS_INTERACTIVE" = false ]; then
-                # 非対話モードでは削除
-                print_info "非対話モード: エイリアスを削除します"
+                # Delete in non-interactive mode
+                print_info "Non-interactive mode: Deleting aliases"
                 SHOULD_DELETE_ALIAS=true
-            elif confirm "$rcfile からエイリアスを削除しますか？" "n"; then
+            elif confirm "Delete aliases from $rcfile?" "n"; then
                 SHOULD_DELETE_ALIAS=true
             fi
 
@@ -306,29 +305,29 @@ EOF
                 BACKUP_FILE="${rcfile}.backup.$(date +%Y%m%d%H%M%S)"
                 cp "$rcfile" "$BACKUP_FILE"
 
-                # マーカーコメントを削除（複数パターンに対応）
+                # Remove marker comments (supports multiple patterns)
                 sed -i.tmp '/# gist-cache-rs aliases/d' "$rcfile"
 
-                # 検出された各エイリアスを削除
+                # Delete each detected alias
                 for alias_entry in "${FOUND_ALIASES[@]}"; do
                     ALIAS_NAME="${alias_entry%%:*}"
-                    # エイリアス名をエスケープ（特殊文字に対応）
+                    # Escape alias name (for special characters)
                     ESCAPED_ALIAS=$(printf '%s\n' "$ALIAS_NAME" | sed 's/[]\/$*.^[]/\\&/g')
                     sed -i.tmp "/^[[:space:]]*alias[[:space:]]\+${ESCAPED_ALIAS}=/d" "$rcfile"
                 done
 
-                # 一時ファイルを削除
+                # Delete temporary file
                 rm -f "${rcfile}.tmp"
 
-                print_success "エイリアスを削除しました（バックアップ: $BACKUP_FILE）"
+                print_success "Aliases deleted (backup: $BACKUP_FILE)"
             fi
         fi
     done
 
-    print_header "アンインストール完了"
-    print_success "gist-cache-rs のアンインストールが完了しました"
+    print_header "Uninstallation Complete"
+    print_success "gist-cache-rs uninstallation complete"
     echo ""
-    print_info "ご利用ありがとうございました！"
+    print_info "Thank you for using!"
     echo ""
 }
 
@@ -349,7 +348,7 @@ case "$MODE" in
         # Continue to installation
         ;;
     *)
-        print_error "無効なコマンド: $MODE"
+        print_error "Invalid command: $MODE"
         echo ""
         print_usage
         exit 1
@@ -373,27 +372,27 @@ cat << "EOF"
 EOF
 echo -e "${NC}"
 
-print_info "このスクリプトは gist-cache-rs のセットアップを行います"
+print_info "This script will set up gist-cache-rs"
 
 # Non-interactive mode notification
 if [ "$IS_INTERACTIVE" = false ]; then
     echo ""
-    print_warning "非対話モードで実行中（デフォルト設定を使用）"
-    print_info "カスタマイズする場合は環境変数を設定してください"
-    print_info "詳細: $0 help"
+    print_warning "Running in non-interactive mode (using default settings)"
+    print_info "Set environment variables to customize"
+    print_info "Details: $0 help"
     echo ""
 else
     echo ""
-    if ! confirm "セットアップを開始しますか？" "y"; then
-        echo "セットアップを中止しました"
+    if ! confirm "Start setup?" "y"; then
+        echo "Setup cancelled"
         exit 0
     fi
 fi
 
 # ============================================================================
-# Step 1: 前提条件の確認
+# Step 1: Prerequisites Check
 # ============================================================================
-print_header "Step 1: 前提条件の確認"
+print_header "Step 1: Prerequisites Check"
 
 PREREQUISITES_OK=true
 
@@ -406,14 +405,14 @@ if check_command "rustc" && check_command "cargo"; then
     # Check minimum version (1.85)
     RUST_VERSION=$(rustc --version | grep -oP '\d+\.\d+' | head -1)
     if [ "$(echo "$RUST_VERSION >= 1.85" | bc -l 2>/dev/null || echo 0)" -eq 1 ] 2>/dev/null; then
-        print_success "Rustのバージョンは要件を満たしています (>= 1.85)"
+        print_success "Rust version meets requirements (>= 1.85)"
     else
-        print_warning "Rustのバージョンが古い可能性があります（推奨: 1.85以降）"
+        print_warning "Rust version may be old (recommended: 1.85 or later)"
     fi
 else
-    print_error "Rustがインストールされていません"
-    print_info "インストール方法: https://rustup.rs/"
-    print_info "コマンド: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+    print_error "Rust is not installed"
+    print_info "Installation method: https://rustup.rs/"
+    print_info "Command: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
     PREREQUISITES_OK=false
 fi
 
@@ -426,65 +425,65 @@ if check_command "gh"; then
 
     # Check authentication
     if gh auth status &> /dev/null; then
-        print_success "GitHub CLI は認証済みです"
+        print_success "GitHub CLI is authenticated"
         GH_USER=$(gh api user --jq .login 2>/dev/null || echo "unknown")
-        echo -e "  ${BLUE}ユーザー:${NC} $GH_USER"
+        echo -e "  ${BLUE}User:${NC} $GH_USER"
     else
-        print_error "GitHub CLI が認証されていません"
-        print_info "認証コマンド: gh auth login"
+        print_error "GitHub CLI is not authenticated"
+        print_info "Authentication command: gh auth login"
         PREREQUISITES_OK=false
     fi
 else
-    print_error "GitHub CLI (gh) がインストールされていません"
-    print_info "インストール方法: https://cli.github.com/"
+    print_error "GitHub CLI (gh) is not installed"
+    print_info "Installation method: https://cli.github.com/"
     PREREQUISITES_OK=false
 fi
 
 echo ""
 
 if [ "$PREREQUISITES_OK" = false ]; then
-    print_error "前提条件が満たされていません"
+    print_error "Prerequisites not met"
     echo ""
     if [ "$IS_INTERACTIVE" = true ]; then
-        if confirm "それでも続行しますか？" "n"; then
-            print_warning "前提条件が不足した状態で続行します"
+        if confirm "Continue anyway?" "n"; then
+            print_warning "Continuing with insufficient prerequisites"
         else
-            echo "セットアップを中止しました"
+            echo "Setup cancelled"
             exit 1
         fi
     else
-        print_error "非対話モードでは前提条件が必須です"
+        print_error "Prerequisites are mandatory in non-interactive mode"
         exit 1
     fi
 fi
 
-print_success "前提条件チェック完了"
+print_success "Prerequisites Check Complete"
 
 # ============================================================================
-# Step 2: プロジェクトディレクトリの確認
+# Step 2: Project Directory Confirmation
 # ============================================================================
-print_header "Step 2: プロジェクトディレクトリの確認"
+print_header "Step 2: Project Directory Confirmation"
 
-# Cargo.tomlが存在するか確認
+# Check if Cargo.toml exists
 if [ -f "$SCRIPT_DIR/../Cargo.toml" ]; then
-    print_success "プロジェクトディレクトリを検出: $(dirname "$SCRIPT_DIR")"
+    print_success "Project directory detected: $(dirname "$SCRIPT_DIR")"
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 elif [ -f "$SCRIPT_DIR/Cargo.toml" ]; then
-    print_success "プロジェクトディレクトリを検出: $SCRIPT_DIR"
+    print_success "Project directory detected: $SCRIPT_DIR"
     PROJECT_DIR="$SCRIPT_DIR"
 elif [ -f "./Cargo.toml" ]; then
-    print_success "プロジェクトディレクトリを検出: $(pwd)"
+    print_success "Project directory detected: $(pwd)"
     PROJECT_DIR="$(pwd)"
 else
-    print_warning "Cargo.toml が見つかりません"
+    print_warning "Cargo.toml not found"
     echo ""
 
     # Non-interactive mode: automatically clone
     if [ "$IS_INTERACTIVE" = false ]; then
-        print_info "非対話モード: 自動的にリポジトリをクローンします"
+        print_info "Non-interactive mode: Automatically cloning repository"
         SHOULD_CLONE=true
     else
-        if confirm "GitHubからプロジェクトをクローンしますか？" "y"; then
+        if confirm "Clone project from GitHub?" "y"; then
             SHOULD_CLONE=true
         else
             SHOULD_CLONE=false
@@ -494,52 +493,52 @@ else
     if [ "$SHOULD_CLONE" = true ]; then
         # Check if git is available
         if ! command -v git &> /dev/null; then
-            print_error "git コマンドが見つかりません"
-            print_info "git をインストールしてから再実行してください"
+            print_error "git command not found"
+            print_info "Please install git and try again"
             exit 1
         fi
 
         # Create temp directory
         TEMP_DIR=$(mktemp -d)
-        print_info "一時ディレクトリ: $TEMP_DIR"
+        print_info "Temporary directory: $TEMP_DIR"
 
         # Clone repository
         echo ""
-        print_info "リポジトリをクローン中..."
+        print_info "Cloning repository..."
         if git clone "$REPO_URL" "$TEMP_DIR/gist-cache-rs"; then
-            print_success "クローンが完了しました"
+            print_success "Clone complete"
             PROJECT_DIR="$TEMP_DIR/gist-cache-rs"
             CLEANUP_TEMP=true
         else
-            print_error "クローンに失敗しました"
+            print_error "Clone failed"
             rm -rf "$TEMP_DIR"
             exit 1
         fi
     else
         echo ""
-        read -r -p "$(echo -e "${YELLOW}プロジェクトディレクトリのパスを入力してください: ${NC}")" PROJECT_DIR
+        read -r -p "$(echo -e "${YELLOW}Please enter the path to the project directory: ${NC}")" PROJECT_DIR
 
         if [ ! -f "$PROJECT_DIR/Cargo.toml" ]; then
-            print_error "指定されたディレクトリに Cargo.toml が見つかりません"
+            print_error "Cargo.toml not found in the specified directory"
             exit 1
         fi
     fi
 fi
 
 cd "$PROJECT_DIR" || exit 1
-print_info "作業ディレクトリ: $(pwd)"
+print_info "Working directory: $(pwd)"
 
 
 # ============================================================================
-# Step 3: ビルド
+# Step 3: Build
 # ============================================================================
-print_header "Step 3: ビルド"
+print_header "Step 3: Build"
 
 if [ "$IS_INTERACTIVE" = false ]; then
-    print_info "非対話モード: 自動的にリリースビルドを実行します"
+    print_info "Non-interactive mode: Automatically performing release build"
     SHOULD_BUILD=true
 else
-    if confirm "リリースビルドを実行しますか？" "y"; then
+    if confirm "Perform release build?" "y"; then
         SHOULD_BUILD=true
     else
         SHOULD_BUILD=false
@@ -548,173 +547,173 @@ fi
 
 if [ "$SHOULD_BUILD" = true ]; then
     echo ""
-    print_info "ビルドを開始します (時間がかかる場合があります)..."
+    print_info "Starting build (may take some time)..."
     echo ""
 
     if cargo build --release; then
-        print_success "ビルドが完了しました"
+        print_success "Build complete"
 
-        # バイナリのサイズを表示
+        # Display binary size
         if [ -f "target/release/gist-cache-rs" ]; then
             BINARY_SIZE=$(du -h target/release/gist-cache-rs | cut -f1)
-            print_info "バイナリサイズ: $BINARY_SIZE"
+            print_info "Binary size: $BINARY_SIZE"
         fi
     else
-        print_error "ビルドに失敗しました"
+        print_error "Build failed"
         exit 1
     fi
 else
-    print_warning "ビルドをスキップしました"
+    print_warning "Build skipped"
 
     if [ ! -f "target/release/gist-cache-rs" ]; then
-        print_error "ビルド済みバイナリが見つかりません"
+        print_error "Built binary not found"
         exit 1
     fi
 fi
 
 # ============================================================================
-# Step 4: インストール
+# Step 4: Installation
 # ============================================================================
-print_header "Step 4: インストール"
+print_header "Step 4: Installation"
 
 if [ "$IS_INTERACTIVE" = false ]; then
-    print_info "非対話モード: インストール方法 ${INSTALL_METHOD} を使用"
+    print_info "Non-interactive mode: Using installation method ${INSTALL_METHOD}"
     INSTALL_CHOICE="$INSTALL_METHOD"
 else
-    echo "インストール方法を選択してください:"
-    echo "  1) cargo install (推奨) - ~/.cargo/bin にインストール"
-    echo "  2) システムディレクトリ - /usr/local/bin にコピー (要sudo)"
-    echo "  3) ユーザーディレクトリ - ~/bin にコピー"
-    echo "  4) シンボリックリンク - 開発者向け"
-    echo "  5) スキップ"
+    echo "Select installation method:"
+    echo "  1) cargo install (recommended) - Install to ~/.cargo/bin"
+    echo "  2) System directory - Copy to /usr/local/bin (sudo required)"
+    echo "  3) User directory - Copy to ~/bin"
+    echo "  4) Symbolic link - For developers"
+    echo "  5) Skip"
     echo ""
 
-    read -r -p "$(echo -e "${YELLOW}選択 [1-5]: ${NC}")" INSTALL_CHOICE
+    read -r -p "$(echo -e "${YELLOW}Selection [1-5]: ${NC}")" INSTALL_CHOICE
 
     # Validate input
     if [[ ! "$INSTALL_CHOICE" =~ ^[1-5]$ ]]; then
-        print_error "無効な選択です"
+        print_error "Invalid selection"
         exit 1
     fi
 fi
 
 case $INSTALL_CHOICE in
     1)
-        print_info "cargo install を実行します..."
+        print_info "Performing cargo install..."
         if cargo install --path .; then
-            print_success "インストールが完了しました"
-            print_info "インストール先: ~/.cargo/bin/gist-cache-rs"
+            print_success "Installation complete"
+            print_info "Installation destination: ~/.cargo/bin/gist-cache-rs"
 
-            # PATH確認
+            # PATH check
             if echo "$PATH" | grep -q ".cargo/bin"; then
-                print_success "$HOME/.cargo/bin はPATHに含まれています"
+                print_success "$HOME/.cargo/bin is included in PATH"
             else
-                print_warning "$HOME/.cargo/bin がPATHに含まれていません"
-                print_info "以下を ~/.bashrc または ~/.zshrc に追加してください:"
+                print_warning "$HOME/.cargo/bin is not included in PATH"
+                print_info "Add the following to ~/.bashrc or ~/.zshrc:"
                 echo -e "  ${CYAN}export PATH=\"\$HOME/.cargo/bin:\$PATH\"${NC}"
             fi
         else
-            print_error "インストールに失敗しました"
+            print_error "Installation failed"
             exit 1
         fi
         ;;
     2)
-        print_info "システムディレクトリにコピーします..."
+        print_info "Copying to system directory..."
         if sudo cp target/release/gist-cache-rs /usr/local/bin/; then
-            print_success "インストールが完了しました"
-            print_info "インストール先: /usr/local/bin/gist-cache-rs"
+            print_success "Installation complete"
+            print_info "Installation destination: /usr/local/bin/gist-cache-rs"
         else
-            print_error "インストールに失敗しました"
+            print_error "Installation failed"
             exit 1
         fi
         ;;
     3)
-        print_info "ユーザーディレクトリにコピーします..."
+        print_info "Copying to user directory..."
         mkdir -p ~/bin
         if cp target/release/gist-cache-rs ~/bin/; then
-            print_success "インストールが完了しました"
-            print_info "インストール先: ~/bin/gist-cache-rs"
+            print_success "Installation complete"
+            print_info "Installation destination: ~/bin/gist-cache-rs"
 
-            # PATH確認
+            # PATH check
             if echo "$PATH" | grep -q "$HOME/bin"; then
-                print_success "$HOME/bin はPATHに含まれています"
+                print_success "$HOME/bin is included in PATH"
             else
-                print_warning "$HOME/bin がPATHに含まれていません"
-                print_info "以下を ~/.bashrc または ~/.zshrc に追加してください:"
+                print_warning "$HOME/bin is not included in PATH"
+                print_info "Add the following to ~/.bashrc or ~/.zshrc:"
                 echo -e "  ${CYAN}export PATH=\"\$HOME/bin:\$PATH\"${NC}"
             fi
         else
-            print_error "インストールに失敗しました"
+            print_error "Installation failed"
             exit 1
         fi
         ;;
     4)
-        print_info "シンボリックリンクを作成します..."
+        print_info "Creating symbolic link..."
 
         if [ "$IS_INTERACTIVE" = false ]; then
             # Non-interactive: default to ~/bin
             LINK_CHOICE=2
         else
-            echo "  1) /usr/local/bin (要sudo)"
+            echo "  1) /usr/local/bin (sudo required)"
             echo "  2) ~/bin"
-            read -r -p "$(echo -e "${YELLOW}選択 [1-2]: ${NC}")" LINK_CHOICE
+            read -r -p "$(echo -e "${YELLOW}Selection [1-2]: ${NC}")" LINK_CHOICE
         fi
 
         case $LINK_CHOICE in
             1)
                 if sudo ln -sf "$(pwd)/target/release/gist-cache-rs" /usr/local/bin/gist-cache-rs; then
-                    print_success "シンボリックリンクを作成しました"
-                    print_info "リンク先: /usr/local/bin/gist-cache-rs"
+                    print_success "Symbolic link created"
+                    print_info "Link destination: /usr/local/bin/gist-cache-rs"
                 fi
                 ;;
             2)
                 mkdir -p ~/bin
                 if ln -sf "$(pwd)/target/release/gist-cache-rs" ~/bin/gist-cache-rs; then
-                    print_success "シンボリックリンクを作成しました"
-                    print_info "リンク先: ~/bin/gist-cache-rs"
+                    print_success "Symbolic link created"
+                    print_info "Link destination: ~/bin/gist-cache-rs"
                 fi
                 ;;
         esac
         ;;
     5)
-        print_warning "インストールをスキップしました"
+        print_warning "Installation skipped"
         ;;
     *)
-        print_error "無効な選択です"
+        print_error "Invalid selection"
         exit 1
         ;;
 esac
 
 # ============================================================================
-# Step 5: インストール確認
+# Step 5: Installation Confirmation
 # ============================================================================
-print_header "Step 5: インストール確認"
+print_header "Step 5: Installation Confirmation"
 
 if command -v gist-cache-rs &> /dev/null; then
-    print_success "gist-cache-rs コマンドが利用可能です"
+    print_success "gist-cache-rs command is available"
     check_version "gist-cache-rs" "--version"
-    print_info "パス: $(which gist-cache-rs)"
+    print_info "Path: $(which gist-cache-rs)"
 else
-    print_warning "gist-cache-rs コマンドが見つかりません"
-    print_info "シェルを再起動するか、PATHを更新してください"
+    print_warning "gist-cache-rs command not found"
+    print_info "Please restart your shell or update your PATH"
 fi
 
 # ============================================================================
-# Step 6: 初回キャッシュ作成
+# Step 6: Initial Cache Creation
 # ============================================================================
-print_header "Step 6: 初回キャッシュ作成"
+print_header "Step 6: Initial Cache Creation"
 
 if [ "$SKIP_CACHE_UPDATE" = "true" ]; then
-    print_info "環境変数により、キャッシュ更新をスキップします"
+    print_info "Skipping cache update due to environment variable"
 elif ! command -v gist-cache-rs &> /dev/null; then
-    print_warning "コマンドが利用できないため、キャッシュ作成をスキップします"
-    print_info "後で 'gist-cache-rs update' を実行してください"
+    print_warning "Skipping cache creation because command is unavailable"
+    print_info "Please run 'gist-cache-rs update' later"
 else
     if [ "$IS_INTERACTIVE" = false ]; then
-        print_info "非対話モード: 自動的にキャッシュ更新を実行します"
+        print_info "Non-interactive mode: Automatically performing cache update"
         SHOULD_UPDATE=true
     else
-        if confirm "初回キャッシュ更新を実行しますか？" "y"; then
+        if confirm "Perform initial cache update?" "y"; then
             SHOULD_UPDATE=true
         else
             SHOULD_UPDATE=false
@@ -723,35 +722,35 @@ else
 
     if [ "$SHOULD_UPDATE" = true ]; then
         echo ""
-        print_info "キャッシュ更新を開始します..."
+        print_info "Starting cache update..."
         echo ""
 
         if gist-cache-rs update --verbose; then
-            print_success "キャッシュ更新が完了しました"
+            print_success "Cache update complete"
         else
-            print_error "キャッシュ更新に失敗しました"
+            print_error "Cache update failed"
         fi
     else
-        print_info "後で 'gist-cache-rs update' を実行してください"
+        print_info "Please run 'gist-cache-rs update' later"
     fi
 fi
 
 # ============================================================================
-# Step 7: エイリアス設定（オプション）
+# Step 7: Alias Configuration (Optional)
 # ============================================================================
-print_header "Step 7: エイリアス設定（オプション）"
+print_header "Step 7: Alias Configuration (Optional)"
 
 if [ "$SKIP_ALIAS" = "true" ]; then
-    print_info "環境変数により、エイリアス設定をスキップします"
+    print_info "Skipping alias configuration due to environment variable"
 else
     if [ "$IS_INTERACTIVE" = false ]; then
-        # 非対話モード
+        # Non-interactive mode
         if [ "$AUTO_ALIAS" = "true" ]; then
-            # 自動設定を実行
-            print_info "非対話モード: エイリアス自動設定を実行します"
+            # Execute automatic configuration
+            print_info "Non-interactive mode: Performing automatic alias configuration"
             echo ""
 
-            # シェルの検出（環境変数SHELLから判定）
+            # Detect shell (judging from SHELL environment variable)
             if [[ "$SHELL" == *"zsh"* ]]; then
                 SHELL_RC="$HOME/.zshrc"
             elif [[ "$SHELL" == *"bash"* ]]; then
@@ -760,13 +759,13 @@ else
                 SHELL_RC="$HOME/.bashrc"
             fi
 
-            print_info "設定ファイル: $SHELL_RC"
-            print_info "設定するエイリアス:"
+            print_info "Configuration file: $SHELL_RC"
+            print_info "Aliases to be set:"
             echo -e "  ${CYAN}alias ${ALIAS_UPDATE}='gist-cache-rs update'${NC}"
             echo -e "  ${CYAN}alias ${ALIAS_RUN}='gist-cache-rs run'${NC}"
             echo ""
 
-            # 既存のエイリアスをチェック
+            # Check existing aliases
             UPDATE_EXISTS=false
             RUN_EXISTS=false
 
@@ -779,61 +778,61 @@ else
                 fi
             fi
 
-            # エイリアスを追加（既存のものはスキップ）
+            # Add aliases (skip existing ones)
             ADDED=false
             SKIPPED=false
 
-            # マーカーコメントを追加（新規追加がある場合のみ）
+            # Add marker comment (only if new additions)
             if [ "$UPDATE_EXISTS" = false ] || [ "$RUN_EXISTS" = false ]; then
                 echo "" >> "$SHELL_RC"
                 echo "# gist-cache-rs aliases: ${ALIAS_UPDATE}, ${ALIAS_RUN} (added on $(date +%Y-%m-%d))" >> "$SHELL_RC"
             fi
 
-            # update エイリアスを追加
+            # Add update alias
             if [ "$UPDATE_EXISTS" = true ]; then
-                print_warning "エイリアス '${ALIAS_UPDATE}' は既に存在します（スキップ）"
+                print_warning "Alias '${ALIAS_UPDATE}' already exists (skipped)"
                 SKIPPED=true
             else
                 echo "alias ${ALIAS_UPDATE}='gist-cache-rs update'" >> "$SHELL_RC"
                 ADDED=true
             fi
 
-            # run エイリアスを追加
+            # Add run alias
             if [ "$RUN_EXISTS" = true ]; then
-                print_warning "エイリアス '${ALIAS_RUN}' は既に存在します（スキップ）"
+                print_warning "Alias '${ALIAS_RUN}' already exists (skipped)"
                 SKIPPED=true
             else
                 echo "alias ${ALIAS_RUN}='gist-cache-rs run'" >> "$SHELL_RC"
                 ADDED=true
             fi
 
-            # 結果を表示
+            # Display results
             if [ "$ADDED" = true ]; then
-                print_success "エイリアスを追加しました"
-                print_info "反映するには以下を実行してください:"
+                print_success "Aliases added"
+                print_info "To reflect changes, run:"
                 echo -e "  ${CYAN}source $SHELL_RC${NC}"
             fi
             if [ "$SKIPPED" = true ]; then
-                print_info "既存のエイリアスは保持されました"
+                print_info "Existing aliases retained"
             fi
         else
-            # 自動設定しない場合は手動設定を案内
-            print_info "非対話モード: エイリアス設定をスキップします"
-            print_info "手動で設定する場合:"
+            # Guide manual configuration if not auto-configured
+            print_info "Non-interactive mode: Skipping alias configuration"
+            print_info "If configuring manually:"
             echo -e "  ${CYAN}alias gcrsu='gist-cache-rs update'${NC}"
             echo -e "  ${CYAN}alias gcrsr='gist-cache-rs run'${NC}"
             echo ""
-            print_info "または、環境変数で自動設定:"
+            print_info "Or, for automatic configuration with environment variables:"
             echo -e "  ${CYAN}GIST_CACHE_AUTO_ALIAS=true${NC}"
         fi
-    elif confirm "便利なエイリアスを設定しますか？" "y"; then
+    elif confirm "Configure convenient aliases?" "y"; then
         echo ""
-        echo "推奨エイリアス:"
+        echo "Recommended aliases:"
         echo -e "  ${CYAN}alias gcrsu='gist-cache-rs update'${NC}"
         echo -e "  ${CYAN}alias gcrsr='gist-cache-rs run'${NC}"
         echo ""
 
-        # シェルの検出
+        # Detect shell
         if [ -n "$BASH_VERSION" ]; then
             SHELL_RC="$HOME/.bashrc"
         elif [ -n "$ZSH_VERSION" ]; then
@@ -842,40 +841,40 @@ else
             SHELL_RC="$HOME/.bashrc"
         fi
 
-        print_info "設定ファイル: $SHELL_RC"
+        print_info "Configuration file: $SHELL_RC"
         echo ""
 
-        # 推奨エイリアスを使うか確認
-        if confirm "推奨エイリアス名（gcrsu, gcrsr）を使用しますか？" "y"; then
+        # Confirm use of recommended aliases
+        if confirm "Use recommended alias names (gcrsu, gcrsr)?" "y"; then
             ALIAS_UPDATE="gcrsu"
             ALIAS_RUN="gcrsr"
         else
-            # カスタムエイリアス名を入力
+            # Enter custom alias names
             echo ""
-            print_info "カスタムエイリアス名を入力してください"
+            print_info "Enter custom alias names"
             echo ""
 
-            read -r -p "$(echo -e "${YELLOW}gist-cache-rs update 用のエイリアス名: ${NC}")" ALIAS_UPDATE
+            read -r -p "$(echo -e "${YELLOW}Alias name for gist-cache-rs update: ${NC}")" ALIAS_UPDATE
             if [ -z "$ALIAS_UPDATE" ]; then
                 ALIAS_UPDATE="gcrsu"
-                print_warning "入力がないため、デフォルト名 'gcrsu' を使用します"
+                print_warning "No input, using default name 'gcrsu'"
             fi
 
-            read -r -p "$(echo -e "${YELLOW}gist-cache-rs run 用のエイリアス名: ${NC}")" ALIAS_RUN
+            read -r -p "$(echo -e "${YELLOW}Alias name for gist-cache-rs run: ${NC}")" ALIAS_RUN
             if [ -z "$ALIAS_RUN" ]; then
                 ALIAS_RUN="gcrsr"
-                print_warning "入力がないため、デフォルト名 'gcrsr' を使用します"
+                print_warning "No input, using default name 'gcrsr'"
             fi
 
             echo ""
-            print_info "設定するエイリアス:"
+            print_info "Aliases to be set:"
             echo -e "  ${CYAN}alias ${ALIAS_UPDATE}='gist-cache-rs update'${NC}"
             echo -e "  ${CYAN}alias ${ALIAS_RUN}='gist-cache-rs run'${NC}"
         fi
 
         echo ""
-        if confirm "これらのエイリアスを $SHELL_RC に追加しますか？" "y"; then
-            # 既存のエイリアスをチェック
+        if confirm "Add these aliases to $SHELL_RC?" "y"; then
+            # Check existing aliases
             UPDATE_EXISTS=false
             RUN_EXISTS=false
 
@@ -888,88 +887,88 @@ else
                 fi
             fi
 
-            # エイリアスを追加（既存のものはスキップ）
+            # Add aliases (skip existing ones)
             ADDED=false
             SKIPPED=false
 
-            # マーカーコメントを追加（新規追加がある場合のみ）
+            # Add marker comment (only if new additions)
             if [ "$UPDATE_EXISTS" = false ] || [ "$RUN_EXISTS" = false ]; then
                 echo "" >> "$SHELL_RC"
                 echo "# gist-cache-rs aliases: ${ALIAS_UPDATE}, ${ALIAS_RUN} (added on $(date +%Y-%m-%d))" >> "$SHELL_RC"
             fi
 
-            # update エイリアスを追加
+            # Add update alias
             if [ "$UPDATE_EXISTS" = true ]; then
-                print_warning "エイリアス '${ALIAS_UPDATE}' は既に存在します（スキップ）"
+                print_warning "Alias '${ALIAS_UPDATE}' already exists (skipped)"
                 SKIPPED=true
             else
                 echo "alias ${ALIAS_UPDATE}='gist-cache-rs update'" >> "$SHELL_RC"
                 ADDED=true
             fi
 
-            # run エイリアスを追加
+            # Add run alias
             if [ "$RUN_EXISTS" = true ]; then
-                print_warning "エイリアス '${ALIAS_RUN}' は既に存在します（スキップ）"
+                print_warning "Alias '${ALIAS_RUN}' already exists (skipped)"
                 SKIPPED=true
             else
                 echo "alias ${ALIAS_RUN}='gist-cache-rs run'" >> "$SHELL_RC"
                 ADDED=true
             fi
 
-            # 結果を表示
+            # Display results
             if [ "$ADDED" = true ]; then
-                print_success "エイリアスを追加しました"
+                print_success "Aliases added"
             fi
             if [ "$SKIPPED" = true ]; then
-                print_info "既存のエイリアスは保持されました"
+                print_info "Existing aliases retained"
             fi
 
             if [ "$ADDED" = true ]; then
-                print_info "反映するには以下を実行してください:"
+                print_info "To reflect changes, run:"
                 echo -e "  ${CYAN}source $SHELL_RC${NC}"
             fi
         else
-            print_info "手動で設定する場合は、上記のエイリアスをシェル設定ファイルに追加してください"
+            print_info "If configuring manually, add the above aliases to your shell configuration file"
         fi
     else
-        print_info "エイリアス設定をスキップしました"
+        print_info "Alias configuration skipped"
     fi
 fi
 
 # ============================================================================
-# 完了
+# Complete
 # ============================================================================
-print_header "セットアップ完了"
+print_header "Setup Complete"
 
-print_success "gist-cache-rs のセットアップが完了しました！"
+print_success "gist-cache-rs setup is complete!"
 echo ""
-echo -e "${BOLD}次のステップ:${NC}"
+echo -e "${BOLD}Next Steps:${NC}"
 echo ""
-echo "1. コマンドの確認:"
+echo "1. Command verification:"
 echo -e "   ${CYAN}gist-cache-rs --version${NC}"
 echo -e "   ${CYAN}gist-cache-rs --help${NC}"
 echo ""
-echo "2. キャッシュ更新（まだの場合）:"
+echo "2. Cache update (if not already done):"
 echo -e "   ${CYAN}gist-cache-rs update${NC}"
 echo ""
-echo "3. Gistを検索して実行:"
+echo "3. Search and run Gist:"
 echo -e "   ${CYAN}gist-cache-rs run --preview keyword${NC}"
 echo -e "   ${CYAN}gist-cache-rs run keyword bash${NC}"
 echo ""
-echo "詳細は以下のドキュメントを参照してください:"
-echo "  • README.md - 機能の詳細"
-echo "  • docs/QUICKSTART.md - クイックスタートガイド"
-echo "  • docs/EXAMPLES.md - 実例集"
+echo "Refer to the following documentation for details:"
+echo "  • README.md - Feature details"
+echo "  • docs/QUICKSTART.md - Quickstart Guide"
+echo "  • docs/EXAMPLES.md - Examples Collection"
 echo ""
-print_info "問題が発生した場合は、docs/INSTALL.md を確認してください"
+print_info "If you encounter any issues, please check docs/INSTALL.md"
 echo ""
 
 # Cleanup temporary directory if created
 if [ "${CLEANUP_TEMP:-false}" = true ] && [ -n "$TEMP_DIR" ]; then
-    print_info "一時ディレクトリをクリーンアップ中..."
+    print_info "Cleaning up temporary directory..."
     cd "$HOME" || exit 1
     rm -rf "$TEMP_DIR"
-    print_success "クリーンアップが完了しました"
+    print_success "Cleanup complete"
     echo ""
 fi
 
