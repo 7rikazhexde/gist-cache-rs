@@ -32,7 +32,7 @@ fi
 # GIST_CACHE_INSTALL_METHOD: 1-5 (default: 1 = cargo install)
 # GIST_CACHE_SKIP_CACHE: true/false (default: false)
 # GIST_CACHE_SKIP_ALIAS: true/false (default: false)
-# GIST_CACHE_AUTO_ALIAS: true/false (default: false) - 非対話モードでエイリアス自動設定
+# GIST_CACHE_AUTO_ALIAS: true/false (default: false) - Auto-configure aliases in non-interactive mode
 # GIST_CACHE_ALIAS_UPDATE: alias name for update (default: gcrsu)
 # GIST_CACHE_ALIAS_RUN: alias name for run (default: gcrsr)
 INSTALL_METHOD="${GIST_CACHE_INSTALL_METHOD:-1}"
@@ -45,38 +45,38 @@ ALIAS_RUN="${GIST_CACHE_ALIAS_RUN:-gcrsr}"
 # Functions
 print_usage() {
     cat << EOF
-使用方法: $0 [COMMAND]
+Usage: $0 [COMMAND]
 
 COMMAND:
-  install     インストール（デフォルト）
-  uninstall   アンインストール
-  help        このヘルプを表示
+  install     Install (default)
+  uninstall   Uninstall
+  help        Show this help
 
-インストール例:
-  # ローカルで実行
+Installation examples:
+  # Run locally
   ./setup.sh install
 
-  # curlで直接実行（非対話モード）
+  # Run directly with curl (non-interactive mode)
   curl -sSL https://raw.githubusercontent.com/7rikazhexde/gist-cache-rs/main/script/setup.sh | bash
 
-  # curlで実行（環境変数でカスタマイズ）
+  # Run with curl (customize with environment variables)
   curl -sSL https://raw.githubusercontent.com/7rikazhexde/gist-cache-rs/main/script/setup.sh | GIST_CACHE_INSTALL_METHOD=1 bash
 
-  # アンインストール
+  # Uninstall
   curl -sSL https://raw.githubusercontent.com/7rikazhexde/gist-cache-rs/main/script/setup.sh | bash -s uninstall
 
-環境変数:
-  GIST_CACHE_INSTALL_METHOD  インストール方法 (1-5, デフォルト: 1)
-    1: cargo install (推奨)
-    2: システムディレクトリ (/usr/local/bin)
-    3: ユーザーディレクトリ (~/bin)
-    4: シンボリックリンク
-    5: スキップ
-  GIST_CACHE_SKIP_CACHE      キャッシュ更新をスキップ (true/false, デフォルト: false)
-  GIST_CACHE_SKIP_ALIAS      エイリアス設定をスキップ (true/false, デフォルト: false)
-  GIST_CACHE_AUTO_ALIAS      非対話モードでエイリアス自動設定 (true/false, デフォルト: false)
-  GIST_CACHE_ALIAS_UPDATE    updateコマンドのエイリアス名 (デフォルト: gcrsu)
-  GIST_CACHE_ALIAS_RUN       runコマンドのエイリアス名 (デフォルト: gcrsr)
+Environment variables:
+  GIST_CACHE_INSTALL_METHOD  Installation method (1-5, default: 1)
+    1: cargo install (recommended)
+    2: System directory (/usr/local/bin)
+    3: User directory (~/bin)
+    4: Symbolic link
+    5: Skip
+  GIST_CACHE_SKIP_CACHE      Skip cache update (true/false, default: false)
+  GIST_CACHE_SKIP_ALIAS      Skip alias configuration (true/false, default: false)
+  GIST_CACHE_AUTO_ALIAS      Auto-configure aliases in non-interactive mode (true/false, default: false)
+  GIST_CACHE_ALIAS_UPDATE    Alias name for update command (default: gcrsu)
+  GIST_CACHE_ALIAS_RUN       Alias name for run command (default: gcrsr)
 
 EOF
 }
@@ -136,7 +136,7 @@ confirm() {
 
 check_command() {
     if command -v "$1" &> /dev/null; then
-        print_success "$1 がインストールされています ($(command -v "$1"))"
+        print_success "$1 is installed ($(command -v "$1"))"
         return 0
     else
         print_error "$1 が見つかりません"
