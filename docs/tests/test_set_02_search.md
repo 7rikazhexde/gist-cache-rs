@@ -1,242 +1,242 @@
-# gist-cache-rs 機能検証テスト設計書（テストセット2：検索機能）
+# gist-cache-rs Functional Verification Test Design Document (Test Set 2: Search Functionality)
 
-## テスト目的
+## Test Objective
 
-gist-cache-rsの検索機能が設計通りに正しく動作することを確認する。
+To confirm that the gist-cache-rs search functionality operates correctly as designed.
 
-## テスト対象機能
+## Target Functionality
 
-- Auto検索（デフォルト）
-- ID直接指定検索（--id）
-- ファイル名検索（--filename）
-- 説明文検索（--description）
-- 複数候補からの選択UI
-- 検索結果0件時のエラーハンドリング
+- Auto Search (default)
+- Direct ID Specification Search (--id)
+- Filename Search (--filename)
+- Description Search (--description)
+- Selection UI from multiple candidates
+- Error handling for 0 search results
 
-## 前提条件
+## Prerequisites
 
-- gist-cache-rsがインストール済み
-- GitHub CLIが認証済み
-- メタデータキャッシュが最新（`gist-cache-rs update`実行済み）
-- 複数のテスト用Gistが存在する
+- gist-cache-rs is installed
+- GitHub CLI is authenticated
+- Metadata cache is up-to-date (`gist-cache-rs update` has been executed)
+- Multiple test Gists exist
 
-## テストケース一覧
+## Test Case List
 
-### TC1: Auto検索（デフォルト）
+### TC1: Auto Search (default)
 
-**目的**: キーワードによる自動検索が正しく動作することを確認
+**Objective**: Confirm that automatic search by keyword works correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args.sh を含む複数のGistが存在する
+- Multiple Gists including hello_args.sh exist
 
-**手順**:
+**Steps**:
 
-1. キーワード「hello」で検索: `gist-cache-rs run hello bash`
-2. 検索結果を確認
-3. 複数候補が表示された場合、番号を選択して実行
+1. Search by keyword "hello": `gist-cache-rs run hello bash`
+2. Check search results.
+3. If multiple candidates are displayed, select a number and execute.
 
-**期待結果**:
+**Expected Result**:
 
-- ファイル名または説明文に「hello」を含むGistが表示される
-- 1件の場合は直接実行、複数件の場合は選択UIが表示される
-- 選択したGistが正しく実行される
+- Gists containing "hello" in filename or description are displayed.
+- If 1 item, executed directly; if multiple, selection UI is displayed.
+- Selected Gist is executed correctly.
 
-**検証項目**:
+**Verification Items**:
 
-- ファイル名での部分一致検索が動作する
-- 説明文での部分一致検索が動作する
-- 大文字小文字を区別しない検索が動作する
-
----
-
-### TC2: ID直接指定（--id）
-
-**目的**: Gist IDを直接指定した検索が正しく動作することを確認
-
-**前提条件**:
-
-- hello_args.sh のGist ID（7bcb324e9291fa350334df8efb7f0deb）が分かっている
-
-**手順**:
-
-1. Gist IDを直接指定: `gist-cache-rs run --id 7bcb324e9291fa350334df8efb7f0deb bash test`
-2. 実行結果を確認
-
-**期待結果**:
-
-- 検索プロセスをスキップして、直接指定されたGistが実行される
-- 「ID指定モード」のメッセージが表示される
-- 複数候補の選択UIは表示されない
-
-**検証項目**:
-
-- 正確なGist IDで直接アクセスできる
-- ID指定モードのメッセージが表示される
-- 他の検索オプションと併用できない（エラーまたは無視される）
+- Partial match search by filename works.
+- Partial match search by description works.
+- Case-insensitive search works.
 
 ---
 
-### TC3: ファイル名検索（--filename）
+### TC2: Direct ID Specification (--id)
 
-**目的**: ファイル名に限定した検索が正しく動作することを確認
+**Objective**: Confirm that search by directly specifying Gist ID works correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args.sh を含む複数のGistが存在する
+- Gist ID for hello_args.sh (7bcb324e9291fa350334df8efb7f0deb) is known.
 
-**手順**:
+**Steps**:
 
-1. ファイル名で検索: `gist-cache-rs run --filename hello_args.sh bash`
-2. 検索結果を確認
-3. 実行結果を確認
+1. Directly specify Gist ID: `gist-cache-rs run --id 7bcb324e9291fa350334df8efb7f0deb bash test`
+2. Check execution result.
 
-**期待結果**:
+**Expected Result**:
 
-- ファイル名が「hello_args.sh」に一致するGistのみが検索される
-- 説明文に「hello_args.sh」が含まれていても、ファイル名が異なるGistは除外される
-- 部分一致で検索される（例: 「hello」でも「hello_args.sh」が見つかる）
+- Specified Gist is executed directly, skipping the search process.
+- "ID specification mode" message is displayed.
+- Multiple candidate selection UI is not displayed.
 
-**検証項目**:
+**Verification Items**:
 
-- ファイル名での検索が正しく動作する
-- 説明文は検索対象外になる
-- 複数マッチした場合は選択UIが表示される
-
----
-
-### TC4: 説明文検索（--description）
-
-**目的**: 説明文に限定した検索が正しく動作することを確認
-
-**前提条件**:
-
-- 説明文に特定のキーワード（例: 「#bash」「#test」）を含むGistが存在する
-
-**手順**:
-
-1. 説明文で検索: `gist-cache-rs run --description "#bash" bash`
-2. 検索結果を確認
-3. 複数候補から1つを選択して実行
-
-**期待結果**:
-
-- 説明文に「#bash」を含むGistのみが検索される
-- ファイル名に「#bash」が含まれていても、説明文に含まれていなければ除外される
-- 部分一致で検索される
-
-**検証項目**:
-
-- 説明文での検索が正しく動作する
-- ファイル名は検索対象外になる
-- タグ検索（「#bash」など）が有効に機能する
+- Direct access with accurate Gist ID is possible.
+- "ID specification mode" message is displayed.
+- Cannot be used in conjunction with other search options (error or ignored).
 
 ---
 
-### TC5: 複数候補からの選択
+### TC3: Filename Search (--filename)
 
-**目的**: 複数の検索結果から番号で選択するUIが正しく動作することを確認
+**Objective**: Confirm that search limited to filename works correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- 「hello」で検索すると複数のGistがヒットする
+- Multiple Gists including hello_args.sh exist.
 
-**手順**:
+**Steps**:
 
-1. 複数ヒットするキーワードで検索: `gist-cache-rs run hello bash`
-2. 表示される候補リストを確認
-3. 番号を選択（例: 4を入力してEnter）
-4. 選択したGistが実行されることを確認
+1. Search by filename: `gist-cache-rs run --filename hello_args.sh bash`
+2. Check search results.
+3. Check execution result.
 
-**期待結果**:
+**Expected Result**:
 
-- 複数のGistが番号付きリストで表示される
-- 各Gistの説明文とファイル名が表示される
-- 「番号を選択してください (1-N):」のプロンプトが表示される
-- 入力した番号に対応するGistが実行される
+- Only Gists with filename matching "hello_args.sh" are searched.
+- Gists with "hello_args.sh" in description but different filename are excluded.
+- Partial match search (e.g., "hello" finds "hello_args.sh") works.
 
-**検証項目**:
+**Verification Items**:
 
-- 番号付きリストが正しく表示される
-- 有効な番号を入力すると対応するGistが実行される
-- 不正な番号（0、範囲外、文字列など）を入力した場合のエラーハンドリング
+- Filename search works correctly.
+- Description is not searched.
+- If multiple matches, selection UI is displayed.
 
 ---
 
-### TC6: 検索結果0件のエラーハンドリング
+### TC4: Description Search (--description)
 
-**目的**: 検索結果が見つからない場合のエラーハンドリングが正しく動作することを確認
+**Objective**: Confirm that search limited to description works correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- 存在しないキーワード（例: 「nonexistent_gist_xyz」）を使用
+- Gists containing specific keywords in description (e.g., "#bash", "#test") exist.
 
-**手順**:
+**Steps**:
 
-1. 存在しないキーワードで検索: `gist-cache-rs run nonexistent_gist_xyz bash`
-2. エラーメッセージを確認
-3. 終了コードを確認
+1. Search by description: `gist-cache-rs run --description "#bash" bash`
+2. Check search results.
+3. Select one from multiple candidates and execute.
 
-**期待結果**:
+**Expected Result**:
 
-- 「No search results for query: nonexistent_gist_xyz」のようなエラーメッセージが表示される
-- プログラムが適切なエラーコード（非0）で終了する
-- プログラムがクラッシュしない
+- Only Gists containing "#bash" in description are searched.
+- If "#bash" is in filename but not description, Gist is excluded.
+- Partial match search works.
 
-**検証項目**:
+**Verification Items**:
 
-- 明確なエラーメッセージが表示される
-- エラーコードが非0
-- メモリリークやクラッシュが発生しない
-
----
-
-## 追加テストケース
-
-### TC7: 特殊文字を含む検索
-
-**目的**: 特殊文字を含むキーワードで検索が正しく動作することを確認
-
-**手順**:
-
-1. 特殊文字を含むキーワードで検索: `gist-cache-rs run "data_analysis.py" bash`
-
-**期待結果**:
-
-- アンダースコアやピリオドを含むファイル名が正しく検索される
-- 特殊文字がエスケープされずに検索される
+- Description search works correctly.
+- Filename is not searched.
+- Tag search (e.g., "#bash") works effectively.
 
 ---
 
-### TC8: 空白を含む検索
+### TC5: Selection from Multiple Candidates
 
-**目的**: 空白を含む説明文の検索が正しく動作することを確認
+**Objective**: Confirm that the UI for selecting by number from multiple search results works correctly.
 
-**手順**:
+**Prerequisites**:
 
-1. 空白を含むキーワードで検索: `gist-cache-rs run --description "Test Script" bash`
+- Searching for "hello" hits multiple Gists.
 
-**期待結果**:
+**Steps**:
 
-- 空白を含む説明文が正しく検索される
-- 引用符で囲んだキーワードが正しく処理される
+1. Search with a keyword that hits multiple results: `gist-cache-rs run hello bash`
+2. Check the displayed candidate list.
+3. Select a number (e.g., enter 4 and press Enter).
+4. Confirm that the selected Gist is executed.
+
+**Expected Result**:
+
+- Multiple Gists are displayed in a numbered list.
+- Description and filename of each Gist are displayed.
+- "Select a number (1-N):" prompt is displayed.
+- Gist corresponding to the entered number is executed.
+
+**Verification Items**:
+
+- Numbered list is displayed correctly.
+- Entering a valid number executes the corresponding Gist.
+- Error handling for invalid numbers (0, out of range, string, etc.).
 
 ---
 
-## テスト実行順序
+### TC6: Error Handling for 0 Search Results
 
-1. TC1: Auto検索（デフォルト）
-2. TC2: ID直接指定（--id）
-3. TC3: ファイル名検索（--filename）
-4. TC4: 説明文検索（--description）
-5. TC5: 複数候補からの選択
-6. TC6: 検索結果0件のエラーハンドリング
-7. TC7: 特殊文字を含む検索（オプション）
-8. TC8: 空白を含む検索（オプション）
+**Objective**: Confirm that error handling when no search results are found works correctly.
 
-## 注意事項
+**Prerequisites**:
 
-- TC5は対話的な入力が必要なため、自動化が困難
-- TC6はエラーケースのため、正常系のテスト後に実施
-- 検索結果は環境（所有しているGist）によって異なる
-- テスト実行前にメタデータキャッシュを最新化すること
+- Use a non-existent keyword (e.g., "nonexistent_gist_xyz").
+
+**Steps**:
+
+1. Search with a non-existent keyword: `gist-cache-rs run nonexistent_gist_xyz bash`
+2. Check error message.
+3. Check exit code.
+
+**Expected Result**:
+
+- Error message like "No search results for query: nonexistent_gist_xyz" is displayed.
+- Program exits with an appropriate error code (non-zero).
+- Program does not crash.
+
+**Verification Items**:
+
+- Clear error message is displayed.
+- Exit code is non-zero.
+- No memory leaks or crashes occur.
+
+---
+
+## Additional Test Cases
+
+### TC7: Search with Special Characters
+
+**Objective**: Confirm that search with keywords containing special characters works correctly.
+
+**Steps**:
+
+1. Search with a keyword containing special characters: `gist-cache-rs run "data_analysis.py" bash`
+
+**Expected Result**:
+
+- Filenames containing underscores or periods are searched correctly.
+- Special characters are searched without escaping.
+
+---
+
+### TC8: Search with Spaces
+
+**Objective**: Confirm that search for descriptions containing spaces works correctly.
+
+**Steps**:
+
+1. Search with a keyword containing spaces: `gist-cache-rs run --description "Test Script" bash`
+
+**Expected Result**:
+
+- Descriptions containing spaces are searched correctly.
+- Keywords enclosed in quotes are processed correctly.
+
+---
+
+## Test Execution Order
+
+1. TC1: Auto Search (default)
+2. TC2: Direct ID Specification (--id)
+3. TC3: Filename Search (--filename)
+4. TC4: Description Search (--description)
+5. TC5: Selection from Multiple Candidates
+6. TC6: Error Handling for 0 Search Results
+7. TC7: Search with Special Characters (optional)
+8. TC8: Search with Spaces (optional)
+
+## Notes
+
+- TC5 requires interactive input, making automation difficult.
+- TC6 is an error case, so it should be executed after normal tests.
+- Search results vary depending on the environment (owned Gists).
+- Metadata cache should be up-to-date before running tests.

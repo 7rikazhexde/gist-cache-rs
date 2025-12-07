@@ -1,181 +1,181 @@
-# gist-cache-rs 機能検証テスト設計書（テストセット4：プレビュー機能検証）
+# gist-cache-rs Functional Verification Test Design Document (Test Set 4: Preview Function Verification)
 
-## テスト目的
+## Test Objective
 
-gist-cache-rsのプレビュー機能（`-p`/`--preview`）が正しく動作することを確認する。
+To confirm that the gist-cache-rs preview function (`-p`/`--preview`) works correctly.
 
-## テスト対象機能
+## Target Functionality
 
-- Auto検索でのプレビュー表示
-- ID直接指定でのプレビュー表示
-- ファイル名検索でのプレビュー表示
-- キャッシュありでのプレビュー表示
-- --previewオプション（ロングオプション）の動作
+- Preview display with Auto Search
+- Preview display with Direct ID Specification
+- Preview display with Filename Search
+- Preview display with existing cache
+- `--preview` option (long option) behavior
 
-## 前提条件
+## Prerequisites
 
-- gist-cache-rsがインストール済み
-- GitHub CLIが認証済み
-- メタデータキャッシュが最新（`gist-cache-rs update`実行済み）
-- テスト用のhello_args系Gistが存在する
+- gist-cache-rs is installed
+- GitHub CLI is authenticated
+- Metadata cache is up-to-date (`gist-cache-rs update` has been executed)
+- Test Gists for hello_args series exist
 
-## テストケース一覧
+## Test Case List
 
-### TC1: Auto検索でのプレビュー（-pオプション）
+### TC1: Preview with Auto Search (-p option)
 
-**目的**: キーワード検索でプレビューが正しく表示されることを確認
+**Objective**: Confirm that preview is displayed correctly with keyword search.
 
-**前提条件**:
+**Prerequisites**:
 
-- 「hello」で検索すると複数のGistがヒットする
+- Searching for "hello" hits multiple Gists.
 
-**手順**:
+**Steps**:
 
-1. `-p`オプション付きで検索: `gist-cache-rs run -p hello bash`
-2. 複数候補から1つを選択（例: 番号7）
-3. 表示内容を確認
+1. Search with `-p` option: `gist-cache-rs run -p hello bash`
+2. Select one from multiple candidates (e.g., number 7).
+3. Check displayed content.
 
-**期待結果**:
+**Expected Result**:
 
-- 複数のGistが番号付きリストで表示される
-- 番号選択後、以下が表示される:
-  - Description（説明文）
-  - Files（ファイル名）
-  - `=== Gist内容 ===` セクション
-  - `--- ファイル名 ---` ヘッダー
-  - ファイルの内容（ソースコード）
-- スクリプトは実行されない（バージョン情報や引数表示なし）
+- Multiple Gists are displayed in a numbered list.
+- After selecting a number, the following are displayed:
+  - Description
+  - Files
+  - `=== Gist Content ===` section
+  - `--- Filename ---` header
+  - File content (source code)
+- Script is not executed (no version information or argument display).
 
-**検証項目**:
+**Verification Items**:
 
-- プレビューモードが正しく起動する
-- Gist内容が正しく表示される
-- 実行されずに終了する
-
----
-
-### TC2: ID直接指定でのプレビュー
-
-**目的**: ID指定時のプレビューが正しく表示されることを確認
-
-**前提条件**:
-
-- hello_args.sh のGist ID（7bcb324e9291fa350334df8efb7f0deb）が分かっている
-
-**手順**:
-
-1. ID指定でプレビュー: `gist-cache-rs run -p --id 7bcb324e9291fa350334df8efb7f0deb bash`
-2. 表示内容を確認
-
-**期待結果**:
-
-- 「ID指定モード」のメッセージが表示される
-- 検索プロセスがスキップされる
-- Description、Files、Gist内容が表示される
-- スクリプトは実行されない
-
-**検証項目**:
-
-- ID直接指定とプレビューモードの併用が動作する
-- 選択UIがスキップされる
-- 内容が正しく表示される
+- Preview mode launches correctly.
+- Gist content is displayed correctly.
+- Exits without executing.
 
 ---
 
-### TC3: ファイル名指定でのプレビュー
+### TC2: Preview with Direct ID Specification
 
-**目的**: ファイル名検索時のプレビューが正しく表示されることを確認
+**Objective**: Confirm that preview is displayed correctly when specifying ID.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args.py が存在する
+- hello_args.sh (ID: 7bcb324e9291fa350334df8efb7f0deb) is known.
 
-**手順**:
+**Steps**:
 
-1. ファイル名指定でプレビュー: `gist-cache-rs run -p --filename hello_args.py python3`
-2. 表示内容を確認
+1. Preview with ID: `gist-cache-rs run -p --id 7bcb324e9291fa350334df8efb7f0deb bash`
+2. Check displayed content.
 
-**期待結果**:
+**Expected Result**:
 
-- hello_args.py を含むGistが検索される
-- 単一結果の場合は直接プレビュー表示
-- 複数結果の場合は選択UI表示
-- Gist内容が正しく表示される
-- スクリプトは実行されない
+- "ID specification mode" message is displayed.
+- Search process is skipped.
+- Description, Files, Gist content are displayed.
+- Script is not executed.
 
-**検証項目**:
+**Verification Items**:
 
-- ファイル名検索とプレビューモードの併用が動作する
-- 内容が正しく表示される
-
----
-
-### TC4: キャッシュありでのプレビュー
-
-**目的**: コンテンツキャッシュが存在する場合のプレビュー動作を確認
-
-**前提条件**:
-
-- hello_args.sh が既にキャッシュされている（過去に実行済み）
-
-**手順**:
-
-1. キャッシュ確認: `ls ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/`
-2. プレビュー実行: `gist-cache-rs run -p --id 7bcb324e9291fa350334df8efb7f0deb bash`
-3. 表示内容を確認
-
-**期待結果**:
-
-- 「情報: キャッシュが存在しないため...」のメッセージは表示されない
-- キャッシュから高速に内容を読み込む
-- Gist内容が正しく表示される
-- スクリプトは実行されない
-
-**検証項目**:
-
-- キャッシュからのプレビュー表示が動作する
-- ネットワークアクセスが発生しない（既にキャッシュがある場合）
+- Combination of direct ID specification and preview mode works.
+- Selection UI is skipped.
+- Content is displayed correctly.
 
 ---
 
-### TC5: --previewオプション（ロングオプション）
+### TC3: Preview with Filename Specification
 
-**目的**: ロングオプション `--preview` が正しく動作することを確認
+**Objective**: Confirm that preview is displayed correctly with filename search.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args.rb が存在する
+- hello_args.py exists.
 
-**手順**:
+**Steps**:
 
-1. `--preview`オプション付きで検索: `gist-cache-rs run --preview --filename hello_args.rb ruby`
-2. 表示内容を確認
+1. Preview with filename: `gist-cache-rs run -p --filename hello_args.py python3`
+2. Check displayed content.
 
-**期待結果**:
+**Expected Result**:
 
-- `-p` と同じ動作をする
-- Gist内容が正しく表示される
-- スクリプトは実行されない
+- Gist containing hello_args.py is searched.
+- If single result, direct preview display.
+- If multiple results, selection UI is displayed.
+- Gist content is displayed correctly.
+- Script is not executed.
 
-**検証項目**:
+**Verification Items**:
 
-- ロングオプション `--preview` が動作する
-- `-p` との動作の一貫性
+- Combination of filename search and preview mode works.
+- Content is displayed correctly.
 
 ---
 
-## テスト実行順序
+### TC4: Preview with Cache
 
-1. TC1: Auto検索でのプレビュー（対話的テスト）
-2. TC2: ID直接指定でのプレビュー
-3. TC3: ファイル名指定でのプレビュー
-4. TC4: キャッシュありでのプレビュー
-5. TC5: --previewオプション（ロングオプション）
+**Objective**: Confirm preview behavior when content cache exists.
 
-## 注意事項
+**Prerequisites**:
 
-- TC1は対話的な入力が必要
-- プレビューモードではスクリプトは実行されない
-- キャッシュの有無によりメッセージが異なる
-- TC4はTC2の後に実行することでキャッシュが作成される
-- プレビュー表示では引数（bash, python3など）は使用されない（表示のみ）
+- hello_args.sh is already cached (executed previously).
+
+**Steps**:
+
+1. Verify cache: `ls ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/`
+2. Execute preview: `gist-cache-rs run -p --id 7bcb324e9291fa350334df8efb7f0deb bash`
+3. Check displayed content.
+
+**Expected Result**:
+
+- "Info: Cache not found..." message is not displayed.
+- Content is loaded quickly from cache.
+- Gist content is displayed correctly.
+- Script is not executed.
+
+**Verification Items**:
+
+- Preview display from cache works.
+- No network access occurs (if cache already exists).
+
+---
+
+### TC5: `--preview` Option (Long Option)
+
+**Objective**: Confirm that the long option `--preview` works correctly.
+
+**Prerequisites**:
+
+- hello_args.rb exists.
+
+**Steps**:
+
+1. Search with `--preview` option: `gist-cache-rs run --preview --filename hello_args.rb ruby`
+2. Check displayed content.
+
+**Expected Result**:
+
+- Behaves the same as `-p`.
+- Gist content is displayed correctly.
+- Script is not executed.
+
+**Verification Items**:
+
+- Long option `--preview` works.
+- Consistent behavior with `-p`.
+
+---
+
+## Test Execution Order
+
+1. TC1: Preview with Auto Search (Interactive Test)
+2. TC2: Preview with Direct ID Specification
+3. TC3: Preview with Filename Specification
+4. TC4: Preview with Cache
+5. TC5: --preview Option (Long Option)
+
+## Notes
+
+- TC1 requires interactive input.
+- Scripts are not executed in preview mode.
+- Messages vary depending on cache presence.
+- TC4 creates cache after TC2 execution.
+- Arguments (bash, python3, etc.) are not used in preview display (display only).

@@ -1,217 +1,217 @@
-# gist-cache-rs 機能検証テスト設計書
+# gist-cache-rs Functional Verification Test Design Document
 
-## テスト目的
+## Test Objective
 
-gist-cache-rsの2層キャッシング機能が設計通りに正しく動作することを確認する。
+To confirm that the gist-cache-rs 2-layer caching mechanism operates correctly as designed.
 
-## テスト対象Gist
+## Target Gist
 
 - **Gist ID**: 7bcb324e9291fa350334df8efb7f0deb
-- **ファイル名**: hello_args.sh
-- **説明**: Bash引数テストスクリプト
+- **Filename**: hello_args.sh
+- **Description**: Bash argument test script
 - **URL**: https://gist.github.com/7rikazhexde/7bcb324e9291fa350334df8efb7f0deb
 
-## 前提条件
+## Prerequisites
 
-- gist-cache-rsがインストール済み
-- GitHub CLIが認証済み
-- メタデータキャッシュが最新（`gist-cache-rs update`実行済み）
+- gist-cache-rs is installed
+- GitHub CLI is authenticated
+- Metadata cache is up-to-date (`gist-cache-rs update` has been executed)
 
-## テストケース一覧
+## Test Case List
 
-### TC1: 初回実行（コンテンツキャッシュなし）
+### TC1: First Execution (no content cache)
 
-**目的**: 初回実行時にGitHub APIから取得し、コンテンツキャッシュが作成されることを確認
+**Objective**: Confirm that on first execution, content is fetched from GitHub API and content cache is created.
 
-**前提条件**:
+**Prerequisites**:
 
-- メタデータキャッシュは存在する
-- hello_args.shのコンテンツキャッシュは存在しない
+- Metadata cache exists
+- Content cache for hello_args.sh does not exist
 
-**手順**:
+**Steps**:
 
-1. コンテンツキャッシュを削除: `rm -rf ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/`
-2. 実行: `gist-cache-rs run hello_args.sh bash arg1 arg2 arg3`
-3. キャッシュファイルの存在確認: `ls ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/`
+1. Delete content cache: `rm -rf ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/`
+2. Execute: `gist-cache-rs run hello_args.sh bash arg1 arg2 arg3`
+3. Verify existence of cache file: `ls ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/`
 
-**期待結果**:
+**Expected Result**:
 
-- メッセージ「情報: キャッシュが存在しないため、GitHub APIから取得します...」が表示される
-- スクリプトが正常に実行される
-- 引数が正しく表示される（arg1, arg2, arg3）
-- コンテンツキャッシュファイルが作成される（`~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/hello_args.sh`）
-
----
-
-### TC2: 2回目実行（コンテンツキャッシュあり）
-
-**目的**: 2回目以降の実行時にキャッシュから高速に読み込まれることを確認
-
-**前提条件**:
-
-- TC1完了（コンテンツキャッシュが存在する）
-
-**手順**:
-
-1. 実行: `gist-cache-rs run hello_args.sh bash test1 test2`
-2. 実行時間を体感的に確認
-
-**期待結果**:
-
-- 「情報: キャッシュが存在しないため...」のメッセージは**表示されない**
-- スクリプトが即座に実行される（ネットワーク待機なし）
-- 引数が正しく表示される（test1, test2）
-- キャッシュから読み込まれるため、TC1より高速
+- Message "Info: Cache not found, fetching from GitHub API..." is displayed.
+- Script executes successfully.
+- Arguments are displayed correctly (arg1, arg2, arg3).
+- Content cache file is created (`~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/hello_args.sh`).
 
 ---
 
-### TC3: update コマンドによるメタデータ更新（変更なし）
+### TC2: Second Execution (with content cache)
 
-**目的**: Gistに変更がない場合、コンテンツキャッシュが維持されることを確認
+**Objective**: Confirm that on second and subsequent executions, content is loaded quickly from cache.
 
-**前提条件**:
+**Prerequisites**:
 
-- TC2完了（コンテンツキャッシュが存在する）
+- TC1 completed (content cache exists)
 
-**手順**:
+**Steps**:
 
-1. updateコマンド実行: `gist-cache-rs update --verbose`
-2. キャッシュファイルの存在確認: `ls -la ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/`
-3. 実行: `gist-cache-rs run hello_args.sh bash check`
+1. Execute: `gist-cache-rs run hello_args.sh bash test1 test2`
+2. Subjectively check execution time.
 
-**期待結果**:
+**Expected Result**:
 
-- updateコマンドで「更新なし」または「更新: 0件」と表示される
-- コンテンツキャッシュファイルが削除されない
-- 実行時にキャッシュから読み込まれる（APIメッセージなし）
-
----
-
-### TC4: Gist更新後の動作
-
-**目的**: Gistが更新された場合、update後にコンテンツキャッシュが削除され、次回実行時に最新版が取得されることを確認
-
-**前提条件**:
-
-- TC3完了（コンテンツキャッシュが存在する）
-
-**手順**:
-
-1. GitHub上でhello_args.shを編集（例: コメント行を追加）
-2. キャッシュファイルのタイムスタンプを記録: `stat ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/hello_args.sh`
-3. updateコマンド実行: `gist-cache-rs update --verbose`
-4. キャッシュファイルの存在確認: `ls ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/`
-5. 実行: `gist-cache-rs run hello_args.sh bash updated`
-
-**期待結果**:
-
-- updateコマンドで「更新: 1件」と表示される
-- コンテンツキャッシュディレクトリが削除される（`contents/7bcb324e9291fa350334df8efb7f0deb/`が存在しない）
-- 実行時に「情報: キャッシュが存在しないため、GitHub APIから取得します...」が表示される
-- 最新版のスクリプトが実行される（編集内容が反映されている）
-- 新しいコンテンツキャッシュが作成される
+- Message "Info: Cache not found..." is **not** displayed.
+- Script executes instantly (no network wait).
+- Arguments are displayed correctly (test1, test2).
+- Execution is faster than TC1 due to loading from cache.
 
 ---
 
-### TC5: --forceオプションの動作
+### TC3: Metadata Update via `update` Command (no change)
 
-**目的**: run --forceが実行前に自動的にupdateを実行することを確認
+**Objective**: Confirm that content cache is retained if there are no changes to the Gist.
 
-**前提条件**:
+**Prerequisites**:
 
-- TC4完了（コンテンツキャッシュが存在する）
+- TC2 completed (content cache exists)
 
-**手順**:
+**Steps**:
 
-1. GitHub上でhello_args.shを再度編集（例: 別のコメントを追加）
-2. **updateコマンドを実行せず**に、--forceオプション付きで実行: `gist-cache-rs run --force hello_args.sh bash force_test`
+1. Execute update command: `gist-cache-rs update --verbose`
+2. Verify existence of cache file: `ls -la ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/`
+3. Execute: `gist-cache-rs run hello_args.sh bash check`
 
-**期待結果**:
+**Expected Result**:
 
-- 実行前に自動的にメタデータキャッシュが更新される（内部処理）
-- Gistが更新されているため、コンテンツキャッシュが削除される
-- 最新版のスクリプトが実行される（2回目の編集内容が反映されている）
-- 新しいコンテンツキャッシュが作成される
-
----
-
-### TC6: cache listコマンド
-
-**目的**: キャッシュ一覧が正しく表示されることを確認
-
-**前提条件**:
-
-- TC5完了（コンテンツキャッシュが存在する）
-
-**手順**:
-
-1. `gist-cache-rs cache list`を実行
-
-**期待結果**:
-
-- hello_args.sh (ID: 7bcb324e9291fa350334df8efb7f0deb)が一覧に表示される
-- 説明文、ファイル名、更新日時が表示される
-- 合計キャッシュ数が表示される
+- "No updates" or "Updated: 0 items" is displayed by the update command.
+- Content cache file is not deleted.
+- Execution loads from cache (no API message).
 
 ---
 
-### TC7: cache sizeコマンド
+### TC4: Behavior after Gist Update
 
-**目的**: キャッシュサイズが正しく表示されることを確認
+**Objective**: Confirm that if a Gist is updated, content cache is deleted after update, and the latest version is fetched on next execution.
 
-**前提条件**:
+**Prerequisites**:
 
-- TC6完了
+- TC3 completed (content cache exists)
 
-**手順**:
+**Steps**:
 
-1. `gist-cache-rs cache size`を実行
+1. Edit hello_args.sh on GitHub (e.g., add a comment line).
+2. Record timestamp of cache file: `stat ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/hello_args.sh`
+3. Execute update command: `gist-cache-rs update --verbose`
+4. Verify existence of cache file: `ls ~/.cache/gist-cache/contents/7bcb324e9291fa350334df8efb7f0deb/`
+5. Execute: `gist-cache-rs run hello_args.sh bash updated`
 
-**期待結果**:
+**Expected Result**:
 
-- キャッシュされたGist数が表示される
-- 合計サイズが表示される（KB単位など）
-- キャッシュディレクトリのパスが表示される
-
----
-
-### TC8: cache clearコマンド
-
-**目的**: 全キャッシュが削除されることを確認
-
-**前提条件**:
-
-- TC7完了（コンテンツキャッシュが存在する）
-
-**手順**:
-
-1. `gist-cache-rs cache clear`を実行
-2. 確認プロンプトで`y`を入力
-3. キャッシュディレクトリを確認: `ls ~/.cache/gist-cache/contents/`
-
-**期待結果**:
-
-- 確認プロンプトが表示される
-- 「全キャッシュを削除しました」というメッセージが表示される
-- contentsディレクトリが空になる
-- 次回実行時は初回実行として動作する
+- "Updated: 1 item" is displayed by the update command.
+- Content cache directory is deleted (`contents/7bcb324e9291fa350334df8efb7f0deb/` does not exist).
+- "Info: Cache not found, fetching from GitHub API..." is displayed on execution.
+- Latest version of the script is executed (edits are reflected).
+- New content cache is created.
 
 ---
 
-## テスト実行順序
+### TC5: `--force` Option Behavior
 
-1. TC1: 初回実行（キャッシュなし）
-2. TC2: 2回目実行（キャッシュあり）
-3. TC3: update（変更なし）
-4. TC4: Gist更新後の動作 ← **GitHub上での編集が必要**
-5. TC5: --forceオプション ← **GitHub上での再編集が必要**
+**Objective**: Confirm that `run --force` automatically executes `update` before running.
+
+**Prerequisites**:
+
+- TC4 completed (content cache exists)
+
+**Steps**:
+
+1. Edit hello_args.sh on GitHub again (e.g., add another comment).
+2. **Without executing update command**, execute with `--force` option: `gist-cache-rs run --force hello_args.sh bash force_test`
+
+**Expected Result**:
+
+- Metadata cache is automatically updated before execution (internal process).
+- Content cache is deleted because the Gist was updated.
+- Latest version of the script is executed (second edit is reflected).
+- New content cache is created.
+
+---
+
+### TC6: `cache list` Command
+
+**Objective**: Confirm that the cache list is displayed correctly.
+
+**Prerequisites**:
+
+- TC5 completed (content cache exists)
+
+**Steps**:
+
+1. Execute: `gist-cache-rs cache list`
+
+**Expected Result**:
+
+- hello_args.sh (ID: 7bcb324e9291fa350334df8efb7f0deb) is displayed in the list.
+- Description, filename, and updated_at are displayed.
+- Total number of cached Gists is displayed.
+
+---
+
+### TC7: `cache size` Command
+
+**Objective**: Confirm that the cache size is displayed correctly.
+
+**Prerequisites**:
+
+- TC6 completed
+
+**Steps**:
+
+1. Execute: `gist-cache-rs cache size`
+
+**Expected Result**:
+
+- Number of cached Gists is displayed.
+- Total size is displayed (e.g., in KB).
+- Path to the cache directory is displayed.
+
+---
+
+### TC8: `cache clear` Command
+
+**Objective**: Confirm that all caches are deleted.
+
+**Prerequisites**:
+
+- TC7 completed (content cache exists)
+
+**Steps**:
+
+1. Execute: `gist-cache-rs cache clear`
+2. Enter `y` at the confirmation prompt.
+3. Verify cache directory: `ls ~/.cache/gist-cache/contents/`
+
+**Expected Result**:
+
+- Confirmation prompt is displayed.
+- Message "All caches deleted" is displayed.
+- `contents` directory becomes empty.
+- Next execution behaves as a first execution.
+
+---
+
+## Test Execution Order
+
+1. TC1: First execution (no cache)
+2. TC2: Second execution (with cache)
+3. TC3: update (no change)
+4. TC4: Behavior after Gist update ← **Requires editing on GitHub**
+5. TC5: --force option ← **Requires re-editing on GitHub**
 6. TC6: cache list
 7. TC7: cache size
 8. TC8: cache clear
 
-## 注意事項
+## Notes
 
-- TC4とTC5ではGitHub上でのGist編集が必要
-- 編集内容は軽微なもの（コメント追加など）で十分
-- テスト実行前にメタデータキャッシュを最新化しておく（`gist-cache-rs update`）
-- 各テストケース間で状態が引き継がれるため、順序通りに実行すること
+- TC4 and TC5 require Gist editing on GitHub.
+- Minor edits (e.g., adding a comment) are sufficient.
+- Metadata cache should be up-to-date before running tests (`gist-cache-rs update`).
+- State is carried over between test cases, so they must be executed in order.

@@ -1,388 +1,390 @@
-# gist-cache-rs 機能検証テスト設計書（テストセット3：インタープリタ動作検証）
+# gist-cache-rs Functional Verification Test Design Document (Test Set 3: Interpreter Operation Verification)
 
-## テスト目的
+## Test Objective
 
-gist-cache-rsが各インタープリタを正しく起動し、引数を渡して実行できることを確認する。
+To confirm that gist-cache-rs correctly launches each interpreter, passes arguments, and executes scripts.
 
-## テスト対象機能
+## Target Functionality
 
-- Bash実行（bash）
-- Python実行（python3）
-- Ruby実行（ruby）
-- Node.js実行（node）
-- PHP実行（php）
-- Perl実行（perl）
-- PowerShell実行（pwsh）
-- TypeScript実行（ts-node, deno, bun）
-- UV実行（uv run）- PEP 723対応
+- Bash execution (bash)
+- Python execution (python3)
+- Ruby execution (ruby)
+- Node.js execution (node)
+- PHP execution (php)
+- Perl execution (perl)
+- PowerShell execution (pwsh)
+- TypeScript execution (ts-node, deno, bun)
+- UV execution (uv run) - PEP 723 compatible
 
-## 前提条件
+## Prerequisites
 
-- gist-cache-rsがインストール済み
-- GitHub CLIが認証済み
-- メタデータキャッシュが最新（`gist-cache-rs update`実行済み）
-- 各インタープリタがシステムにインストール済み
-- テスト用のhello_args系Gistが存在する
+- gist-cache-rs is installed
+- GitHub CLI is authenticated
+- Metadata cache is up-to-date (`gist-cache-rs update` has been executed)
+- Each interpreter is installed on the system
+- Test Gists for hello_args series exist
 
-## テストケース一覧
+## Test Case List
 
-### TC1: Bash実行
+### TC1: Bash Execution
 
-**目的**: Bashスクリプトが正しく実行されることを確認
+**Objective**: Confirm that Bash scripts are executed correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args.sh (ID: 7bcb324e9291fa350334df8efb7f0deb) が存在する
+- hello_args.sh (ID: 7bcb324e9291fa350334df8efb7f0deb) exists.
 
-**手順**:
+**Steps**:
 
-1. Bashで実行: `gist-cache-rs run --id 7bcb324e9291fa350334df8efb7f0deb bash arg1 arg2 arg3`
-2. 実行結果を確認
+1. Execute with Bash: `gist-cache-rs run --id 7bcb324e9291fa350334df8efb7f0deb bash arg1 arg2 arg3`
+2. Check execution result.
 
-**期待結果**:
+**Expected Result**:
 
-- Bashバージョンが表示される
-- 引数の数「3」が表示される
-- 引数が正しく表示される（arg1, arg2, arg3）
-- 数値以外のため「数値として計算できませんでした」が表示される
+- Bash version is displayed.
+- Number of arguments "3" is displayed.
+- Arguments are displayed correctly (arg1, arg2, arg3).
+- "Could not calculate as a number" is displayed as arguments are not numerical.
 
-**検証項目**:
+**Verification Items**:
 
-- Bashインタープリタが正しく起動する
-- 引数が正しく渡される
-- スクリプトが正常に実行される
-
----
-
-### TC2: Python実行
-
-**目的**: Pythonスクリプトが正しく実行されることを確認
-
-**前提条件**:
-
-- hello_args.py が存在する
-
-**手順**:
-
-1. Pythonで実行: `gist-cache-rs run --filename hello_args.py python3 10 20 30`
-2. 実行結果を確認
-
-**期待結果**:
-
-- Pythonバージョンが表示される
-- 引数の数「3」が表示される
-- 引数が正しく表示される（10, 20, 30）
-- 数値のため合計「60」が表示される（Pythonスクリプトが合計計算機能を持つ場合）
-
-**検証項目**:
-
-- Pythonインタープリタが正しく起動する
-- 引数が正しく渡される
-- スクリプトが正常に実行される
+- Bash interpreter launches correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
 
 ---
 
-### TC3: Ruby実行
+### TC2: Python Execution
 
-**目的**: Rubyスクリプトが正しく実行されることを確認
+**Objective**: Confirm that Python scripts are executed correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args.rb が存在する
+- hello_args.py exists.
 
-**手順**:
+**Steps**:
 
-1. Rubyで実行: `gist-cache-rs run --filename hello_args.rb ruby test1 test2`
-2. 実行結果を確認
+1. Execute with Python: `gist-cache-rs run --filename hello_args.py python3 10 20 30`
+2. Check execution result.
 
-**期待結果**:
+**Expected Result**:
 
-- Rubyバージョンが表示される
-- 引数の数「2」が表示される
-- 引数が正しく表示される（test1, test2）
+- Python version is displayed.
+- Number of arguments "3" is displayed.
+- Arguments are displayed correctly (10, 20, 30).
+- If the Python script has a sum calculation function, the sum "60" is displayed.
 
-**検証項目**:
+**Verification Items**:
 
-- Rubyインタープリタが正しく起動する
-- 引数が正しく渡される
-- スクリプトが正常に実行される
-
----
-
-### TC4: Node.js実行
-
-**目的**: Node.jsスクリプトが正しく実行されることを確認
-
-**前提条件**:
-
-- hello_args.js または hello_args_2.js が存在する
-
-**手順**:
-
-1. Node.jsで実行: `gist-cache-rs run --filename hello_args.js node hello world`
-2. 実行結果を確認
-
-**期待結果**:
-
-- Node.jsバージョンが表示される
-- 引数の数「2」が表示される
-- 引数が正しく表示される（hello, world）
-
-**検証項目**:
-
-- Node.jsインタープリタが正しく起動する
-- 引数が正しく渡される
-- スクリプトが正常に実行される
+- Python interpreter launches correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
 
 ---
 
-### TC5: PHP実行
+### TC3: Ruby Execution
 
-**目的**: PHPスクリプトが正しく実行されることを確認
+**Objective**: Confirm that Ruby scripts are executed correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args.php が存在する
+- hello_args.rb exists.
 
-**手順**:
+**Steps**:
 
-1. PHPで実行: `gist-cache-rs run --filename hello_args.php php 100 200`
-2. 実行結果を確認
+1. Execute with Ruby: `gist-cache-rs run --filename hello_args.rb ruby test1 test2`
+2. Check execution result.
 
-**期待結果**:
+**Expected Result**:
 
-- PHPバージョンが表示される
-- 引数の数「2」が表示される
-- 引数が正しく表示される（100, 200）
+- Ruby version is displayed.
+- Number of arguments "2" is displayed.
+- Arguments are displayed correctly (test1, test2).
 
-**検証項目**:
+**Verification Items**:
 
-- PHPインタープリタが正しく起動する
-- 引数が正しく渡される
-- スクリプトが正常に実行される
-
----
-
-### TC6: Perl実行
-
-**目的**: Perlスクリプトが正しく実行されることを確認
-
-**前提条件**:
-
-- hello_args.pl が存在する
-
-**手順**:
-
-1. Perlで実行: `gist-cache-rs run --filename hello_args.pl perl foo bar baz`
-2. 実行結果を確認
-
-**期待結果**:
-
-- Perlバージョンが表示される
-- 引数の数「3」が表示される
-- 引数が正しく表示される（foo, bar, baz）
-
-**検証項目**:
-
-- Perlインタープリタが正しく起動する
-- 引数が正しく渡される
-- スクリプトが正常に実行される
+- Ruby interpreter launches correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
 
 ---
 
-### TC7: PowerShell実行
+### TC4: Node.js Execution
 
-**目的**: PowerShellスクリプトが正しく実行されることを確認
+**Objective**: Confirm that Node.js scripts are executed correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args.ps1 (ID: 2cb45541fee10264b615fd641c577a20) が存在する
-- pwshコマンドがインストール済み（PowerShell Core）
+- hello_args.js or hello_args_2.js exists.
 
-**手順**:
+**Steps**:
 
-1. PowerShellで実行: `gist-cache-rs run --id 2cb45541fee10264b615fd641c577a20 pwsh test1 test2 test3`
-2. 実行結果を確認
+1. Execute with Node.js: `gist-cache-rs run --filename hello_args.js node hello world`
+2. Check execution result.
 
-**期待結果**:
+**Expected Result**:
 
-- PowerShellバージョンが表示される
-- 引数の数「3」が表示される
-- 引数が正しく表示される（test1, test2, test3）
-- 数値以外のため「数値以外が含まれているため、計算できませんでした」が表示される
+- Node.js version is displayed.
+- Number of arguments "2" is displayed.
+- Arguments are displayed correctly (hello, world).
 
-**検証項目**:
+**Verification Items**:
 
-- PowerShellインタープリタ（pwsh）が正しく起動する
-- 引数が正しく渡される
-- スクリプトが正常に実行される
-
-**数値引数のテスト**:
-
-1. PowerShellで実行: `gist-cache-rs run --filename hello_args.ps1 pwsh 10 20 30`
-2. 期待結果: 合計「60」が表示される
+- Node.js interpreter launches correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
 
 ---
 
-### TC8: TypeScript実行（Deno）
+### TC5: PHP Execution
 
-**目的**: DenoでTypeScriptスクリプトが正しく実行されることを確認
+**Objective**: Confirm that PHP scripts are executed correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args_deno.ts (ID: 9b0e7e1bdf7d24c3f28a80d18f6aaafe) が存在する
-- denoコマンドがインストール済み
+- hello_args.php exists.
 
-**手順**:
+**Steps**:
 
-1. Denoで実行（引数なし）: `gist-cache-rs run --filename hello_args_deno.ts deno`
-2. Denoで実行（文字列引数）: `gist-cache-rs run --filename hello_args_deno.ts deno test1 test2 test3`
-3. Denoで実行（数値引数）: `gist-cache-rs run --filename hello_args_deno.ts deno 10 20 30`
-4. 各実行結果を確認
+1. Execute with PHP: `gist-cache-rs run --filename hello_args.php php 100 200`
+2. Check execution result.
 
-**期待結果**:
+**Expected Result**:
 
-- Denoバージョンが表示される
-- TypeScriptバージョンが表示される
-- V8バージョンが表示される
-- 引数なし: 使用例が表示される
-- 文字列引数: 引数の数「3」、引数が正しく表示される（test1, test2, test3）、「数値以外が含まれているため、計算できませんでした」
-- 数値引数: 引数の数「3」、引数が正しく表示される（10, 20, 30）、合計「60」が表示される
+- PHP version is displayed.
+- Number of arguments "2" is displayed.
+- Arguments are displayed correctly (100, 200).
+- Confirmed numerical calculation function: `100 + 200 = 300`.
 
-**検証項目**:
+**Verification Items**:
 
-- Denoインタープリタが正しく起動する
-- TypeScriptファイル（.ts）が正しく認識される
-- `deno run`コマンドが正しく使用される
-- 引数が正しく渡される
-- スクリプトが正常に実行される
+- PHP interpreter launches correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
 
 ---
 
-### TC9: TypeScript実行（ts-node）
+### TC6: Perl Execution
 
-**目的**: ts-nodeでTypeScriptスクリプトが正しく実行されることを確認
+**Objective**: Confirm that Perl scripts are executed correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args.ts (ID: c3c925384cc8241d8cd30f269af84332) が存在する
-- ts-nodeコマンドがインストール済み（`npm install -g ts-node typescript`）
+- hello_args.pl exists.
 
-**手順**:
+**Steps**:
 
-1. ts-nodeで実行: `gist-cache-rs run --filename hello_args.ts ts-node hello world`
-2. 実行結果を確認
+1. Execute with Perl: `gist-cache-rs run --filename hello_args.pl perl foo bar baz`
+2. Check execution result.
 
-**期待結果**:
+**Expected Result**:
 
-- TypeScriptバージョンが表示される
-- Node.jsバージョンが表示される
-- 引数の数「2」が表示される
-- 引数が正しく表示される（hello, world）
-- 数値以外のため「数値以外が含まれているため、計算できませんでした」が表示される
+- Perl version is displayed.
+- Number of arguments "3" is displayed.
+- Arguments are displayed correctly (foo, bar, baz).
 
-**検証項目**:
+**Verification Items**:
 
-- ts-nodeインタープリタが正しく起動する
-- TypeScriptファイル（.ts）が正しく認識される
-- 引数が正しく渡される
-- スクリプトが正常に実行される
-
-**注意事項**:
-
-- ts-nodeはNode.js上でTypeScriptを実行するため、`npm install -g ts-node typescript`が必要
-- インストールされていない場合はこのテストケースをスキップ
+- Perl interpreter launches correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
 
 ---
 
-### TC10: TypeScript実行（Bun）
+### TC7: PowerShell Execution
 
-**目的**: BunでTypeScriptスクリプトが正しく実行されることを確認
+**Objective**: Confirm that PowerShell scripts are executed correctly.
 
-**前提条件**:
+**Prerequisites**:
 
-- hello_args_bun.ts (ID: a3d74a884ff923fc83c047c2cf3d6f08) が存在する
-- bunコマンドがインストール済み
+- hello_args.ps1 (ID: 2cb45541fee10264b615fd641c577a20) exists.
+- `pwsh` command is installed (PowerShell Core).
 
-**手順**:
+**Steps**:
 
-1. Bunで実行: `gist-cache-rs run --filename hello_args_bun.ts bun 100 200`
-2. 実行結果を確認
+1. Execute with PowerShell: `gist-cache-rs run --id 2cb45541fee10264b615fd641c577a20 pwsh test1 test2 test3`
+2. Check execution result.
 
-**期待結果**:
+**Expected Result**:
 
-- Bunバージョンが表示される
-- 引数の数「2」が表示される
-- 引数が正しく表示される（100, 200）
-- 合計「300」が表示される
+- PowerShell version is displayed.
+- Number of arguments "3" is displayed.
+- Arguments are displayed correctly (test1, test2, test3).
+- "Calculation impossible because it contains non-numerical values" is displayed as arguments are not numerical.
 
-**検証項目**:
+**Verification Items**:
 
-- Bunインタープリタが正しく起動する
-- TypeScriptファイル（.ts）が正しく認識される
-- 引数が正しく渡される
-- スクリプトが正常に実行される
+- PowerShell interpreter (`pwsh`) launches correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
 
-**注意事項**:
+**Numerical Argument Test**:
 
-- Bunは高速なJavaScript/TypeScriptランタイム
-- インストールされていない場合はこのテストケースをスキップ
-
----
-
-### TC11: UV実行（PEP 723対応）
-
-**目的**: UV（PEP 723対応）でPythonスクリプトが正しく実行されることを確認
-
-**前提条件**:
-
-- hello_args.py が存在する
-- uvコマンドがインストール済み
-
-**手順**:
-
-1. UVで実行: `gist-cache-rs run --filename hello_args.py uv 5 10 15`
-2. 実行結果を確認
-
-**期待結果**:
-
-- Pythonバージョンが表示される（uvが管理するPython環境）
-- 引数の数「3」が表示される
-- 引数が正しく表示される（5, 10, 15）
-- 数値のため合計「30」が表示される（スクリプトが合計計算機能を持つ場合）
-
-**検証項目**:
-
-- UVインタープリタ（`uv run`）が正しく起動する
-- PEP 723メタデータが正しく処理される
-- 引数が正しく渡される
-- スクリプトが正常に実行される
+1. Execute with PowerShell: `gist-cache-rs run --filename hello_args.ps1 pwsh 10 20 30`
+2. Expected Result: Sum "60" is displayed.
 
 ---
 
-## テスト実行順序
+### TC8: TypeScript Execution (Deno)
 
-1. TC1: Bash実行
-2. TC2: Python実行
-3. TC3: Ruby実行
-4. TC4: Node.js実行
-5. TC5: PHP実行
-6. TC6: Perl実行
-7. TC7: PowerShell実行
-8. TC8: TypeScript実行（Deno）
-9. TC9: TypeScript実行（ts-node）
-10. TC10: TypeScript実行（Bun）
-11. TC11: UV実行（PEP 723）
+**Objective**: Confirm that TypeScript scripts are executed correctly with Deno.
 
-## 注意事項
+**Prerequisites**:
 
-- 各インタープリタがシステムにインストールされていることを確認すること
-- インストールされていないインタープリタのテストはスキップ可能
-- TC7（PowerShell）は主にLinux/macOS上のPowerShell Core（pwsh）を対象とする
-- TC8-10（TypeScript）は各ランタイムで動作を確認
-  - **TC8 (Deno)**: TypeScriptをネイティブサポート、最も推奨（動作確認済み）
-  - **TC9 (ts-node)**: Node.js上でTypeScriptを実行、要インストール（`npm install -g ts-node typescript`）
-  - **TC10 (Bun)**: TypeScriptをネイティブサポート、高速実行（要インストール）
-- TC11（UV）は特にPEP 723対応の検証が目的
-- 各スクリプトの実装内容により、出力形式が異なる場合がある
-- 引数の処理方法は各言語の仕様に依存する
+- hello_args_deno.ts (ID: 9b0e7e1bdf7d24c3f28a80d18f6aaafe) exists.
+- `deno` command is installed.
+
+**Steps**:
+
+1. Execute with Deno (no arguments): `gist-cache-rs run --filename hello_args_deno.ts deno`
+2. Execute with Deno (string arguments): `gist-cache-rs run --filename hello_args_deno.ts deno test1 test2 test3`
+3. Execute with Deno (numerical arguments): `gist-cache-rs run --filename hello_args_deno.ts deno 10 20 30`
+4. Check each execution result.
+
+**Expected Result**:
+
+- Deno version is displayed.
+- TypeScript version is displayed.
+- V8 version is displayed.
+- No arguments: Usage example is displayed.
+- String arguments: Number of arguments "3", arguments displayed correctly (test1, test2, test3), "Calculation impossible because it contains non-numerical values".
+- Numerical arguments: Number of arguments "3", arguments displayed correctly (10, 20, 30), sum "60" is displayed.
+
+**Verification Items**:
+
+- Deno interpreter launches correctly.
+- TypeScript file (.ts) is recognized correctly.
+- `deno run` command is used correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
+
+---
+
+### TC9: TypeScript Execution (ts-node)
+
+**Objective**: Confirm that TypeScript scripts are executed correctly with ts-node.
+
+**Prerequisites**:
+
+- hello_args.ts (ID: c3c925384cc8241d8cd30f269af84332) exists.
+- `ts-node` command is installed (`npm install -g ts-node typescript`).
+
+**Steps**:
+
+1. Execute with ts-node: `gist-cache-rs run --filename hello_args.ts ts-node hello world`
+2. Check execution result.
+
+**Expected Result**:
+
+- TypeScript version is displayed.
+- Node.js version is displayed.
+- Number of arguments "2" is displayed.
+- Arguments are displayed correctly (hello, world).
+- "Calculation impossible because it contains non-numerical values" is displayed as arguments are not numerical.
+
+**Verification Items**:
+
+- ts-node interpreter launches correctly.
+- TypeScript file (.ts) is recognized correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
+
+**Notes**:
+
+- `ts-node` executes TypeScript on Node.js, so `npm install -g ts-node typescript` is required.
+- If not installed, this test case can be skipped.
+
+---
+
+### TC10: TypeScript Execution (Bun)
+
+**Objective**: Confirm that TypeScript scripts are executed correctly with Bun.
+
+**Prerequisites**:
+
+- hello_args_bun.ts (ID: a3d74a884ff923fc83c047c2cf3d6f08) exists.
+- `bun` command is installed.
+
+**Steps**:
+
+1. Execute with Bun: `gist-cache-rs run --filename hello_args_bun.ts bun 100 200`
+2. Check execution result.
+
+**Expected Result**:
+
+- Bun version is displayed.
+- Number of arguments "2" is displayed.
+- Arguments are displayed correctly (100, 200).
+- Sum "300" is displayed.
+
+**Verification Items**:
+
+- Bun interpreter launches correctly.
+- TypeScript file (.ts) is recognized correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
+
+**Notes**:
+
+- Bun is a fast JavaScript/TypeScript runtime.
+- If not installed, this test case can be skipped.
+
+---
+
+### TC11: UV Execution (PEP 723 Compatible)
+
+**Objective**: Confirm that Python scripts are executed correctly with UV (PEP 723 compatible).
+
+**Prerequisites**:
+
+- hello_args.py exists.
+- `uv` command is installed.
+
+**Steps**:
+
+1. Execute with UV: `gist-cache-rs run --filename hello_args.py uv 5 10 15`
+2. Check execution result.
+
+**Expected Result**:
+
+- Python version is displayed (Python environment managed by uv).
+- Number of arguments "3" is displayed.
+- Arguments are displayed correctly (5, 10, 15).
+- If the script has a sum calculation function, the sum "30" is displayed.
+
+**Verification Items**:
+
+- UV interpreter (`uv run`) launches correctly.
+- PEP 723 metadata is processed correctly.
+- Arguments are passed correctly.
+- Script executes successfully.
+
+---
+
+## Test Execution Order
+
+1. TC1: Bash Execution
+2. TC2: Python Execution
+3. TC3: Ruby Execution
+4. TC4: Node.js Execution
+5. TC5: PHP Execution
+6. TC6: Perl Execution
+7. TC7: PowerShell Execution
+8. TC8: TypeScript Execution (Deno)
+9. TC9: TypeScript Execution (ts-node)
+10. TC10: TypeScript Execution (Bun)
+11. TC11: UV Execution (PEP 723)
+
+## Notes
+
+- Ensure each interpreter is installed on the system.
+- Tests for uninstalled interpreters can be skipped.
+- TC7 (PowerShell) primarily targets PowerShell Core (`pwsh`) on Linux/macOS.
+- TC8-10 (TypeScript) verify operation with respective runtimes.
+  - **TC8 (Deno)**: Native TypeScript support, most recommended (operation confirmed).
+  - **TC9 (ts-node)**: Executes TypeScript on Node.js, requires installation (`npm install -g ts-node typescript`).
+  - **TC10 (Bun)**: Native TypeScript support, fast execution (requires installation).
+- TC11 (UV) specifically aims to verify PEP 723 compatibility.
+- Output format may vary depending on the specific script implementation.
+- Argument handling depends on the specifications of each language.
+```

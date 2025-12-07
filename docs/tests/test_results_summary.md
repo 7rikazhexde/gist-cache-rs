@@ -1,301 +1,301 @@
-## 機能検証テスト
+## Functional Verification Tests
 
-### 機能検証テスト実行結果（2025-11-01）
+### Functional Verification Test Results (2025-11-01)
 
-**テスト対象Gist**:
+**Target Gist**:
 
 - ID: 7bcb324e9291fa350334df8efb7f0deb
-- ファイル名: hello_args.sh
+- Filename: hello_args.sh
 - URL: https://gist.github.com/7rikazhexde/7bcb324e9291fa350334df8efb7f0deb
 
-#### テスト結果サマリー
+#### Test Result Summary
 
-| TC | テスト内容 | 結果 | 備考 |
+| TC | Test Content | Result | Notes |
 |---|---|---|---|
-| TC1 | 初回実行（キャッシュなし） | ✅ 成功 | APIから取得、キャッシュ作成確認 |
-| TC2 | 2回目実行（キャッシュあり） | ✅ 成功 | キャッシュから高速読み込み確認 |
-| TC3 | updateコマンド（変更なし） | ✅ 成功 | キャッシュ維持を確認 |
-| TC4 | Gist更新後の動作 | ✅ 成功 | 自動キャッシュ削除、最新版取得確認 |
-| TC5 | --forceオプション | ✅ 成功 | 自動update実行、最新版取得確認 |
-| TC6 | cache listコマンド | ✅ 成功 | キャッシュ一覧表示確認 |
-| TC7 | cache sizeコマンド | ✅ 成功 | キャッシュサイズ表示確認 |
-| TC8 | cache clearコマンド | ✅ 成功 | 全キャッシュ削除確認 |
+| TC1 | First execution (no cache) | ✅ Success | Confirmed retrieval from API, cache creation |
+| TC2 | Second execution (with cache) | ✅ Success | Confirmed fast loading from cache |
+| TC3 | update command (no change) | ✅ Success | Confirmed cache retention |
+| TC4 | Behavior after Gist update | ✅ Success | Confirmed automatic cache deletion, latest version retrieval |
+| TC5 | --force option | ✅ Success | Confirmed automatic update execution, latest version retrieval |
+| TC6 | cache list command | ✅ Success | Confirmed cache list display |
+| TC7 | cache size command | ✅ Success | Confirmed cache size display |
+| TC8 | cache clear command | ✅ Success | Confirmed all cache deletion |
 
-**全8件のテストケースが成功しました。**
+**All 8 test cases passed.**
 
-#### 主要な確認事項
+#### Key Verification Points
 
-✅ **コンテンツキャッシュの基本動作**
+✅ **Basic Content Cache Operation**
 
-- 初回実行時にGitHub APIから取得し、`~/.cache/gist-cache/contents/{gist_id}/{filename}`にキャッシュを作成
-- メッセージ「情報: キャッシュが存在しないため、GitHub APIから取得します...」が正しく表示
-- 2回目以降はキャッシュから即座に読み込み（ネットワークアクセスなし、約20倍高速）
+- On first execution, retrieves from GitHub API and caches to `~/.cache/gist-cache/contents/{gist_id}/{filename}`
+- Message "Info: Cache not found, fetching from GitHub API..." displayed correctly
+- Subsequent executions load instantly from cache (no network access, approx. 20x faster)
 
-✅ **メタデータ更新とキャッシュ鮮度管理**
+✅ **Metadata Update and Cache Freshness Management**
 
-- `update`コマンドでGist更新を検出：「Gist更新を検出: 7bcb324e9291fa350334df8efb7f0deb」
-- 更新されたGistのコンテンツキャッシュディレクトリが自動削除
-- 変更のないGistはキャッシュが維持される
+- `update` command detects Gist update: "Gist update detected: 7bcb324e9291fa350334df8efb7f0deb"
+- Content cache directory for updated Gist is automatically deleted
+- Unchanged Gists retain their cache
 
-✅ **Gist更新後の動作（TC4）**
+✅ **Behavior after Gist update (TC4)**
 
-- GitHub上でGistを編集（コメント追加: `# TEST MODIFICATION 1`）
-- `update --verbose`で「更新: 1件」を確認
-- コンテンツキャッシュディレクトリが削除されることを確認
-- 次回実行時に最新版が取得され、新しいキャッシュに反映
+- Edited Gist on GitHub (added comment: `# TEST MODIFICATION 1`)
+- Confirmed "Updated: 1 item" with `update --verbose`
+- Confirmed content cache directory is deleted
+- Latest version retrieved and reflected in new cache on next execution
 
-✅ **--forceオプションの動作（TC5）**
+✅ **--force Option Behavior (TC5)**
 
-- updateコマンドを手動実行せずに、`run --force`のみで実行
-- 実行前に自動的にupdateが実行される（出力：「Gistキャッシュを更新しています...」）
-- Gist更新が検出され、キャッシュが自動削除（出力：「更新: 1件」「キャッシュ削除: 1件」）
-- 最新版（`# TEST MODIFICATION 2`）が取得され、実行される
-- 開発中のGistを常に最新版で実行できることを確認
+- Executed with `run --force` without manually running update command
+- `update` is automatically executed before run (output: "Updating Gist cache...")
+- Gist update detected, cache automatically deleted (output: "Updated: 1 item", "Cache deleted: 1 item")
+- Latest version (`# TEST MODIFICATION 2`) retrieved and executed
+- Confirmed ability to always run the latest version of Gists under development
 
-✅ **cacheコマンドの動作（TC6-8）**
+✅ **cache Command Behavior (TC6-8)**
 
-- `cache list`: キャッシュ済みGistの一覧表示（ID、説明、ファイル名、更新日時、合計数）
-- `cache size`: キャッシュサイズ情報表示（Gist数、合計サイズ、ディレクトリパス）
-- `cache clear`: 確認プロンプト付きで全キャッシュを削除
+- `cache list`: Displays list of cached Gists (ID, description, filename, updated_at, total count)
+- `cache size`: Displays cache size information (number of Gists, total size, directory path)
+- `cache clear`: Clears all caches with a confirmation prompt
 
-#### 技術的な補足
+#### Technical Notes
 
-- Gist更新はGitHub CLI（`gh api`）を使用して自動化
-- 2回の編集を実行してTC4とTC5をテスト
-- 全てのテストで期待通りの動作を確認
-- レート制限残量: 4971（テスト終了時）
+- Gist updates automated using GitHub CLI (`gh api`)
+- Two edits performed to test TC4 and TC5
+- All tests confirmed expected behavior
+- Rate limit remaining: 4971 (at end of tests)
 
 ---
 
-### 機能検証テスト（テストセット2: 検索機能）実行結果（2025-11-01）
+### Functional Verification Test Results (Test Set 2: Search Functionality) (2025-11-01)
 
-**テスト設計書**: `request/functional_verification_test_design_search.md`
+**Test Design Document**: `request/functional_verification_test_design_search.md`
 
-**テスト対象Gist**:
+**Target Gists**:
 
-- 複数のhello_args系Gist（合計7件）
-- テスト用ID: 7bcb324e9291fa350334df8efb7f0deb (hello_args.sh)
+- Multiple hello_args related Gists (total 7)
+- Test ID: 7bcb324e9291fa350334df8efb7f0deb (hello_args.sh)
 
-#### テスト結果サマリー
+#### Test Result Summary
 
-| TC | テスト内容 | 結果 | 備考 |
+| TC | Test Content | Result | Notes |
 |---|---|---|---|
-| TC1 | Auto検索（デフォルト） | ✅ 成功 | キーワード"hello"で7件ヒット、選択UI確認 |
-| TC2 | ID直接指定（--id） | ✅ 成功 | ID指定モードメッセージ表示確認 |
-| TC3 | ファイル名検索（--filename） | ✅ 成功 | 単一結果、直接実行確認 |
-| TC4 | 説明文検索（--description） | ✅ 成功 | タグ検索"#bash"で2件ヒット確認 |
-| TC5 | 複数候補からの選択 | ✅ 成功 | 番号7選択でPythonスクリプト実行確認 |
-| TC6 | 検索結果0件のエラー | ✅ 成功 | エラーメッセージ、終了コード1確認 |
+| TC1 | Auto search (default) | ✅ Success | Keyword "hello" hit 7 items, confirmed selection UI |
+| TC2 | Direct ID specification (--id) | ✅ Success | Confirmed ID specification mode message display |
+| TC3 | Filename search (--filename) | ✅ Success | Single result, confirmed direct execution |
+| TC4 | Description search (--description) | ✅ Success | Tag search "#bash" hit 2 items, confirmed |
+| TC5 | Selection from multiple candidates | ✅ Success | Selected number 7, confirmed Python script execution |
+| TC6 | 0 search results error | ✅ Success | Confirmed error message, exit code 1 |
 
-**全6件のテストケースが成功しました。**
+**All 6 test cases passed.**
 
-#### 主要な確認事項
+#### Key Verification Points
 
-✅ **Auto検索（TC1）**
+✅ **Auto Search (TC1)**
 
-- キーワード「hello」で7件のGistがヒット
-- 複数候補の選択UI（番号付きリスト）が正しく表示
-- 各Gistの説明文とファイル名が表示される
-- 番号選択後、対応するGistが実行される
+- Keyword "hello" hit 7 Gists
+- Multiple candidate selection UI (numbered list) displayed correctly
+- Description and filename of each Gist displayed
+- After selecting a number, the corresponding Gist is executed
 
-✅ **ID直接指定（TC2）**
+✅ **Direct ID Specification (TC2)**
 
-- `--id 7bcb324e9291fa350334df8efb7f0deb`で直接Gistを指定
-- 検索プロセスをスキップして直接実行
-- 「ID指定モード」のメッセージが表示される
+- Specified Gist directly with `--id 7bcb324e9291fa350334df8efb7f0deb`
+- Skipped search process and executed directly
+- "ID specification mode" message displayed
 
-✅ **ファイル名検索（TC3）**
+✅ **Filename Search (TC3)**
 
-- `--filename hello_args.sh`で完全一致検索
-- 単一結果のため選択UIをスキップして直接実行
-- ファイル名のみが検索対象となり、説明文は除外される
+- Exact match search with `--filename hello_args.sh`
+- Skipped selection UI for single result and executed directly
+- Only filename is searched, description is excluded
 
-✅ **説明文検索（TC4）**
+✅ **Description Search (TC4)**
 
-- `--description "#bash"`でタグ検索
-- 説明文に「#bash」を含むGistのみヒット（2件）
-- ファイル名は検索対象外となる
-- タグを使った絞り込みが有効に機能
+- Tag search with `--description "#bash"`
+- Only Gists containing "#bash" in description hit (2 items)
+- Filename is not searched
+- Confirmed effective tag filtering
 
-✅ **複数候補の選択UI（TC5）**
+✅ **Selection UI from Multiple Candidates (TC5)**
 
-- キーワード「hello」で7件の候補が表示
-- 番号7を選択してPythonスクリプト（hello_args.py）が実行される
-- キャッシュ不在時のメッセージ「情報: キャッシュが存在しないため、GitHub APIから取得します...」を確認
-- 引数が正しく渡される
+- Keyword "hello" displayed 7 candidates
+- Selected number 7, confirmed Python script (hello_args.py) execution
+- Confirmed "Info: Cache not found, fetching from GitHub API..." message when cache is absent
+- Arguments passed correctly
 
-✅ **検索結果0件のエラーハンドリング（TC6）**
+✅ **Error Handling for 0 Search Results (TC6)**
 
-- 存在しないキーワード「nonexistent_gist_xyz」で検索
-- 明確なエラーメッセージ「No search results for query: nonexistent_gist_xyz」が表示
-- 終了コード1（非0）で終了
-- プログラムがクラッシュせず、適切にエラー処理される
+- Searched with non-existent keyword "nonexistent_gist_xyz"
+- Clear error message "No search results for query: nonexistent_gist_xyz" displayed
+- Exited with code 1 (non-zero)
+- Confirmed proper error handling without program crash
 
-#### 検証できた検索モード
+#### Verified Search Modes
 
-- ✅ **Auto検索**: ファイル名と説明文の両方を対象にした部分一致検索
-- ✅ **ID直接指定**: Gist IDによる直接アクセス
-- ✅ **ファイル名検索**: ファイル名のみを対象にした検索
-- ✅ **説明文検索**: 説明文のみを対象にした検索（タグ検索を含む）
-- ✅ **複数候補選択UI**: 番号入力による対話的な選択
-- ✅ **エラーハンドリング**: 検索結果0件時の適切なエラー処理
+- ✅ **Auto Search**: Partial match search targeting both filename and description
+- ✅ **Direct ID Specification**: Direct access by Gist ID
+- ✅ **Filename Search**: Search targeting only filename
+- ✅ **Description Search**: Search targeting only description (including tag search)
+- ✅ **Multiple Candidate Selection UI**: Interactive selection by number input
+- ✅ **Error Handling**: Proper error handling when 0 search results
 
 ---
 
-### 機能検証テスト（テストセット3: インタープリタ動作検証）実行結果（2025-11-01）
+### Functional Verification Test Results (Test Set 3: Interpreter Operation Verification) (2025-11-01)
 
-**テスト設計書**: `request/functional_verification_test_design_interpreter.md`
+**Test Design Document**: `request/functional_verification_test_design_interpreter.md`
 
-**テスト対象Gist**:
+**Target Gists**:
 
-- 各言語のhello_args系スクリプト（Bash, Python, Ruby, Node.js, PHP, Perl）
-- テスト用Bash ID: 7bcb324e9291fa350334df8efb7f0deb (hello_args.sh)
+- hello_args related scripts for various languages (Bash, Python, Ruby, Node.js, PHP, Perl)
+- Test Bash ID: 7bcb324e9291fa350334df8efb7f0deb (hello_args.sh)
 
-#### テスト結果サマリー
+#### Test Result Summary
 
-| TC | テスト内容 | 結果 | 備考 |
+| TC | Test Content | Result | Notes |
 |---|---|---|---|
-| TC1 | Bash実行 | ✅ 成功 | Bash 5.1.16、引数正常渡し確認 |
-| TC2 | Python実行 | ✅ 成功 | Python 3.12.4、引数正常渡し確認 |
-| TC3 | Ruby実行 | ✅ 成功 | Ruby 3.3.5、引数正常渡し確認 |
-| TC4 | Node.js実行 | ✅ 成功 | Node.js v22.13.0、引数正常渡し確認 |
-| TC5 | PHP実行 | ✅ 成功 | PHP 8.1.2、引数・数値計算確認 |
-| TC6 | Perl実行 | ✅ 成功 | Perl v5.34.0、引数正常渡し確認 |
-| TC7 | UV実行（PEP 723） | ✅ 成功 | Python 3.12.5、引数正常渡し確認 |
+| TC1 | Bash execution | ✅ Success | Bash 5.1.16, confirmed argument passing |
+| TC2 | Python execution | ✅ Success | Python 3.12.4, confirmed argument passing |
+| TC3 | Ruby execution | ✅ Success | Ruby 3.3.5, confirmed argument passing |
+| TC4 | Node.js execution | ✅ Success | Node.js v22.13.0, confirmed argument passing |
+| TC5 | PHP execution | ✅ Success | PHP 8.1.2, confirmed argument passing and numerical calculation |
+| TC6 | Perl execution | ✅ Success | Perl v5.34.0, confirmed argument passing |
+| TC7 | UV execution (PEP 723) | ✅ Success | Python 3.12.5, confirmed argument passing |
 
-**全7件のテストケースが成功しました。**
+**All 7 test cases passed.**
 
-#### 主要な確認事項
+#### Key Verification Points
 
-✅ **Bash実行（TC1）**
+✅ **Bash Execution (TC1)**
 
-- ID直接指定（`--id 7bcb324e9291fa350334df8efb7f0deb`）で実行
-- Bashバージョン表示: `5.1.16(1)-release`
-- 引数3個（arg1, arg2, arg3）が正しく渡される
-- 数値でないため「数値として計算できませんでした」が表示
+- Executed with direct ID specification (`--id 7bcb324e9291fa350334df8efb7f0deb`)
+- Bash version displayed: `5.1.16(1)-release`
+- 3 arguments (arg1, arg2, arg3) passed correctly
+- "Could not calculate as a number" displayed as arguments are not numerical
 
-✅ **Python実行（TC2）**
+✅ **Python Execution (TC2)**
 
-- ファイル名指定（`--filename hello_args.py`）で実行
-- Pythonバージョン表示: `3.12.4`
-- 引数3個（10, 20, 30）が正しく渡される
+- Executed with filename specification (`--filename hello_args.py`)
+- Python version displayed: `3.12.4`
+- 3 arguments (10, 20, 30) passed correctly
 
-✅ **Ruby実行（TC3）**
+✅ **Ruby Execution (TC3)**
 
-- ファイル名指定（`--filename hello_args.rb`）で実行
-- キャッシュ不在のためGitHub APIから取得
-- Rubyバージョン表示: `3.3.5`
-- 引数2個（test1, test2）が正しく渡される
+- Executed with filename specification (`--filename hello_args.rb`)
+- Retrieved from GitHub API due to cache absence
+- Ruby version displayed: `3.3.5`
+- 2 arguments (test1, test2) passed correctly
 
-✅ **Node.js実行（TC4）**
+✅ **Node.js Execution (TC4)**
 
-- ファイル名指定（`--filename hello_args.js`）で実行
-- キャッシュ不在のためGitHub APIから取得
-- Node.jsバージョン表示: `v22.13.0`
-- 引数2個（hello, world）が正しく渡される
+- Executed with filename specification (`--filename hello_args.js`)
+- Retrieved from GitHub API due to cache absence
+- Node.js version displayed: `v22.13.0`
+- 2 arguments (hello, world) passed correctly
 
-✅ **PHP実行（TC5）**
+✅ **PHP Execution (TC5)**
 
-- ファイル名指定（`--filename hello_args.php`）で実行
-- キャッシュ不在のためGitHub APIから取得
-- PHPバージョン表示: `8.1.2-1ubuntu2.22`
-- 引数2個（100, 200）が正しく渡される
-- 数値計算機能を確認: `100 + 200 = 300`
+- Executed with filename specification (`--filename hello_args.php`)
+- Retrieved from GitHub API due to cache absence
+- PHP version displayed: `8.1.2-1ubuntu2.22`
+- 2 arguments (100, 200) passed correctly
+- Numerical calculation confirmed: `100 + 200 = 300`
 
-✅ **Perl実行（TC6）**
+✅ **Perl Execution (TC6)**
 
-- ファイル名指定（`--filename hello_args.pl`）で実行
-- キャッシュ不在のためGitHub APIから取得
-- Perlバージョン表示: `v5.34.0`
-- 引数3個（foo, bar, baz）が正しく渡される
+- Executed with filename specification (`--filename hello_args.pl`)
+- Retrieved from GitHub API due to cache absence
+- Perl version displayed: `v5.34.0`
+- 3 arguments (foo, bar, baz) passed correctly
 
-✅ **UV実行 - PEP 723対応（TC7）**
+✅ **UV Execution - PEP 723 Compatible (TC7)**
 
-- ファイル名指定（`--filename hello_args.py`）で実行
-- インタープリタ指定: `uv`
-- Pythonバージョン表示: `3.12.5` (uvが管理する環境)
-- 引数3個（5, 10, 15）が正しく渡される
-- PEP 723メタデータが正しく処理される
+- Executed with filename specification (`--filename hello_args.py`)
+- Interpreter specified: `uv`
+- Python version displayed: `3.12.5` (environment managed by uv)
+- 3 arguments (5, 10, 15) passed correctly
+- PEP 723 metadata processed correctly
 
-#### 検証できた機能
+#### Verified Functions
 
-- ✅ **多言語サポート**: Bash, Python, Ruby, Node.js, PHP, Perl の6言語が正常動作
-- ✅ **UV統合**: PEP 723準拠のuvによるPython実行環境の自動管理
-- ✅ **引数の正常な受け渡し**: 各インタープリタで引数が正しく渡される
-- ✅ **バージョン表示**: 各言語のバージョン情報が正しく取得・表示される
-- ✅ **コンテンツキャッシュ**: 初回API取得後、2回目以降はキャッシュから高速読み込み
+- ✅ **Multi-language Support**: Bash, Python, Ruby, Node.js, PHP, Perl (6 languages) operate normally
+- ✅ **UV Integration**: Automatic management of Python execution environment by uv, compliant with PEP 723
+- ✅ **Correct Argument Passing**: Arguments passed correctly for each interpreter
+- ✅ **Version Display**: Version information for each language correctly retrieved and displayed
+- ✅ **Content Cache**: After initial API retrieval, subsequent loads are fast from cache
 
 ---
 
-### 機能検証テスト（テストセット4: プレビュー機能検証）実行結果（2025-11-01）
+### Functional Verification Test Results (Test Set 4: Preview Function Verification) (2025-11-01)
 
-**テスト設計書**: `request/functional_verification_test_design_preview.md`
+**Test Design Document**: `request/functional_verification_test_design_preview.md`
 
-**テスト対象Gist**:
+**Target Gists**:
 
 - create_folders.sh (ID: 587558d7c6a9d11b6ec648db364844da)
-- 各言語のhello_args系スクリプト（Python, Bash, Ruby）
+- hello_args related scripts for various languages (Python, Bash, Ruby)
 
-#### テスト結果サマリー
+#### Test Result Summary
 
-| TC | テスト内容 | 結果 | 備考 |
+| TC | Test Content | Result | Notes |
 |---|---|---|---|
-| TC1 | Auto検索でのプレビュー | ✅ 成功 | 対話的テスト、複数候補から選択 |
-| TC2 | ID直接指定でのプレビュー | ✅ 成功 | create_folders.sh全文表示確認 |
-| TC3 | ファイル名指定でのプレビュー | ✅ 成功 | hello_args.py全文表示確認 |
-| TC4 | キャッシュありでのプレビュー | ✅ 成功 | キャッシュから高速読み込み確認 |
-| TC5 | --previewロングオプション | ✅ 成功 | -pと同じ動作確認 |
+| TC1 | Preview with Auto Search | ✅ Success | Interactive test, selection from multiple candidates |
+| TC2 | Preview with Direct ID Specification | ✅ Success | Confirmed full display of create_folders.sh |
+| TC3 | Preview with Filename Specification | ✅ Success | Confirmed full display of hello_args.py |
+| TC4 | Preview with Cache | ✅ Success | Confirmed fast loading from cache |
+| TC5 | --preview long option | ✅ Success | Confirmed same behavior as -p |
 
-**全5件のテストケースが成功しました。**
+**All 5 test cases passed.**
 
-#### 主要な確認事項
+#### Key Verification Points
 
-✅ **Auto検索でのプレビュー（TC1）**
+✅ **Preview with Auto Search (TC1)**
 
-- キーワード検索で複数候補が表示される
-- 番号選択後、Gist内容がプレビュー表示される
-- スクリプトは実行されない（プレビューのみ）
+- Multiple candidates displayed in keyword search
+- Gist content preview displayed after selecting a number
+- Script is not executed (preview only)
 
-✅ **ID直接指定でのプレビュー（TC2）**
+✅ **Preview with Direct ID Specification (TC2)**
 
-- `--id 587558d7c6a9d11b6ec648db364844da`で直接指定
-- 「ID指定モード」メッセージが表示される
-- Description: 指定パスに連番付き（開始番号〜終了番号）のフォルダを100件単位で作成するスクリプト
+- Directly specified with `--id 587558d7c6a9d11b6ec648db364844da`
+- "ID specification mode" message displayed
+- Description: A script to create 100 folders with sequential numbers (start number to end number) in a specified path.
 - Files: create_folders.sh
-- `=== Gist内容 ===` セクション表示
-- `--- create_folders.sh ---` ヘッダー表示
-- スクリプト全文（約100行）が正しく表示される
-- スクリプトは実行されない
+- `=== Gist Content ===` section displayed
+- `--- create_folders.sh ---` header displayed
+- Full script (approx. 100 lines) displayed correctly
+- Script is not executed
 
-✅ **ファイル名指定でのプレビュー（TC3）**
+✅ **Preview with Filename Specification (TC3)**
 
-- `--filename hello_args.py`で検索
-- 単一結果のため直接プレビュー表示
-- Description: hello_args.py - Python引数テストスクリプト #python #test
-- Pythonスクリプト全文が正しく表示される
-- スクリプトは実行されない
+- Searched with `--filename hello_args.py`
+- Direct preview display for single result
+- Description: hello_args.py - Python argument test script #python #test
+- Full Python script displayed correctly
+- Script is not executed
 
-✅ **キャッシュありでのプレビュー（TC4）**
+✅ **Preview with Cache (TC4)**
 
-- hello_args.shのキャッシュが既に存在
-- `--id 7bcb324e9291fa350334df8efb7f0deb`で実行
-- 「情報: キャッシュが存在しないため...」メッセージは表示されない
-- キャッシュから高速に読み込まれる
-- Bashスクリプト全文が正しく表示される（TEST MODIFICATION 1, 2のコメントを含む）
-- スクリプトは実行されない
+- hello_args.sh cache already exists
+- Executed with `--id 7bcb324e9291fa350334df8efb7f0deb`
+- "Info: Cache not found..." message is not displayed
+- Fast loading from cache
+- Full Bash script displayed correctly (including TEST MODIFICATION 1, 2 comments)
+- Script is not executed
 
-✅ **--previewロングオプション（TC5）**
+✅ **--preview Long Option (TC5)**
 
-- `--preview --filename hello_args.rb`で実行
-- `-p`と同じプレビューモード動作
-- Description: hello_args.rb - Ruby引数テストスクリプト #ruby #test #gist-cache-rs
-- Rubyスクリプト全文が正しく表示される
-- スクリプトは実行されない
+- Executed with `--preview --filename hello_args.rb`
+- Same preview mode behavior as `-p`
+- Description: hello_args.rb - Ruby argument test script #ruby #test #gist-cache-rs
+- Full Ruby script displayed correctly
+- Script is not executed
 
-#### 検証できた機能
+#### Verified Functions
 
-- ✅ **プレビューモード基本動作**: `-p`/`--preview`オプションでスクリプトを実行せずに内容のみ表示
-- ✅ **検索モードとの併用**: Auto検索、ID直接指定、ファイル名検索の全てでプレビューが動作
-- ✅ **Gist内容の表示**: Description、Files、スクリプト全文が正しく表示される
-- ✅ **キャッシュ統合**: キャッシュありの場合は高速読み込み、なしの場合はAPI取得
-- ✅ **オプション形式**: ショートオプション（-p）とロングオプション（--preview）の両方が動作
+- ✅ **Basic Preview Mode Operation**: Displays content only without executing script with `-p`/`--preview` option
+- ✅ **Combination with Search Modes**: Preview works with Auto Search, Direct ID specification, and Filename Search
+- ✅ **Display of Gist Content**: Description, Files, and full script content displayed correctly
+- ✅ **Cache Integration**: Fast loading from cache if available, API retrieval otherwise
+- ✅ **Option Format**: Both short option (-p) and long option (--preview) work
