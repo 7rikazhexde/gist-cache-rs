@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-12-08
+
+### Added
+
+- **mdbook Documentation Structure**
+  - Comprehensive documentation organized into three sections:
+    - User Guide: Installation, Quick Start, Examples, Self-Update
+    - Developer Guide: Testing, Coverage, Test Inventory, GitHub CLI Testing
+    - Test Specifications: Detailed test results and test sets
+  - GitHub Pages deployment workflow for automatic documentation publishing
+  - Setup guide for mdbook configuration and deployment (docs/MDBOOK_SETUP.md)
+
+- **Development Tools**
+  - Pre-commit hooks configuration using prek/pre-commit
+  - markdownlint configuration for consistent markdown style
+
+### Changed
+
+- **Internationalization (i18n)**
+  - Translated all source code comments and error messages from Japanese to English
+  - Translated all documentation files to English:
+    - README.md, CLAUDE.md
+    - docs/: INSTALL.md, QUICKSTART.md, EXAMPLES.md, SELF-UPDATE.md
+    - docs/testing/: All testing documentation
+    - docs/tests/: All test specification documents
+  - Translated setup scripts (setup.sh, setup.ps1) and user-facing messages to English
+
 ## [0.5.8] - 2025-12-04
 
 ### Changed
