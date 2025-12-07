@@ -63,7 +63,7 @@ impl ScriptRunner {
 
         let result = self.execute();
 
-        // ダウンロードオプションが指定されている場合は、実行結果に関わらずダウンロード
+        // If download option is specified, download regardless of execution result
         if self.options.download {
             self.download_files()?;
         }
@@ -95,25 +95,25 @@ impl ScriptRunner {
     }
 
     fn preview_content(&self) -> Result<()> {
-        println!("{}", "=== Gist内容 ===".cyan().bold());
+        println!("{}", "=== Gist Content ===".cyan().bold());
 
         for file in &self.gist.files {
             println!("\n{}", format!("--- {} ---", file.filename).yellow().bold());
 
-            // キャッシュチェック
+            // Check cache
             let content_cache = ContentCache::new(self.config.contents_dir.clone());
 
             let content = if content_cache.exists(&self.gist.id, &file.filename) {
-                // キャッシュから読み込み
+                // Load from cache
                 match content_cache.read(&self.gist.id, &file.filename) {
                     Ok(c) => c,
                     Err(_) => {
-                        // キャッシュ読み込み失敗時はAPIから取得
+                        // Fetch from API if cache read fails
                         GitHubApi::new().fetch_gist_content(&self.gist.id, &file.filename)?
                     }
                 }
             } else {
-                // APIから取得
+                // Fetch from API
                 GitHubApi::new().fetch_gist_content(&self.gist.id, &file.filename)?
             };
 
@@ -129,49 +129,48 @@ impl ScriptRunner {
 
         println!(
             "{}",
-            format!("実行中: {} ({})", main_file.filename, self.interpreter).cyan()
+            format!("Executing: {} ({})", main_file.filename, self.interpreter).cyan()
         );
 
-        // キャッシュチェックと本文取得
+        // Check cache and fetch content
         let content_cache = ContentCache::new(self.config.contents_dir.clone());
 
         let content = if content_cache.exists(&self.gist.id, &main_file.filename) {
-            // キャッシュから読み込み
+            // Load from cache
             match content_cache.read(&self.gist.id, &main_file.filename) {
                 Ok(c) => {
                     if std::env::var("GIST_CACHE_VERBOSE").is_ok() {
-                        println!("{}", "  → キャッシュからロード".green());
+                        println!("{}", "  → Loaded from cache".green());
                     }
                     c
                 }
                 Err(e) => {
-                    // 自己修復の原則：キャッシュ読み込み失敗時はAPIから取得
+                    // Self-healing principle: Fetch from API if cache read fails
                     eprintln!(
                         "{}",
-                        format!("  警告: キャッシュ読み込み失敗、APIから取得します: {}", e)
-                            .yellow()
+                        format!("  Warning: Cache read failed, fetching from API: {}", e).yellow()
                     );
                     let fetched =
                         GitHubApi::new().fetch_gist_content(&self.gist.id, &main_file.filename)?;
 
-                    // 取得に成功したらキャッシュに保存を試みる
+                    // Try to save to cache if fetch succeeds
                     let _ = content_cache.write(&self.gist.id, &main_file.filename, &fetched);
 
                     fetched
                 }
             }
         } else {
-            // APIから取得
+            // Fetch from API
             println!(
                 "{}",
-                "  情報: キャッシュが存在しないため、GitHub APIから取得します...".yellow()
+                "  Info: Cache does not exist, fetching from GitHub API...".yellow()
             );
             GitHubApi::new().fetch_gist_content(&self.gist.id, &main_file.filename)?
         };
 
-        // 対話モードでの整合性確保：
-        // キャッシュから読み込む場合もAPIから取得する場合も、
-        // 常に一時ファイルを経由して実行することで動作を統一
+        // Ensure consistency in interactive mode:
+        // Whether loading from cache or fetching from API,
+        // always execute via temporary file to unify behavior
         let execution_result =
             if self.options.force_file_based || self.options.interactive || self.is_shell {
                 self.execute_via_temp_file(&content, &main_file.filename)
@@ -179,9 +178,9 @@ impl ScriptRunner {
                 self.execute_direct(&content)
             };
 
-        // 実行が成功した場合のみキャッシュに保存
+        // Save to cache only if execution succeeds
         if execution_result.is_ok() {
-            // キャッシュが存在しない場合のみ保存（既存のキャッシュは上書きしない）
+            // Save only if cache doesn't exist (don't overwrite existing cache)
             if !content_cache.exists(&self.gist.id, &main_file.filename) {
                 match content_cache.write(&self.gist.id, &main_file.filename, &content) {
                     Ok(_) => {
@@ -189,7 +188,7 @@ impl ScriptRunner {
                             println!(
                                 "{}",
                                 format!(
-                                    "  → キャッシュに保存しました: {}",
+                                    "  → Saved to cache: {}",
                                     self.config
                                         .contents_dir
                                         .join(&self.gist.id)
@@ -201,10 +200,10 @@ impl ScriptRunner {
                         }
                     }
                     Err(e) => {
-                        // キャッシュ保存失敗は警告のみ（実行は成功しているため）
+                        // Cache save failure is warning only (execution succeeded)
                         eprintln!(
                             "{}",
-                            format!("  警告: キャッシュ保存に失敗: {}", e).yellow()
+                            format!("  Warning: Failed to save cache: {}", e).yellow()
                         );
                     }
                 }
@@ -246,10 +245,10 @@ impl ScriptRunner {
         Ok(&self.gist.files[0])
     }
 
-    /// 一時ファイル経由での実行（対話モード、シェルスクリプト、file-basedインタープリタ）
+    /// Execute via temporary file (interactive mode, shell scripts, file-based interpreters)
     ///
-    /// 重要：キャッシュの有無に関わらず、この関数を使用することで
-    /// 対話的なスクリプトの動作が一貫することを保証
+    /// Important: Using this function ensures consistent behavior for
+    /// interactive scripts regardless of whether cache exists or not
     fn execute_via_temp_file(&self, content: &str, filename: &str) -> Result<()> {
         // Create temporary file
         let temp_dir = std::env::temp_dir();
@@ -298,7 +297,7 @@ impl ScriptRunner {
         }
 
         // Run with inherited stdio for interactive mode
-        // 対話モードでは標準入力を継承することで、readコマンドなどが正常に動作
+        // Inherit stdin in interactive mode so commands like `read` work properly
         let status = cmd
             .stdin(Stdio::inherit())
             .stdout(Stdio::inherit())
@@ -318,7 +317,7 @@ impl ScriptRunner {
         Ok(())
     }
 
-    /// 標準入力経由での直接実行（非対話モード、stdin対応インタープリタ）
+    /// Direct execution via stdin (non-interactive mode, stdin-compatible interpreters)
     fn execute_direct(&self, content: &str) -> Result<()> {
         // Build command with interpreter-specific flags for stdin execution
         let mut cmd = match self.interpreter.as_str() {
@@ -396,40 +395,40 @@ impl ScriptRunner {
 
     fn download_files(&self) -> Result<()> {
         println!();
-        println!("{}", "=== ファイルをダウンロード中 ===".cyan().bold());
+        println!("{}", "=== Downloading Files ===".cyan().bold());
 
-        // ダウンロードディレクトリを確保
+        // Ensure download directory exists
         self.config.ensure_download_dir()?;
 
         let content_cache = ContentCache::new(self.config.contents_dir.clone());
 
         for file in &self.gist.files {
-            // キャッシュから読み込むか、APIから取得
+            // Load from cache or fetch from API
             let content = if content_cache.exists(&self.gist.id, &file.filename) {
                 match content_cache.read(&self.gist.id, &file.filename) {
                     Ok(c) => c,
                     Err(_) => {
-                        // キャッシュ読み込み失敗時はAPIから取得
+                        // Fetch from API if cache read fails
                         GitHubApi::new().fetch_gist_content(&self.gist.id, &file.filename)?
                     }
                 }
             } else {
-                // APIから取得
+                // Fetch from API
                 let fetched = GitHubApi::new().fetch_gist_content(&self.gist.id, &file.filename)?;
 
-                // ダウンロード時はキャッシュも作成
+                // Also create cache when downloading
                 let _ = content_cache.write(&self.gist.id, &file.filename, &fetched);
 
                 fetched
             };
 
-            // ダウンロードフォルダに保存
+            // Save to download folder
             let download_path = self.config.download_dir.join(&file.filename);
             fs::write(&download_path, &content)?;
 
             println!(
                 "{}",
-                format!("  ✓ ダウンロード完了: {}", download_path.display()).green()
+                format!("  ✓ Download complete: {}", download_path.display()).green()
             );
         }
 
@@ -437,7 +436,7 @@ impl ScriptRunner {
         println!(
             "{}",
             format!(
-                "{}件のファイルを{}に保存しました",
+                "Saved {} file(s) to {}",
                 self.gist.files.len(),
                 self.config.download_dir.display()
             )

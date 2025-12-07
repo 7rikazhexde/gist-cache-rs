@@ -2,23 +2,23 @@ use crate::cache::types::GitHubGist;
 use crate::error::Result;
 use chrono::{DateTime, Utc};
 
-/// GitHub API操作のトレイト
-/// テスト時にモック実装を注入できるようにする
+/// Trait for GitHub API operations
+/// Allows injecting mock implementations during testing
 #[cfg_attr(test, mockall::automock)]
 pub trait GitHubClient {
-    /// GitHub CLIの認証状態を確認
+    /// Check GitHub CLI authentication status
     fn check_auth(&self) -> Result<()>;
 
-    /// 認証済みユーザー名を取得
+    /// Get authenticated user name
     fn get_user(&self) -> Result<String>;
 
-    /// APIレート制限の残数を確認
+    /// Check API rate limit remaining
     fn check_rate_limit(&self) -> Result<i64>;
 
-    /// Gist一覧を取得（差分更新用のsinceパラメータ対応）
+    /// Fetch Gist list (supports since parameter for differential updates)
     fn fetch_gists(&self, since: Option<DateTime<Utc>>) -> Result<Vec<GitHubGist>>;
 
-    /// 特定Gistファイルの内容を取得
+    /// Fetch content of a specific Gist file
     fn fetch_gist_content(&self, gist_id: &str, filename: &str) -> Result<String>;
 }
 
@@ -61,7 +61,7 @@ mod tests {
     fn test_mock_fetch_gists() {
         let mut mock = MockGitHubClient::new();
 
-        // テスト用のGistデータを作成
+        // Create test Gist data
         let test_gist = GitHubGist {
             id: "test123".to_string(),
             description: Some("Test gist".to_string()),

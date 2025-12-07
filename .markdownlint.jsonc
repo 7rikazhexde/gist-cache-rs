@@ -1,40 +1,30 @@
 {
   // Enable all default rules
   "default": true,
-
   // MD003: Heading style - use ATX style (# Heading)
   "MD003": {
     "style": "atx"
   },
-
   // MD007: Unordered list indentation - 2 spaces
   "MD007": {
     "indent": 2
   },
-
   // MD013: Line length - 120 characters (exclude code blocks and tables)
-  "MD013": {
-    "line_length": 120,
-    "code_blocks": false,
-    "tables": false
-  },
-
+  "MD013": false,
   // MD024: Multiple headings with the same content - allow if not siblings
   "MD024": {
     "siblings_only": true
   },
-
   // MD025: Multiple top-level headings
   "MD025": {
     "front_matter_title": ""
   },
-
   // MD033: Inline HTML - disable (allow HTML in markdown)
   "MD033": false,
-
   // MD034: Bare URL used - disable (allow bare URLs)
   "MD034": false,
-
   // MD041: First line in file should be a top level heading - disable
-  "MD041": false
+  "MD041": false,
+  // MD060: Table column style - enforce aligned style
+  "MD060": false
 }

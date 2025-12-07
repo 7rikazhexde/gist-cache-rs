@@ -1,212 +1,214 @@
 # CLAUDE.md
 
-このファイルは、Claude Code (claude.ai/code) がこのリポジトリで作業する際のガイダンスを提供します。
+This file provides guidance for Claude Code (claude.ai/code) when working on this repository.
 
-## プロジェクト概要
+## Project Overview
 
-**gist-cache-rs** は、GitHub Gistを効率的にキャッシュ・検索・実行するためのRust製CLIツールです。高速な差分更新、複数言語のスクリプト実行サポート、コンテンツキャッシュ機能を提供します。
+**gist-cache-rs** is a Rust CLI tool for efficiently caching, searching, and executing GitHub Gists. It offers fast incremental updates, multi-language script execution support, and content caching capabilities.
 
-**対応プラットフォーム**: Linux、macOS、Windows 10以降
+**Supported Platforms**: Linux, macOS, Windows 10 or later
 
 <!-- markdownlint-disable-next-line MD013 -->
-**サポート対象インタープリタ**: bash, sh, zsh, python3, ruby, node, php, perl, pwsh (PowerShell Core), TypeScript (ts-node, deno, bun), uv
+**Supported Interpreters**: bash, sh, zsh, python3, ruby, node, php, perl, pwsh (PowerShell Core), TypeScript (ts-node, deno, bun), uv
 
-## 開発コマンド
+## Development Commands
 
-### ビルドとテスト
+### Build and Test
 
 ```bash
-# 開発ビルド
+# Development build
 cargo build
 
-# リリースビルド（最適化済み）
+# Release build (optimized)
 cargo build --release
 
-# ローカルインストール
+# Local installation
 cargo install --path .
 
-# テスト実行
+# Run tests
 cargo test
 
-# 詳細出力付きテスト実行
+# Run tests with verbose output
 cargo test -- --nocapture
 ```
 
-### コード品質チェック（justfile経由）
+### Code Quality Checks (via justfile)
 
 ```bash
-# 全チェックを実行（フォーマット、lint、テスト）
+# Run all checks (format, lint, test)
 just check
 
-# フォーマットチェックのみ
+# Format check only
 just fmt-check
 
-# clippyでlint
+# Lint with clippy
 just lint
 
-# テストを静かに実行
+# Run tests silently
 just test
 
-# コードを自動フォーマット
+# Auto-format code
 just fmt
 
-# CI用チェック（警告をエラーとして扱う）
+# CI checks (treat warnings as errors)
 just ci-check
 ```
 
-### アプリケーションの実行
+### Application Execution
 
 ```bash
-# キャッシュ更新
+# Cache update
 cargo run -- update
 cargo run -- update --force
 cargo run -- update --verbose
 
-# Gist実行
+# Gist execution
 cargo run -- run <query> [interpreter] [args...]
 cargo run -- run --preview <query>
 cargo run -- run --interactive <query>
-cargo run -- run --force <query>  # 実行前にキャッシュ更新
-cargo run -- run --download <query>  # ダウンロードフォルダに保存
+cargo run -- run --force <query>  # Update cache before execution
+cargo run -- run --download <query>  # Save to download folder
 
-# キャッシュ管理
+# Cache management
 cargo run -- cache list
 cargo run -- cache size
 cargo run -- cache clear
 
-# アプリケーション自体の更新
-cargo run -- self update --check         # 更新確認のみ
-cargo run -- self update                 # 最新版に更新（GitHub Releases）
-cargo run -- self update --from-source   # ソースからビルドして更新
+# Application self-update
+cargo run -- self update --check         # Check for updates only
+cargo run -- self update                 # Update to latest version (GitHub Releases)
+cargo run -- self update --from-source   # Update by building from source
 cargo run -- self update --verbose
 ```
 
-## アーキテクチャ概要
+## Architecture Overview
 
-### ファイル構造
+### File Structure
 
 ```bash
 src/
-├── cache/              # キャッシュ管理層
-│   ├── content.rs      # コンテンツキャッシュ (541行)
-│   ├── types.rs        # データ型定義 (246行)
-│   ├── update.rs       # 差分更新ロジック (849行)
+├── cache/              # Cache management layer
+│   ├── content.rs      # Content cache (541 lines)
+│   ├── types.rs        # Data type definitions (246 lines)
+│   ├── update.rs       # Incremental update logic (849 lines)
 │   └── mod.rs
-├── github/             # GitHub API統合
-│   ├── api.rs          # GitHub CLI wrapper (212行)
-│   ├── client.rs       # トレイト定義 (104行)
+├── github/             # GitHub API integration
+│   ├── api.rs          # GitHub CLI wrapper (212 lines)
+│   ├── client.rs       # Trait definitions (104 lines)
 │   └── mod.rs
-├── execution/          # スクリプト実行
-│   ├── runner.rs       # マルチインタープリタ実行 (758行)
+├── execution/          # Script execution
+│   ├── runner.rs       # Multi-interpreter execution (758 lines)
 │   └── mod.rs
-├── search/             # 検索機能
-│   ├── query.rs        # 検索クエリ処理 (420行)
+├── search/             # Search functionality
+│   ├── query.rs        # Search query processing (420 lines)
 │   └── mod.rs
-├── self_update/        # Self-update機能
-│   ├── updater.rs      # アプリ更新ロジック
+├── self_update/        # Self-update feature
+│   ├── updater.rs      # Application update logic
 │   └── mod.rs
-├── cli.rs              # CLI引数処理 (967行)
-├── config.rs           # 設定管理 (163行)
-├── error.rs            # エラー型定義 (160行)
-├── lib.rs              # ライブラリルート
-└── main.rs             # エントリーポイント
+├── cli.rs              # CLI argument processing (967 lines)
+├── config.rs           # Configuration management (163 lines)
+├── error.rs            # Error type definitions (160 lines)
+├── lib.rs              # Library root
+└── main.rs             # Entry point
 
-合計: 18ファイル, 約4,600行
+Total: 18 files, approx. 4,600 lines
 ```
 
-### モジュール構造
+### Module Structure
 
-コードベースは明確な関心の分離を持つモジュラーアーキテクチャに従っています：
+The codebase follows a modular architecture with clear separation of concerns:
 
-**`cache/`** - キャッシュ管理層（2層キャッシング構造）
+**`cache/`** - Cache management layer (2-layer caching structure)
 
-- `types.rs`: コアデータ構造（`GistCache`, `GistInfo`, `GistFile`, `CacheMetadata`）
-- `update.rs`: `CacheUpdater`はGitHub APIの`since`パラメータを使用した差分メタデータキャッシュ更新を処理。Gist更新検出時に対応するコンテンツキャッシュを自動削除
-- `content.rs`: `ContentCache`は`~/.cache/gist-cache/contents/{gist_id}/{filename}`に個別のGistコンテンツファイルを管理。初回実行時に作成され、2回目以降の実行を高速化（約20倍）
+- `types.rs`: Core data structures (`GistCache`, `GistInfo`, `GistFile`, `CacheMetadata`)
+- `update.rs`: `CacheUpdater` handles incremental metadata cache updates using GitHub API`s`since` parameter. Automatically deletes corresponding content cache when Gist updates are detected.
+- `content.rs`: `ContentCache` manages individual Gist content files in `~/.cache/gist-cache/contents/{gist_id}/{filename}`. Created on first execution, speeding up subsequent executions (approx. 20x).
 
-**`github/`** - GitHub API統合
+**`github/`** - GitHub API integration
 
-- `api.rs`: `GitHubApi`は認証、レート制限チェック、gist取得のためにGitHub CLI（`gh`）をラップ
-- 全てのGitHub操作は直接REST APIコールではなく`gh` CLIを使用
+- `api.rs`: `GitHubApi` wraps GitHub CLI (`gh`) for authentication, rate limit checks, and gist retrieval.
+- All GitHub operations use `gh` CLI instead of direct REST API calls.
 
-**`search/`** - 検索機能
+**`search/`** - Search functionality
 
-- `query.rs`: 複数モード（Auto、Id、Filename、Description）を持つ`SearchQuery`を実装
-- 番号付きプロンプトを使用したインタラクティブ選択UI
+- `query.rs`: Implements `SearchQuery` with multiple modes (Auto, ID, Filename, Description).
+- Interactive selection UI using numbered prompts.
 
-**`execution/`** - スクリプト実行
+**`execution/`** - Script execution
 
-- `runner.rs`: `ScriptRunner`は複数インタープリタ実行（bash、python、ruby、node、php、perl、pwsh、TypeScript、uv）を処理
-- stdin ベースとファイルベースの両方の実行モードをサポート
-- `uv`インタープリタはPEP 723メタデータサポートのためにファイルベース実行を使用
-- `pwsh`（PowerShell Core）と`powershell`（Windows PowerShell）はスクリプト実行ポリシーとの互換性のためファイルベース実行を使用
-- TypeScriptインタープリタ（`ts-node`、`deno`、`bun`）はモジュール解決のためファイルベース実行を使用
-- `read`などを使用するスクリプト用のインタラクティブモード
+- `runner.rs`: `ScriptRunner` handles multi-interpreter execution (bash, python, ruby, node, php, perl, pwsh, TypeScript, uv).
+- Supports both stdin-based and file-based execution modes.
+- `uv` interpreter uses file-based execution for PEP 723 metadata support.
+- `pwsh` (PowerShell Core) and `powershell` (Windows PowerShell) use file-based execution for compatibility with script execution policies.
+- TypeScript interpreters (`ts-node`, `deno`, `bun`) use file-based execution for module resolution.
+  - `ts-node`: Executes TypeScript on Node.js
+  - `deno`: Uses `deno run` command in Deno runtime
+  - `bun`: Executes in Bun runtime
+- Interactive mode for scripts using `read`, etc.
 
-**`self_update/`** - アプリケーション自己更新機能
+**`self_update/`** - Application self-update feature
 
-- `updater.rs`: `Updater`はGitHub Releasesまたはソースからの自動更新を処理
-- **GitHub Releases更新**: `self_update` crateを使用したバイナリダウンロード
-- **ソースビルド更新**: git pull + cargo installによるビルド更新
-- 更新確認（`--check`）、強制更新（`--force`）、バージョン指定更新をサポート
-- リポジトリパス検出: 環境変数 → cargo metadata → エラー
-- トラッキング情報がない場合は自動的にorigin/mainから取得
+- `updater.rs`: `Updater` handles automatic updates from GitHub Releases or source.
+- **GitHub Releases update**: Binary download using `self_update` crate.
+- **Source build update**: Build update via git pull + cargo install.
+- Supports update checks (`--check`), forced updates (`--force`), and version-specific updates.
+- Repository path detection: environment variable → cargo metadata → error.
+- Automatically fetches from origin/main if no tracking info is available.
 
-**`config.rs`** - 設定管理
+**`config.rs`** - Configuration management
 
-- キャッシュパスを管理（プラットフォーム別）：
-  - 環境変数`GIST_CACHE_DIR`でオーバーライド可能（テスト用）
-  - Unix: `~/.cache/gist-cache/cache.json` と `~/.cache/gist-cache/contents/`
-  - Windows: `%LOCALAPPDATA%\gist-cache\cache.json` と `%LOCALAPPDATA%\gist-cache\contents\`
-- ダウンロードパスを管理：`dirs::download_dir()`を使用してOSの標準に従う
-- テスト環境での分離：`GIST_CACHE_DIR`を設定することで、実際のユーザーキャッシュに影響を与えずにテスト可能
+- Manages cache paths (platform-specific):
+  - Overridable by environment variable `GIST_CACHE_DIR` (for testing).
+  - Unix: `~/.cache/gist-cache/cache.json` and `~/.cache/gist-cache/contents/`
+  - Windows: `%LOCALAPPDATA%\gist-cache\cache.json` and `%LOCALAPPDATA%\gist-cache\contents\`
+- Manages download path: Uses `dirs::download_dir()` to conform to OS standards.
+- Isolation in test environment: Can be tested without affecting actual user cache by setting `GIST_CACHE_DIR`.
 
-**`error.rs`** - `thiserror`を使用した集中エラー処理
+**`error.rs`** - Centralized error handling using `thiserror`.
 
-### 主要な設計パターン
+### Key Design Patterns
 
-1. **差分更新**: メタデータキャッシュ更新はGitHub APIの`since`パラメータを使用して変更されたgistのみを取得。タイムスタンプは`cache.json`の`last_updated`に保存
+1. **Incremental Updates**: Metadata cache updates use GitHub API`s`since` parameter to fetch only changed gists. Timestamp stored in `last_updated` of `cache.json`.
 
-2. **2層キャッシング（オンデマンド方式）**:
-   - **メタデータキャッシュ**: `cache.json`にgistメタデータ（id、description、files、updated_at）を格納。`update`コマンドで更新
-   - **コンテンツキャッシュ**: `contents/{gist_id}/{filename}`に実際のスクリプト本文を保存。実行時にオンデマンドで作成し、Gist更新時に自動削除
-   - **キャッシュ鮮度管理**: `update`コマンドが新旧メタデータの`updated_at`を比較し、更新されたGistのコンテンツキャッシュディレクトリを削除
+2. **2-Layer Caching (On-demand)**:
+   - **Metadata Cache**: Stores gist metadata (id, description, files, updated_at) in `cache.json`. Updated with the `update` command.
+   - **Content Cache**: Stores actual script body in `contents/{gist_id}/{filename}`. Created on-demand during execution and automatically deleted when Gist updates.
+   - **Cache Freshness Management**: The `update` command compares `updated_at` of new and old metadata, and deletes the content cache directory (`contents/{gist_id}/`) for updated Gists.
 
-3. **GitHub CLI統合**: 認証とAPI アクセスに直接REST APIコールではなく`gh`コマンドを使用
+3. **GitHub CLI Integration**: Uses `gh` command for authentication and API access instead of direct REST API calls.
 
-4. **複数インタープリタサポート**: 実行層は異なるインタープリタを抽象化し、特別な処理を実装:
-   - シェルスクリプト（bash/sh/zsh）: 直接実行
-   - `uv`: PEP 723サポートのため`uv run`コマンドを使用したファイルベース
-   - `php`: 信頼性の高い引数処理のための強制ファイルベース実行
-   - `pwsh`/`powershell`: スクリプト実行ポリシー互換性のための強制ファイルベース実行
-   - TypeScript（`ts-node`、`deno`、`bun`）: モジュール解決とランタイム要件のための強制ファイルベース実行
-     - `ts-node`: Node.js上でTypeScriptを実行
-     - `deno`: Denoランタイムで`deno run`コマンドを使用
-     - `bun`: Bunランタイムで実行
-   - その他: 標準的なstdinベース実行
+4. **Multi-Interpreter Support**: The execution layer abstracts different interpreters and implements special handling:
+   - Shell scripts (bash/sh/zsh): Direct execution.
+   - `uv`: File-based using `uv run` command for PEP 723 support.
+   - `php`: Forced file-based execution for reliable argument handling.
+   - `pwsh`/`powershell`: Forced file-based execution for script execution policy compatibility.
+   - TypeScript (`ts-node`, `deno`, `bun`): Forced file-based execution for module resolution and runtime requirements.
+     - `ts-node`: Executes TypeScript on Node.js.
+     - `deno`: Uses `deno run` command in Deno runtime.
+     - `bun`: Executes in Bun runtime.
+   - Others: Standard stdin-based execution.
 
-5. **検索モード**: 柔軟な検索をサポート:
-   - `Auto`: クエリがGist ID（32文字の16進数）か検出し、またはファイル名/説明文を検索
-   - `Id`: 直接ID検索
-   - `Filename`: ファイル名のみを検索
-   - `Description`: 説明文のみを検索
+5. **Search Modes**: Supports flexible searching:
+   - `Auto`: Detects if query is a Gist ID (32-character hexadecimal), or searches filename/description.
+   - `Id`: Direct ID search.
+   - `Filename`: Searches filenames only.
+   - `Description`: Searches descriptions only.
 
-6. **--forceオプション**: `run`コマンドで`--force`を指定すると、実行前に自動的に`update`コマンドを実行（差分更新）し、最新のGist情報を取得してから実行。更新されたGistは自動的に最新版が取得される
+6. **`--force` Option**: When `--force` is specified with the `run` command, it automatically executes the `update` command (incremental update, not `update --force`) before execution to get the latest Gist information. If the Gist was updated, the latest version is automatically fetched.
 
-7. **--downloadオプション**: `run`コマンドで`--download`を指定すると、Gistファイルをダウンロードフォルダ（`~/Downloads`）に保存。
-   実行可能なスクリプトキャッシュとは別に、個別に保存したい場合に便利。
-   ダウンロード時にコンテンツキャッシュも自動作成され、2回目以降の実行が高速化。
-   他のオプション（`--preview`, `--force`, `--interactive`など）と併用可能
+7. **`--download` Option**: When `--download` is specified with the `run` command, the Gist file is saved to the download folder (`~/Downloads`).
+   Convenient for saving files separately from executable script caches.
+   Content cache is also automatically created during download, speeding up subsequent executions. Can be used with other options (`--preview`, `--force`, `--interactive`, etc.).
 
-## 重要な実装詳細
+## Important Implementation Details
 
-### 日時処理
+### Date and Time Handling
 
-全てのタイムスタンプは、元のbash実装との互換性を維持するため、サブ秒なしのISO 8601形式（`%Y-%m-%dT%H:%M:%SZ`）を使用。`cache/types.rs`にカスタムシリアライザ/デシリアライザあり。
+All timestamps use ISO 8601 format (`%Y-%m-%dT%H:%M:%SZ`) without sub-seconds to maintain compatibility with the original bash implementation. Custom serializer/deserializer is available in `cache/types.rs`.
 
-### キャッシュファイル形式
+### Cache File Format
 
-`cache.json`の構造：
+Structure of `cache.json`:
 
 ```json
 {
@@ -219,142 +221,142 @@ src/
 }
 ```
 
-### 実行モード
+### Execution Modes
 
-- **Stdinモード**（デフォルト）: スクリプトコンテンツをインタープリタに直接パイプ
-- **ファイルモード**（uv、php、interactive）: 実行用に一時ファイルを作成
-- **インタラクティブモード**（`-i`）: `read`コマンドをサポートするためstdioに`inherit()`を使用
-- **プレビューモード**（`-p`/`--preview`）: スクリプトを実行せず、Description、Files、Gist内容のみを表示。検索モード（Auto、ID、Filename、Description）と組み合わせ可能
+- **Stdin Mode** (default): Pipes script content directly to the interpreter.
+- **File Mode** (uv, php, interactive): Creates a temporary file for execution.
+- **Interactive Mode** (`-i`): Uses `inherit()` for stdio to support `read` command in scripts.
+- **Preview Mode** (`-p`/`--preview`): Displays only Description, Files, and Gist content without executing the script. Can be combined with search modes (Auto, ID, Filename, Description).
 
-### プラットフォーム固有の実装
+### Platform-Specific Implementations
 
-**Windows対応**:
+**Windows Support**:
 
-- **パーミッション設定**: 条件付きコンパイル（`#[cfg(unix)]`）を使用し、Unix環境のみで`chmod`を実行。Windowsではファイル拡張子で実行可能性が決定されるため、パーミッション設定は不要
-- **パス設定**: `src/config.rs`でプラットフォーム別のキャッシュディレクトリを使用
+- **Permission Settings**: Uses conditional compilation (`#[cfg(unix)]`) to run `chmod` only on Unix environments. On Windows, file executability is determined by file extension, so permission settings are not required.
+- **Path Settings**: Uses platform-specific cache directories in `src/config.rs`.
   - Unix: `~/.cache/gist-cache`
-  - Windows: `%LOCALAPPDATA%\gist-cache`（`dirs::cache_dir()`を使用）
-  - ダウンロードディレクトリは全プラットフォームで`dirs::download_dir()`を使用
-- **インストールスクリプト**: PowerShell版（`script/setup.ps1`）を提供
+  - Windows: `%LOCALAPPDATA%\gist-cache` (uses `dirs::cache_dir()`)
+  - Download directory uses `dirs::download_dir()` for all platforms.
+- **Installation Script**: Provides a PowerShell version (`script/setup.ps1`).
 
-**クロスプラットフォーム設計**:
+**Cross-Platform Design**:
 
-- 条件付きコンパイル（`cfg`属性）で明示的に分岐
-- プラットフォーム非依存のコードを優先
-- 既存のLinux/macOS環境に影響を与えないデグレード防止
+- Explicit branching with conditional compilation (`cfg` attributes).
+- Prioritizes platform-independent code.
+- Degrade prevention to avoid affecting existing Linux/macOS environments.
 
-### レート制限
+### Rate Limiting
 
-Updaterはレート制限をチェックし、残りリクエストが50未満の場合に警告。`update --force`による強制全件更新は全gistを取得するため、大量のレート制限を消費する可能性あり。
+The Updater checks the rate limit and warns if remaining requests are less than 50. Forced full updates via `update --force` can consume a significant amount of rate limits as it fetches all gists.
 
-### コンテンツキャッシュの動作フロー
+### Content Cache Behavior Flow
 
-1. **初回実行**: GitHub APIから本文を取得し、実行後に`contents/{gist_id}/{filename}`にキャッシュを作成
-2. **2回目以降**: キャッシュから読み込んで実行（ネットワークアクセス不要、約20倍高速）
-3. **Gist更新時**: `update`コマンドがメタデータの`updated_at`変更を検出し、該当するコンテンツキャッシュディレクトリ（`contents/{gist_id}/`）を自動削除
-4. **更新後の初回実行**: 最新版をAPIから取得し、新しいキャッシュを作成
+1. **First Execution**: Fetches content from GitHub API and creates a cache in `contents/{gist_id}/{filename}` after execution.
+2. **Subsequent Executions**: Reads from cache for faster execution (no network access, approx. 20x faster).
+3. **Gist Update**: The `update` command detects changes in `updated_at` of metadata and automatically deletes the corresponding content cache directory (`contents/{gist_id}/`).
+4. **First Execution After Update**: Fetches the latest version from API and creates a new cache.
 
-### --forceオプションの動作
+### `--force` Option Behavior
 
-`run --force`を指定すると：
+When `run --force` is specified:
 
-1. 実行前に自動的に`update`コマンドを実行（差分更新、`update --force`ではない）
-2. Gistが更新されていればコンテンツキャッシュが削除される
-3. 最新版を取得して実行
-4. 新しいキャッシュを作成
+1. Automatically executes the `update` command (incremental update, not `update --force`) before execution.
+2. If the Gist was updated, the content cache is deleted.
+3. Fetches and executes the latest version.
+4. Creates a new cache.
 
-これにより、開発中のGistを頻繁に更新している場合でも、常に最新版を実行できる。
+This ensures that even when Gists are frequently updated during development, the latest version is always executed.
 
-## テスト
+## Tests
 
-テストは非同期関数用に`tokio::test`を使用し、`#[cfg(test)]`を使ってモジュールとインラインで配置。現在`src/cache/content.rs`に最小限のテストカバレッジ。
+Tests use `tokio::test` for asynchronous functions and are placed in modules and inline using `#[cfg(test)]`. Currently, `src/cache/content.rs` has minimal test coverage.
 
-開発用依存関係：
+Development dependencies:
 
-- `assert_cmd`: CLI統合テスト用
-- `tempfile`: 一時テストフィクスチャ用
+- `assert_cmd`: For CLI integration tests.
+- `tempfile`: For temporary test fixtures.
 
-## キャッシュ管理コマンド
+## Cache Management Commands
 
-`cache`サブコマンドで実装されたコンテンツキャッシュ管理機能（main.rs:287-412）：
+Content cache management functions implemented with `cache` subcommand (main.rs:287-412):
 
-- `cache list`: キャッシュされたGistの一覧表示（ID、説明、ファイル名、更新日時）
-- `cache size`: キャッシュディレクトリの合計サイズを表示
-- `cache clean`: 孤立キャッシュの削除（未実装、将来予定）
-- `cache clear`: 全コンテンツキャッシュを削除（確認プロンプト付き）
+- `cache list`: Displays a list of cached Gists (ID, description, filename, update time).
+- `cache size`: Displays the total size of the cache directory.
+- `cache clean`: Deletes orphaned caches (not yet implemented, planned for future).
+- `cache clear`: Deletes all content caches (with confirmation prompt).
 
-`ContentCache`構造体（src/cache/content.rs）が提供するメソッド：
+Methods provided by `ContentCache` struct (src/cache/content.rs):
 
-- `list_cached_gists()`: キャッシュ済みGist IDの一覧取得
-- `total_size()`: キャッシュディレクトリの合計サイズ計算
-- `clear_all()`: 全キャッシュ削除
-- `read()`, `write()`, `exists()`: 個別キャッシュの読み書き
+- `list_cached_gists()`: Get a list of cached Gist IDs.
+- `total_size()`: Calculate the total size of the cache directory.
+- `clear_all()`: Delete all caches.
+- `read()`, `write()`, `exists()`: Read/write individual caches.
 
-## リリースプロセス
+## Release Process
 
-### 自動リリースビルド
+### Automated Release Builds
 
-タグをプッシュすると、GitHub Actionsが自動的にプラットフォーム別のバイナリをビルドしてリリースします。
+When a tag is pushed, GitHub Actions automatically builds and releases platform-specific binaries.
 
 ```bash
-# バージョン更新
+# Update version
 vim Cargo.toml CHANGELOG.md
 git add Cargo.toml CHANGELOG.md
 git commit -m "🔖 Bump version to 0.5.0"
 
-# タグ作成とプッシュ
+# Create and push tag
 git tag v0.5.0
 git push origin main
 git push origin v0.5.0
 ```
 
-### ビルド対象プラットフォーム
+### Build Target Platforms
 
 - Linux (x86_64): `gist-cache-rs-linux-x86_64.tar.gz`
 - macOS (x86_64): `gist-cache-rs-macos-x86_64.tar.gz`
 - macOS (Apple Silicon): `gist-cache-rs-macos-aarch64.tar.gz`
 - Windows (x86_64): `gist-cache-rs-windows-x86_64.zip`
 
-### ワークフロー
+### Workflow
 
-`.github/workflows/release.yml`で定義：
+Defined in `.github/workflows/release.yml`:
 
-1. `create-release`: リリースページ作成、リリースノート生成
-2. `build-release`: 並列ビルド（4プラットフォーム）、アセットアップロード
+1. `create-release`: Creates release page, generates release notes.
+2. `build-release`: Parallel builds (4 platforms), uploads assets.
 
-詳細は [docs/SELF-UPDATE.md](docs/SELF-UPDATE.md#リリースプロセス) を参照。
+For details, refer to [docs/SELF-UPDATE.md](docs/SELF-UPDATE.md#release-process).
 
-## 依存関係
+## Dependencies
 
-主要なランタイム依存関係：
+Primary runtime dependencies:
 
-- `tokio`: 非同期ランタイム
-- `reqwest`: HTTPクライアント（未使用、直接API実装時代の名残）
-- `serde`/`serde_json`: シリアライゼーション
-- `clap`: CLI引数パース
-- `chrono`: 日時処理
-- `anyhow`/`thiserror`: エラー処理
-- `dirs`: プラットフォーム固有のディレクトリ検出
-- `colored`: ターミナル出力の色付け
-- `self_update`: GitHub Releasesからの自動更新
+- `tokio`: Asynchronous runtime.
+- `reqwest`: HTTP client (unused, remnant from direct API implementation era).
+- `serde`/`serde_json`: Serialization.
+- `clap`: CLI argument parsing.
+- `chrono`: Date and time handling.
+- `anyhow`/`thiserror`: Error handling.
+- `dirs`: Platform-specific directory detection.
+- `colored`: Terminal output coloring.
+- `self_update`: Automatic updates from GitHub Releases.
 
-開発用依存関係：
+Development dependencies:
 
-- `mockall`: モックライブラリ（外部依存のテスト用）
-- `tempfile`: 一時ファイル/ディレクトリ（テスト用）
-- `assert_cmd`: CLIテスト用（将来の統合テスト向け）
+- `mockall`: Mocking library (for external dependency testing).
+- `tempfile`: Temporary files/directories (for testing).
+- `assert_cmd`: For CLI testing (for future integration tests).
 
-## テストとカバレッジ
+## Tests and Coverage
 
-**現在の状況**: 68.95%カバレッジ、163個のテスト（ユニット: 120、統合: 43）
+**Current Status**: 68.95% coverage, 163 tests (unit: 120, integration: 43).
 
-**テスト構成**:
+**Test Composition**:
 
-- **ユニットテスト**: `src/`内の`#[cfg(test)]`モジュール、MockGitHubClient使用
-- **統合テスト**: CLI動作、インタープリタ実行（bash/python/node等）、プラットフォーム別テスト
-- **E2Eテスト**: `docs/tests/`に26ケースの機能検証テスト設計書
+- **Unit Tests**: `#[cfg(test)]` modules in `src/`, uses `MockGitHubClient`.
+- **Integration Tests**: CLI behavior, interpreter execution (bash/python/node etc.), platform-specific tests.
+- **E2E Tests**: 26 functional verification test design documents in `docs/tests/`.
 
-**カバレッジ測定**:
+**Coverage Measurement**:
 
 ```bash
 cargo tarpaulin --out Stdout
@@ -362,4 +364,4 @@ cargo tarpaulin --out Html --output-dir coverage
 ```
 
 <!-- markdownlint-disable-next-line MD013 -->
-詳細は [TESTING.md](docs/testing/TESTING.md)、[COVERAGE.md](docs/testing/COVERAGE.md)、[TEST_INVENTORY.md](docs/testing/TEST_INVENTORY.md) を参照。
+For details, refer to [TESTING.md](docs/testing/TESTING.md), [COVERAGE.md](docs/testing/COVERAGE.md), and [TEST_INVENTORY.md](docs/testing/TEST_INVENTORY.md).

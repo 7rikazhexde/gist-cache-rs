@@ -22,10 +22,11 @@ repos:
       - id: clippy
         name: cargo clippy
         description: Run cargo clippy
-        entry: cargo clippy --all-targets --all-features -- -D warnings
+        entry: cargo clippy --all-targets --all-features
         language: system
         types: [rust]
         pass_filenames: false
+        args: ["--", "-D", "warnings"]
 
   # TOML formatting
   - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks

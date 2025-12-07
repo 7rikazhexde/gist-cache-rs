@@ -36,6 +36,7 @@ Thumbs.db
 *.html
 *.pdf
 *.md.bak
+book/book/
 
 # Tools
 .env
