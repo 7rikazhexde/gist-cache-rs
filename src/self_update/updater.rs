@@ -33,7 +33,7 @@ impl Updater {
 
         // Get current version
         let current_version = env!("CARGO_PKG_VERSION");
-        println!("現在のバージョン: {}", current_version.green());
+        println!("Current version: {}", current_version.green());
 
         if self.options.from_source {
             self.update_from_source()
@@ -45,7 +45,7 @@ impl Updater {
     /// Update from GitHub Releases
     fn update_from_releases(&self) -> Result<()> {
         if self.options.verbose {
-            println!("{}", "GitHub Releasesから更新を確認しています...".cyan());
+            println!("{}", "Checking for updates from GitHub Releases...".cyan());
         }
 
         // Build updater
@@ -78,24 +78,24 @@ impl Updater {
             let release = builder.build()?.get_latest_release()?;
             let latest_version = &release.version;
 
-            println!("最新バージョン: {}", latest_version.green());
+            println!("Latest version: {}", latest_version.green());
 
             if latest_version.as_str() > env!("CARGO_PKG_VERSION") {
                 println!(
                     "{}",
-                    format!("新しいバージョン {} が利用可能です", latest_version)
+                    format!("New version {} is available", latest_version)
                         .yellow()
                         .bold()
                 );
-                println!("更新するには: {}", "gist-cache-rs self update".cyan());
+                println!("To update: {}", "gist-cache-rs self update".cyan());
             } else {
-                println!("{}", "最新版を使用しています".green().bold());
+                println!("{}", "You are using the latest version".green().bold());
             }
             return Ok(());
         }
 
         // Perform update
-        println!("{}", "更新を確認しています...".cyan());
+        println!("{}", "Checking for updates...".cyan());
 
         let status = builder.build()?.update()?;
 
@@ -103,15 +103,15 @@ impl Updater {
             self_update::Status::UpToDate(version) => {
                 println!(
                     "{}",
-                    format!("すでに最新版です ({})", version).green().bold()
+                    format!("Already up to date ({})", version).green().bold()
                 );
             }
             self_update::Status::Updated(version) => {
                 println!(
                     "{}",
-                    format!("更新が完了しました: {}", version).green().bold()
+                    format!("Update completed: {}", version).green().bold()
                 );
-                println!("新しいバージョンで再起動してください。");
+                println!("Please restart with the new version.");
             }
         }
 
@@ -121,20 +121,20 @@ impl Updater {
     /// Update from source (git + cargo build + self-replace)
     fn update_from_source(&self) -> Result<()> {
         if self.options.verbose {
-            println!("{}", "ソースからビルドして更新します...".cyan());
+            println!("{}", "Building from source and updating...".cyan());
         }
 
         // Check if git is available
         if !self.check_command_exists("git") {
             return Err(GistCacheError::SelfUpdate(
-                "gitコマンドが見つかりません。gitをインストールしてください。".to_string(),
+                "git command not found. Please install git.".to_string(),
             ));
         }
 
         // Check if cargo is available
         if !self.check_command_exists("cargo") {
             return Err(GistCacheError::SelfUpdate(
-                "cargoコマンドが見つかりません。Rustをインストールしてください。".to_string(),
+                "cargo command not found. Please install Rust.".to_string(),
             ));
         }
 
@@ -142,20 +142,20 @@ impl Updater {
         let repo_path = self.get_repository_path()?;
 
         if self.options.verbose {
-            println!("リポジトリパス: {}", repo_path.display().to_string().cyan());
+            println!("Repository path: {}", repo_path.display().to_string().cyan());
         }
 
         // Pull latest changes
-        println!("{}", "最新の変更を取得しています...".cyan());
+        println!("{}", "Fetching latest changes...".cyan());
         self.run_git_pull(&repo_path)?;
 
         // Build from source
-        println!("{}", "ソースからビルドしています...".cyan());
+        println!("{}", "Building from source...".cyan());
         self.run_cargo_build(&repo_path)?;
 
         // Get current executable path
         let current_exe = std::env::current_exe().map_err(|e| {
-            GistCacheError::SelfUpdate(format!("実行ファイルのパスを取得できませんでした: {}", e))
+            GistCacheError::SelfUpdate(format!("Failed to get executable path: {}", e))
         })?;
 
         // Get path to the newly built binary
@@ -164,24 +164,24 @@ impl Updater {
                 .join("target")
                 .join("release")
                 .join(current_exe.file_name().ok_or_else(|| {
-                    GistCacheError::SelfUpdate("実行ファイル名を取得できませんでした".to_string())
+                    GistCacheError::SelfUpdate("Failed to get executable name".to_string())
                 })?);
 
         if !new_binary.exists() {
             return Err(GistCacheError::SelfUpdate(format!(
-                "ビルドされたバイナリが見つかりません: {}",
+                "Built binary not found: {}",
                 new_binary.display()
             )));
         }
 
         // Replace the current binary with the new one
-        println!("{}", "実行ファイルを置き換えています...".cyan());
+        println!("{}", "Replacing executable...".cyan());
         self_replace::self_replace(&new_binary).map_err(|e| {
-            GistCacheError::SelfUpdate(format!("バイナリの置き換えに失敗しました: {}", e))
+            GistCacheError::SelfUpdate(format!("Failed to replace binary: {}", e))
         })?;
 
-        println!("{}", "更新が完了しました".green().bold());
-        println!("新しいバージョンで再起動してください。");
+        println!("{}", "Update completed".green().bold());
+        println!("Please restart with the new version.");
 
         Ok(())
     }
@@ -231,7 +231,7 @@ impl Updater {
 
         // 3. Fallback: suggest cloning
         Err(GistCacheError::SelfUpdate(
-            "リポジトリが見つかりません。GIST_CACHE_REPO環境変数を設定するか、リポジトリをクローンしてください:\n  git clone https://github.com/7rikazhexde/gist-cache-rs.git".to_string(),
+            "Repository not found. Please set GIST_CACHE_REPO environment variable or clone the repository:\n  git clone https://github.com/7rikazhexde/gist-cache-rs.git".to_string(),
         ))
     }
 
@@ -243,7 +243,7 @@ impl Updater {
             .current_dir(repo_path)
             .output()
             .map_err(|e| {
-                GistCacheError::SelfUpdate(format!("git pullの実行に失敗しました: {}", e))
+                GistCacheError::SelfUpdate(format!("Failed to run git pull: {}", e))
             })?;
 
         if !output.status.success() {
@@ -252,7 +252,7 @@ impl Updater {
             // If tracking information is missing, try pulling from origin/main
             if stderr.contains("no tracking information") {
                 if self.options.verbose {
-                    println!("トラッキング情報がありません。origin/main から取得します...");
+                    println!("No tracking information. Fetching from origin/main...");
                 }
 
                 let output = Command::new("git")
@@ -260,13 +260,13 @@ impl Updater {
                     .current_dir(repo_path)
                     .output()
                     .map_err(|e| {
-                        GistCacheError::SelfUpdate(format!("git pullの実行に失敗しました: {}", e))
+                        GistCacheError::SelfUpdate(format!("Failed to run git pull: {}", e))
                     })?;
 
                 if !output.status.success() {
                     let stderr = String::from_utf8_lossy(&output.stderr);
                     return Err(GistCacheError::SelfUpdate(format!(
-                        "git pull origin mainに失敗しました: {}",
+                        "git pull origin main failed: {}",
                         stderr
                     )));
                 }
@@ -282,7 +282,7 @@ impl Updater {
             }
 
             return Err(GistCacheError::SelfUpdate(format!(
-                "git pullに失敗しました: {}",
+                "git pull failed: {}",
                 stderr
             )));
         }
@@ -306,13 +306,13 @@ impl Updater {
             .current_dir(repo_path)
             .output()
             .map_err(|e| {
-                GistCacheError::SelfUpdate(format!("cargo buildの実行に失敗しました: {}", e))
+                GistCacheError::SelfUpdate(format!("Failed to run cargo build: {}", e))
             })?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             return Err(GistCacheError::SelfUpdate(format!(
-                "cargo buildに失敗しました: {}",
+                "cargo build failed: {}",
                 stderr
             )));
         }

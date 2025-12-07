@@ -109,7 +109,7 @@ pub fn select_from_results<'a>(results: &[&'a GistInfo]) -> Result<&'a GistInfo>
         return Ok(results[0]);
     }
 
-    println!("\n複数のGistが見つかりました:\n");
+    println!("\nMultiple Gists found:\n");
 
     let default_desc = "No description".to_string();
 
@@ -119,7 +119,7 @@ pub fn select_from_results<'a>(results: &[&'a GistInfo]) -> Result<&'a GistInfo>
         println!(" {}. {} | {}", i + 1, desc, files.join(", "));
     }
 
-    print!("\n番号を選択してください (1-{}): ", results.len());
+    print!("\nSelect a number (1-{}): ", results.len());
     io::stdout().flush()?;
 
     let mut input = String::new();
