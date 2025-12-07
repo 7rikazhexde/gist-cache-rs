@@ -5,7 +5,7 @@ use std::fs;
 
 #[derive(Parser)]
 #[command(name = "gist-cache-rs")]
-#[command(about = "Gistキャッシュ・実行システム (Rust実装版)", long_about = None)]
+#[command(about = "Gist caching and execution system (Rust implementation)", long_about = None)]
 #[command(version)]
 pub struct Cli {
     #[command(subcommand)]
@@ -14,66 +14,66 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    /// キャッシュを更新
+    /// Update cache
     Update(UpdateArgs),
-    /// キャッシュから検索して実行
+    /// Search from cache and execute
     Run(RunArgs),
-    /// キャッシュ管理
+    /// Cache management
     Cache(CacheArgs),
-    /// アプリケーション自体を更新
+    /// Update the application itself
     #[command(name = "self")]
     SelfUpdate(SelfUpdateArgs),
 }
 
 #[derive(Args)]
 pub struct UpdateArgs {
-    /// 強制的に全件更新
+    /// Force full update
     #[arg(short, long)]
     pub force: bool,
 
-    /// 詳細な進捗情報を表示
+    /// Display detailed progress information
     #[arg(short, long)]
     pub verbose: bool,
 }
 
 #[derive(Args)]
 pub struct RunArgs {
-    /// 検索キーワード (ID、ファイル名、または説明文)
+    /// Search keyword (ID, filename, or description)
     pub query: Option<String>,
 
-    /// 対話的スクリプト実行モード
+    /// Interactive script execution mode
     #[arg(short, long)]
     pub interactive: bool,
 
-    /// プレビューモード（内容表示のみ）
+    /// Preview mode (display content only)
     #[arg(short, long)]
     pub preview: bool,
 
-    /// 実行前にGistキャッシュを更新
+    /// Update Gist cache before execution
     #[arg(short, long)]
     pub force: bool,
 
-    /// ファイルをダウンロードフォルダに保存
+    /// Save file to download folder
     #[arg(long)]
     pub download: bool,
 
-    /// ID直接指定モード
+    /// Direct ID specification mode
     #[arg(long)]
     pub id: bool,
 
-    /// ファイル名で検索
+    /// Search by filename
     #[arg(long)]
     pub filename: bool,
 
-    /// 説明文で検索
+    /// Search by description
     #[arg(long)]
     pub description: bool,
 
-    /// インタープリタまたは実行コマンド (bash, python3, uv, など)
+    /// Interpreter or execution command (bash, python3, uv, etc.)
     #[arg(value_name = "INTERPRETER")]
     pub interpreter: Option<String>,
 
-    /// スクリプトに渡す追加の引数
+    /// Additional arguments to pass to the script
     #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     pub script_args: Vec<String>,
 }
@@ -86,13 +86,13 @@ pub struct CacheArgs {
 
 #[derive(Subcommand)]
 pub enum CacheCommands {
-    /// キャッシュされたGistの一覧を表示
+    /// Display list of cached Gists
     List,
-    /// キャッシュの合計サイズを表示
+    /// Display total cache size
     Size,
-    /// 古いキャッシュを削除（未実装）
+    /// Remove old cache (not yet implemented)
     Clean,
-    /// 全てのキャッシュを削除
+    /// Remove all cache
     Clear,
 }
 
@@ -104,29 +104,29 @@ pub struct SelfUpdateArgs {
 
 #[derive(Subcommand)]
 pub enum SelfUpdateCommands {
-    /// アプリケーションを最新版に更新
+    /// Update application to latest version
     Update(SelfUpdateOptions),
 }
 
 #[derive(Args)]
 pub struct SelfUpdateOptions {
-    /// ソースからビルドして更新
+    /// Build from source and update
     #[arg(long)]
     pub from_source: bool,
 
-    /// 更新の有無のみ確認（実際には更新しない）
+    /// Only check for updates (do not actually update)
     #[arg(long)]
     pub check: bool,
 
-    /// バージョンが同じでも強制的に更新
+    /// Force update even if version is the same
     #[arg(short, long)]
     pub force: bool,
 
-    /// 特定のバージョンに更新
+    /// Update to specific version
     #[arg(long)]
     pub version: Option<String>,
 
-    /// 詳細な進捗情報を表示
+    /// Display detailed progress information
     #[arg(short, long)]
     pub verbose: bool,
 }
@@ -141,16 +141,16 @@ pub fn run_cli() -> Result<()> {
             updater.update(args.force)?;
         }
         Commands::Run(args) => {
-            // クエリがない場合はヘルプを表示
+            // Display help if no query is provided
             if args.query.is_none() {
                 print_run_help();
                 return Ok(());
             }
 
-            // --force オプションが指定されている場合は、先にキャッシュを更新
+            // Update cache first if --force option is specified
             if args.force {
                 let updater = CacheUpdater::new(config.clone(), false);
-                updater.update(false)?; // 差分更新（force=false）
+                updater.update(false)?; // Differential update (force=false)
             }
 
             run_gist(config, args)?;
@@ -167,50 +167,50 @@ pub fn run_cli() -> Result<()> {
 }
 
 pub fn print_run_help() {
-    println!("{}", "キャッシュから検索して実行".bold());
+    println!("{}", "Search from cache and execute".bold());
     println!();
     println!("Usage: gist-cache-rs run [OPTIONS] <QUERY> [INTERPRETER] [SCRIPT_ARGS]...");
     println!();
-    println!("{}", "引数の順序に注意:".yellow().bold());
-    println!("  オプション（--description等）は、検索キーワードの前に指定してください");
+    println!("{}", "Note argument order:".yellow().bold());
+    println!("  Options (like --description) must be specified before the search keyword");
     println!();
     println!("Arguments:");
-    println!("  <QUERY>           検索キーワード (ID、ファイル名、または説明文)");
-    println!("  [INTERPRETER]     インタープリタ (bash, python3, uv, など)");
-    println!("  [SCRIPT_ARGS]...  スクリプトに渡す追加の引数");
+    println!("  <QUERY>           Search keyword (ID, filename, or description)");
+    println!("  [INTERPRETER]     Interpreter (bash, python3, uv, etc.)");
+    println!("  [SCRIPT_ARGS]...  Additional arguments to pass to the script");
     println!();
     println!("Options:");
-    println!("  -i, --interactive  対話的スクリプト実行モード");
-    println!("  -p, --preview      プレビューモード（内容表示のみ）");
-    println!("  -f, --force        実行前にGistキャッシュを更新（常に最新版を取得）");
-    println!("      --download     ファイルをダウンロードフォルダに保存");
-    println!("      --id           ID直接指定モード");
-    println!("      --filename     ファイル名で検索");
-    println!("      --description  説明文で検索");
+    println!("  -i, --interactive  Interactive script execution mode");
+    println!("  -p, --preview      Preview mode (display content only)");
+    println!("  -f, --force        Update Gist cache before execution (always get latest version)");
+    println!("      --download     Save file to download folder");
+    println!("      --id           Direct ID specification mode");
+    println!("      --filename     Search by filename");
+    println!("      --description  Search by description");
     println!("  -h, --help         Print help");
     println!();
-    println!("{}", "サポートされているインタープリタ:".green().bold());
-    println!("  bash, sh, zsh      - シェルスクリプト");
+    println!("{}", "Supported interpreters:".green().bold());
+    println!("  bash, sh, zsh      - Shell scripts");
     println!("  python3, python    - Python");
-    println!("  uv                 - Python (PEP 723対応)");
-    println!("  ruby, node, perl, php - その他の言語");
+    println!("  uv                 - Python (PEP 723 support)");
+    println!("  ruby, node, perl, php - Other languages");
     println!();
     println!("Examples:");
-    println!("  gist-cache-rs run backup                      # キーワード検索");
-    println!("  gist-cache-rs run backup bash /src /dst       # 引数付きで実行");
-    println!("  gist-cache-rs run data python3                # Python実行");
-    println!("  gist-cache-rs run --description numpy uv      # 説明文検索+uv実行");
-    println!("  gist-cache-rs run -p backup                   # プレビュー");
-    println!("  gist-cache-rs run -i interactive-script       # 対話モード");
-    println!("  gist-cache-rs run --filename setup.sh         # ファイル名検索");
-    println!("  gist-cache-rs run --id abc123def456           # ID指定");
-    println!("  gist-cache-rs run -f backup                   # キャッシュ更新後に実行");
-    println!("  gist-cache-rs run -f --description numpy uv   # キャッシュ更新+説明文検索");
-    println!("  gist-cache-rs run --download backup           # ダウンロードフォルダに保存");
-    println!("  gist-cache-rs run -p --download backup        # プレビュー後にダウンロード");
+    println!("  gist-cache-rs run backup                      # Keyword search");
+    println!("  gist-cache-rs run backup bash /src /dst       # Execute with arguments");
+    println!("  gist-cache-rs run data python3                # Python execution");
+    println!("  gist-cache-rs run --description numpy uv      # Description search + uv execution");
+    println!("  gist-cache-rs run -p backup                   # Preview");
+    println!("  gist-cache-rs run -i interactive-script       # Interactive mode");
+    println!("  gist-cache-rs run --filename setup.sh         # Filename search");
+    println!("  gist-cache-rs run --id abc123def456           # ID specification");
+    println!("  gist-cache-rs run -f backup                   # Execute after cache update");
+    println!("  gist-cache-rs run -f --description numpy uv   # Cache update + description search");
+    println!("  gist-cache-rs run --download backup           # Save to download folder");
+    println!("  gist-cache-rs run -p --download backup        # Preview then download");
     println!();
-    println!("{}", "引数指定を確認してください:".red().bold());
-    println!("  ✅ uv例: gist-cache-rs run --description numpy uv input.csv");
+    println!("{}", "Verify argument specification:".red().bold());
+    println!("  ✅ uv example: gist-cache-rs run --description numpy uv input.csv");
     println!();
     println!("For more information, try '--help'");
 }
@@ -221,7 +221,7 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
         return Err(GistCacheError::CacheNotFound);
     }
 
-    // queryは必ずSomeであることを保証
+    // Ensure query is always Some
     let query_string = args.query.unwrap();
 
     // Load cache
@@ -249,7 +249,7 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
 
     // Select gist
     let gist = if matches!(search_mode, SearchMode::Id) && results.len() == 1 {
-        println!("{}", format!("ID指定モード: {}", results[0].id).cyan());
+        println!("{}", format!("ID specification mode: {}", results[0].id).cyan());
         results[0]
     } else {
         search::select_from_results(&results)?
@@ -318,7 +318,7 @@ pub fn parse_interpreter(
             Ok(("bun".to_string(), None, false, true))
         }
         Some("uv") => {
-            // uvは必ずファイルベースで実行（PEP 723対応のため）
+            // uv always runs in file-based mode (for PEP 723 support)
             Ok((
                 "python3".to_string(),
                 Some("uv run".to_string()),
@@ -329,7 +329,7 @@ pub fn parse_interpreter(
         Some("poetry") => {
             println!(
                 "{}",
-                "警告: PoetryはPEP 723をサポートしていません。python3で実行します。".yellow()
+                "Warning: Poetry does not support PEP 723. Running with python3.".yellow()
             );
             Ok(("python3".to_string(), None, false, false))
         }
@@ -340,14 +340,14 @@ pub fn parse_interpreter(
                 && !output.status.success()
             {
                 eprintln!();
-                eprintln!("{}", "サポートされているインタープリタ:".green());
+                eprintln!("{}", "Supported interpreters:".green());
                 eprintln!(
                     "  bash, sh, zsh, python3, python, uv, ruby, node, perl, php, pwsh, powershell"
                 );
                 eprintln!("  ts-node, deno, bun (TypeScript)");
                 eprintln!();
-                eprintln!("{}", "引数指定を確認してください:".yellow());
-                eprintln!("  ✅ uv例: gist-cache-rs run --description numpy uv input.csv");
+                eprintln!("{}", "Verify argument specification:".yellow());
+                eprintln!("  ✅ uv example: gist-cache-rs run --description numpy uv input.csv");
                 eprintln!();
                 return Err(GistCacheError::InvalidInterpreter(custom.to_string()));
             }
@@ -361,17 +361,17 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
 
     match args.command {
         CacheCommands::List => {
-            println!("{}", "キャッシュされたGist一覧:".cyan().bold());
+            println!("{}", "List of cached Gists:".cyan().bold());
             println!();
 
             let gist_ids = content_cache.list_cached_gists()?;
 
             if gist_ids.is_empty() {
-                println!("{}", "キャッシュされたGistはありません".yellow());
+                println!("{}", "No cached Gists".yellow());
                 return Ok(());
             }
 
-            // メタデータJSONを読み込んで詳細情報を表示
+            // Load metadata JSON and display detailed information
             if config.cache_exists() {
                 let cache_content = fs::read_to_string(&config.cache_file)?;
                 let cache: GistCache = serde_json::from_str(&cache_content)?;
@@ -384,37 +384,37 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
                             gist.files.iter().map(|f| f.filename.as_str()).collect();
 
                         println!("{}", format!("ID: {}", gist.id).green());
-                        println!("  説明: {}", desc);
-                        println!("  ファイル: {}", files.join(", "));
+                        println!("  Description: {}", desc);
+                        println!("  Files: {}", files.join(", "));
                         println!(
-                            "  更新日時: {}",
+                            "  Updated: {}",
                             gist.updated_at.format("%Y-%m-%d %H:%M:%S")
                         );
                         println!();
                     } else {
                         println!("{}", format!("ID: {}", gist_id).green());
-                        println!("  (メタデータが見つかりません)");
+                        println!("  (Metadata not found)");
                         println!();
                     }
                 }
 
                 println!(
                     "{}",
-                    format!("合計: {}件のGistがキャッシュされています", gist_ids.len())
+                    format!("Total: {} Gists cached", gist_ids.len())
                         .cyan()
                         .bold()
                 );
             } else {
-                // メタデータがない場合はIDのみ表示
+                // Display only IDs when metadata is not available
                 for gist_id in &gist_ids {
                     println!("  {}", gist_id.green());
                 }
                 println!();
-                println!("{}", format!("合計: {}件", gist_ids.len()).cyan().bold());
+                println!("{}", format!("Total: {} items", gist_ids.len()).cyan().bold());
             }
         }
         CacheCommands::Size => {
-            println!("{}", "キャッシュサイズ情報:".cyan().bold());
+            println!("{}", "Cache size information:".cyan().bold());
             println!();
 
             let total_size = content_cache.total_size()?;
@@ -422,50 +422,50 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
 
             println!(
                 "{}",
-                format!("キャッシュされたGist数: {}件", gist_count).green()
+                format!("Cached Gists: {} items", gist_count).green()
             );
             println!(
                 "{}",
-                format!("合計サイズ: {}", format_bytes(total_size)).green()
+                format!("Total size: {}", format_bytes(total_size)).green()
             );
             println!(
                 "{}",
-                format!("キャッシュディレクトリ: {}", config.contents_dir.display()).cyan()
+                format!("Cache directory: {}", config.contents_dir.display()).cyan()
             );
         }
         CacheCommands::Clean => {
-            println!("{}", "古いキャッシュの削除".yellow());
+            println!("{}", "Remove old cache".yellow());
             println!();
             println!(
                 "{}",
-                "この機能は現在未実装です。将来のバージョンで実装予定です。".yellow()
+                "This feature is not yet implemented. Planned for a future version.".yellow()
             );
             println!();
-            println!("代わりに以下のコマンドを使用できます:");
-            println!("  gist-cache-rs cache clear  # 全キャッシュを削除");
+            println!("You can use the following command instead:");
+            println!("  gist-cache-rs cache clear  # Remove all cache");
         }
         CacheCommands::Clear => {
-            println!("{}", "全キャッシュの削除".yellow().bold());
+            println!("{}", "Remove all cache".yellow().bold());
             println!();
 
             let gist_count = content_cache.list_cached_gists()?.len();
 
             if gist_count == 0 {
-                println!("{}", "削除するキャッシュはありません".green());
+                println!("{}", "No cache to remove".green());
                 return Ok(());
             }
 
             println!(
                 "{}",
                 format!(
-                    "{}件のGistキャッシュを削除します。よろしいですか？",
+                    "About to remove cache for {} Gists. Are you sure?",
                     gist_count
                 )
                 .yellow()
             );
-            println!("  {}", "この操作は取り消せません。".red());
+            println!("  {}", "This operation cannot be undone.".red());
             println!();
-            print!("続行しますか？ (y/N): ");
+            print!("Continue? (y/N): ");
 
             std::io::Write::flush(&mut std::io::stdout())?;
 
@@ -475,10 +475,10 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
             if input.trim().to_lowercase() == "y" {
                 content_cache.clear_all()?;
                 println!();
-                println!("{}", "全キャッシュを削除しました".green().bold());
+                println!("{}", "All cache has been removed".green().bold());
             } else {
                 println!();
-                println!("{}", "キャンセルしました".cyan());
+                println!("{}", "Cancelled".cyan());
             }
         }
     }

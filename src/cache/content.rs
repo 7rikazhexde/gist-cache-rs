@@ -2,21 +2,21 @@ use crate::error::{GistCacheError, Result};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// Gist本文のキャッシュを管理する構造体
+/// Structure for managing Gist content cache
 pub struct ContentCache {
     cache_dir: PathBuf,
 }
 
 impl ContentCache {
-    /// 新しいContentCacheインスタンスを作成
+    /// Create a new ContentCache instance
     ///
     /// # Arguments
-    /// * `cache_dir` - キャッシュディレクトリのパス（~/.cache/gist-cache/contents）
+    /// * `cache_dir` - Cache directory path (~/.cache/gist-cache/contents)
     pub fn new(cache_dir: PathBuf) -> Self {
         Self { cache_dir }
     }
 
-    /// キャッシュディレクトリが存在することを保証
+    /// Ensure cache directory exists
     pub fn ensure_cache_dir(&self) -> Result<()> {
         if !self.cache_dir.exists() {
             fs::create_dir_all(&self.cache_dir)?;
@@ -24,56 +24,56 @@ impl ContentCache {
         Ok(())
     }
 
-    /// Gistのキャッシュファイルパスを取得
+    /// Get cache file path for a Gist
     ///
     /// # Arguments
-    /// * `gist_id` - GistのID
-    /// * `filename` - ファイル名
+    /// * `gist_id` - Gist ID
+    /// * `filename` - File name
     ///
     /// # Returns
-    /// キャッシュファイルのフルパス
+    /// Full path to cache file
     fn get_cache_path(&self, gist_id: &str, filename: &str) -> PathBuf {
         self.cache_dir.join(gist_id).join(filename)
     }
 
-    /// Gistのキャッシュディレクトリパスを取得
+    /// Get cache directory path for a Gist
     ///
     /// # Arguments
-    /// * `gist_id` - GistのID
+    /// * `gist_id` - Gist ID
     ///
     /// # Returns
-    /// キャッシュディレクトリのフルパス
+    /// Full path to cache directory
     fn get_gist_dir(&self, gist_id: &str) -> PathBuf {
         self.cache_dir.join(gist_id)
     }
 
-    /// キャッシュファイルが存在するかチェック
+    /// Check if cache file exists
     ///
     /// # Arguments
-    /// * `gist_id` - GistのID
-    /// * `filename` - ファイル名
+    /// * `gist_id` - Gist ID
+    /// * `filename` - File name
     ///
     /// # Returns
-    /// キャッシュが存在すればtrue
+    /// True if cache exists
     pub fn exists(&self, gist_id: &str, filename: &str) -> bool {
         self.get_cache_path(gist_id, filename).exists()
     }
 
-    /// キャッシュから本文を読み込む
+    /// Read content from cache
     ///
     /// # Arguments
-    /// * `gist_id` - GistのID
-    /// * `filename` - ファイル名
+    /// * `gist_id` - Gist ID
+    /// * `filename` - File name
     ///
     /// # Returns
-    /// ファイルの内容（文字列）
+    /// File content (string)
     ///
     /// # Errors
-    /// ファイルが存在しない、または読み込みに失敗した場合
+    /// Returns error if file doesn't exist or read fails
     ///
-    /// # 自己修復の原則
-    /// キャッシュファイルが破損している場合、エラーを返すのではなく、
-    /// 呼び出し側がAPIから再取得できるようにする
+    /// # Self-healing Principle
+    /// If cache file is corrupted, return error instead of panicking,
+    /// allowing caller to re-fetch from API
     pub fn read(&self, gist_id: &str, filename: &str) -> Result<String> {
         let path = self.get_cache_path(gist_id, filename);
 
@@ -93,24 +93,24 @@ impl ContentCache {
         })
     }
 
-    /// 本文をキャッシュファイルに書き込む
+    /// Write content to cache file
     ///
     /// # Arguments
-    /// * `gist_id` - GistのID
-    /// * `filename` - ファイル名
-    /// * `content` - ファイルの内容
+    /// * `gist_id` - Gist ID
+    /// * `filename` - File name
+    /// * `content` - File content
     ///
     /// # Errors
-    /// ディレクトリの作成やファイルの書き込みに失敗した場合
+    /// Returns error if directory creation or file write fails
     ///
-    /// # 実装の詳細
-    /// - 原子的な書き込み（一時ファイル→rename）により同時実行時の競合を回避
-    /// - Gistディレクトリが存在しない場合は自動的に作成
+    /// # Implementation Details
+    /// - Atomic write (temp file → rename) to avoid concurrent access conflicts
+    /// - Automatically creates Gist directory if it doesn't exist
     pub fn write(&self, gist_id: &str, filename: &str, content: &str) -> Result<()> {
         let gist_dir = self.get_gist_dir(gist_id);
         let cache_path = self.get_cache_path(gist_id, filename);
 
-        // Gistディレクトリを作成
+        // Create Gist directory
         if !gist_dir.exists() {
             fs::create_dir_all(&gist_dir).map_err(|e| {
                 GistCacheError::CacheWriteError(format!(
@@ -121,10 +121,10 @@ impl ContentCache {
             })?;
         }
 
-        // 原子的な書き込み：一時ファイル→rename
+        // Atomic write: temp file → rename
         let temp_path = cache_path.with_extension("tmp");
 
-        // 一時ファイルに書き込み
+        // Write to temp file
         fs::write(&temp_path, content).map_err(|e| {
             GistCacheError::CacheWriteError(format!(
                 "Failed to write temp file {}: {}",
@@ -133,9 +133,9 @@ impl ContentCache {
             ))
         })?;
 
-        // renameで原子的にファイルを置き換え
+        // Atomically replace file with rename
         fs::rename(&temp_path, &cache_path).map_err(|e| {
-            // 失敗した場合は一時ファイルを削除
+            // Remove temp file if failed
             let _ = fs::remove_file(&temp_path);
             GistCacheError::CacheWriteError(format!(
                 "Failed to rename temp file to cache file {}: {}",
@@ -147,26 +147,26 @@ impl ContentCache {
         Ok(())
     }
 
-    /// 特定のGistのキャッシュを削除
+    /// Delete cache for a specific Gist
     ///
     /// # Arguments
-    /// * `gist_id` - GistのID
+    /// * `gist_id` - Gist ID
     ///
     /// # Returns
-    /// 実際に削除した場合は `Ok(true)`、既に存在しなかった場合は `Ok(false)`
+    /// `Ok(true)` if actually deleted, `Ok(false)` if didn't exist
     ///
     /// # Errors
-    /// 削除に失敗した場合（ただし、ディレクトリが存在しない場合はエラーではない）
+    /// Returns error if deletion fails (but not if directory doesn't exist)
     pub fn delete_gist(&self, gist_id: &str) -> Result<bool> {
         let gist_dir = self.get_gist_dir(gist_id);
 
         if !gist_dir.exists() {
-            // ディレクトリが存在しない場合はスキップ（エラーではない）
-            return Ok(false); // 削除しなかった
+            // Skip if directory doesn't exist (not an error)
+            return Ok(false); // Not deleted
         }
 
-        // 自己修復の原則：ディレクトリ全体を削除
-        // 予期しないファイルが存在する場合でも、ディレクトリごと削除して正常な状態に戻す
+        // Self-healing principle: Delete entire directory
+        // Even if unexpected files exist, delete the whole directory to restore normal state
         fs::remove_dir_all(&gist_dir).map_err(|e| {
             GistCacheError::CacheDeleteError(format!(
                 "Failed to delete gist cache directory {}: {}",
@@ -175,16 +175,16 @@ impl ContentCache {
             ))
         })?;
 
-        Ok(true) // 削除した
+        Ok(true) // Deleted
     }
 
-    /// キャッシュされているすべてのGist IDを取得
+    /// Get all cached Gist IDs
     ///
     /// # Returns
-    /// Gist IDのリスト
+    /// List of Gist IDs
     ///
-    /// # 自己修復の原則
-    /// 予期しないファイルやディレクトリは無視し、正常なGist IDのみを返す
+    /// # Self-healing Principle
+    /// Ignore unexpected files or directories and return only valid Gist IDs
     pub fn list_cached_gists(&self) -> Result<Vec<String>> {
         if !self.cache_dir.exists() {
             return Ok(Vec::new());
@@ -195,12 +195,12 @@ impl ContentCache {
         for entry in fs::read_dir(&self.cache_dir)? {
             let entry = match entry {
                 Ok(e) => e,
-                Err(_) => continue, // 読み取りエラーは無視
+                Err(_) => continue, // Ignore read errors
             };
 
             let path = entry.path();
 
-            // ディレクトリのみを対象
+            // Only target directories
             if path.is_dir()
                 && let Some(gist_id) = path.file_name().and_then(|n| n.to_str())
             {
@@ -211,10 +211,10 @@ impl ContentCache {
         Ok(gist_ids)
     }
 
-    /// キャッシュの合計サイズを計算（バイト単位）
+    /// Calculate total cache size (in bytes)
     ///
     /// # Returns
-    /// キャッシュディレクトリ全体のサイズ
+    /// Size of entire cache directory
     pub fn total_size(&self) -> Result<u64> {
         if !self.cache_dir.exists() {
             return Ok(0);
@@ -243,10 +243,10 @@ impl ContentCache {
         Ok(total_size)
     }
 
-    /// すべてのキャッシュをクリア
+    /// Clear all cache
     ///
     /// # Errors
-    /// 削除に失敗した場合
+    /// Returns error if deletion fails
     pub fn clear_all(&self) -> Result<()> {
         if !self.cache_dir.exists() {
             return Ok(());
@@ -260,7 +260,7 @@ impl ContentCache {
             ))
         })?;
 
-        // ディレクトリを再作成
+        // Recreate directory
         self.ensure_cache_dir()?;
 
         Ok(())

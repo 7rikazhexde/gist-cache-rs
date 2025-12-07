@@ -34,20 +34,20 @@ impl<C: GitHubClient> CacheUpdater<C> {
     }
 
     pub fn update(&self, force: bool) -> Result<()> {
-        println!("{}", "Gistキャッシュを更新しています...".cyan());
+        println!("{}", "Updating Gist cache...".cyan());
 
         if self.verbose {
             if force {
-                println!("{}", "モード: 強制全件更新".yellow());
+                println!("{}", "Mode: Force full update".yellow());
             } else {
-                println!("{}", "モード: 差分更新".yellow());
+                println!("{}", "Mode: Differential update".yellow());
             }
         }
 
         // Ensure cache directory exists
         self.config.ensure_cache_dir()?;
 
-        // ContentCacheインスタンスを作成
+        // Create ContentCache instance
         let content_cache = ContentCache::new(self.config.contents_dir.clone());
         content_cache.ensure_cache_dir()?;
 
@@ -59,22 +59,22 @@ impl<C: GitHubClient> CacheUpdater<C> {
         if rate_limit < 100 {
             println!(
                 "{}",
-                format!("警告: レートリミット残量が{}と低いです", rate_limit).yellow()
+                format!("Warning: Rate limit remaining is low at {}", rate_limit).yellow()
             );
         }
         if self.verbose {
-            println!("{}", format!("レートリミット残量: {}", rate_limit).green());
+            println!("{}", format!("Rate limit remaining: {}", rate_limit).green());
         }
 
         // Load existing cache if available
         let (github_user, last_updated, old_gists) = if self.config.cache_exists() && !force {
             let cache = self.load_cache()?;
             if self.verbose {
-                println!("{}", "既存のキャッシュを検出しました".green());
+                println!("{}", "Detected existing cache".green());
                 println!(
                     "{}",
                     format!(
-                        "GitHubユーザー（キャッシュ再利用）: {}",
+                        "GitHub user (cache reused): {}",
                         cache.metadata.github_user
                     )
                     .green()
@@ -82,7 +82,7 @@ impl<C: GitHubClient> CacheUpdater<C> {
                 println!(
                     "{}",
                     format!(
-                        "最終更新日時: {}",
+                        "Last updated: {}",
                         cache.metadata.last_updated.format("%Y-%m-%dT%H:%M:%SZ")
                     )
                     .green()
@@ -98,12 +98,12 @@ impl<C: GitHubClient> CacheUpdater<C> {
         };
 
         if self.verbose && last_updated.is_none() {
-            println!("{}", format!("GitHubユーザー: {}", github_user).green());
+            println!("{}", format!("GitHub user: {}", github_user).green());
         }
 
         // Fetch gists from GitHub
         if self.verbose {
-            println!("{}", "GitHub APIからGist情報を取得中...".cyan());
+            println!("{}", "Fetching Gist information from GitHub API...".cyan());
         }
 
         let since = if force { None } else { last_updated };
@@ -111,27 +111,27 @@ impl<C: GitHubClient> CacheUpdater<C> {
         let fetched_count = fetched_gists.len();
 
         if self.verbose {
-            println!("{}", format!("取得したGist数: {}", fetched_count).green());
+            println!("{}", format!("Fetched Gists: {}", fetched_count).green());
         }
 
-        // メタデータを比較してキャッシュ削除対象を特定
+        // Compare metadata and identify cache to be deleted
         let mut deleted_cache_count = 0;
         if let Some(ref old) = old_gists {
-            // 旧メタデータをMapに変換
+            // Convert old metadata to Map
             let old_map: HashMap<String, &GistInfo> =
                 old.iter().map(|g| (g.id.clone(), g)).collect();
 
-            // 新しく取得したGistについて、updated_atが変化したものを検出
+            // Detect Gists with changed updated_at from newly fetched ones
             for new_gist in &fetched_gists {
                 if let Some(old_gist) = old_map.get(&new_gist.id) {
-                    // updated_atが異なる場合、Gistが更新されている
+                    // If updated_at is different, the Gist has been updated
                     if old_gist.updated_at != new_gist.updated_at {
-                        // キャッシュを削除
+                        // Delete cache
                         if self.verbose {
                             println!(
                                 "{}",
                                 format!(
-                                    "Gist更新を検出: {} ({})",
+                                    "Detected Gist update: {} ({})",
                                     new_gist.id,
                                     new_gist
                                         .description
@@ -142,28 +142,28 @@ impl<C: GitHubClient> CacheUpdater<C> {
                             );
                         }
 
-                        // 自己修復の原則：エラーが発生してもログ出力して継続
+                        // Self-healing principle: Log and continue even if error occurs
                         match content_cache.delete_gist(&new_gist.id) {
                             Ok(deleted) => {
                                 if deleted {
-                                    // 実際に削除された場合のみカウント
+                                    // Count only when actually deleted
                                     deleted_cache_count += 1;
                                     if self.verbose {
                                         println!(
                                             "{}",
                                             format!(
-                                                "  → キャッシュを削除しました: {}",
+                                                "  → Deleted cache: {}",
                                                 new_gist.id
                                             )
                                             .green()
                                         );
                                     }
                                 } else if self.verbose {
-                                    // 既に存在しなかった場合（verboseモードでのみ表示）
+                                    // If it didn't exist (display only in verbose mode)
                                     println!(
                                         "{}",
                                         format!(
-                                            "  → キャッシュは既に存在しませんでした: {}",
+                                            "  → Cache did not exist: {}",
                                             new_gist.id
                                         )
                                         .cyan()
@@ -174,7 +174,7 @@ impl<C: GitHubClient> CacheUpdater<C> {
                                 eprintln!(
                                     "{}",
                                     format!(
-                                        "  警告: キャッシュ削除に失敗: {} - {}",
+                                        "  Warning: Failed to delete cache: {} - {}",
                                         new_gist.id, e
                                     )
                                     .yellow()
@@ -189,7 +189,7 @@ impl<C: GitHubClient> CacheUpdater<C> {
         // Merge with existing cache if doing differential update
         let final_gists = if let Some(mut old) = old_gists {
             if fetched_count == 0 {
-                println!("{}", "更新なし".green());
+                println!("{}", "No updates".green());
                 old
             } else {
                 // Merge by ID, keeping the latest version
@@ -215,23 +215,23 @@ impl<C: GitHubClient> CacheUpdater<C> {
                     println!(
                         "{}",
                         format!(
-                            "差分マージ完了: 既存 {} + 差分 {} → 総数 {}",
+                            "Differential merge completed: Existing {} + Diff {} → Total {}",
                             old_count, fetched_count, total_count
                         )
                         .green()
                     );
                 }
 
-                println!("{}", format!("更新: {}件", fetched_count).green());
+                println!("{}", format!("Updated: {} items", fetched_count).green());
                 if new > 0 && self.verbose {
-                    println!("{}", format!("新規Gist: {}件", new).green());
+                    println!("{}", format!("New Gists: {} items", new).green());
                 }
 
-                // キャッシュ削除の報告
+                // Report cache deletion
                 if deleted_cache_count > 0 {
                     println!(
                         "{}",
-                        format!("キャッシュ削除: {}件", deleted_cache_count).yellow()
+                        format!("Cache deleted: {} items", deleted_cache_count).yellow()
                     );
                 }
 
@@ -245,7 +245,7 @@ impl<C: GitHubClient> CacheUpdater<C> {
             gists.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
 
             let count = gists.len();
-            println!("{}", format!("新規/更新: {}件", count).green());
+            println!("{}", format!("New/Updated: {} items", count).green());
             gists
         };
 
@@ -262,10 +262,10 @@ impl<C: GitHubClient> CacheUpdater<C> {
         // Save to file
         self.save_cache(&cache)?;
 
-        println!("{}", "キャッシュ更新が完了しました".green().bold());
+        println!("{}", "Cache update completed".green().bold());
         println!(
             "{}",
-            format!("総Gist数: {}", cache.metadata.total_count)
+            format!("Total Gists: {}", cache.metadata.total_count)
                 .cyan()
                 .bold()
         );
