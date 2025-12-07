@@ -1,5 +1,7 @@
 # gist-cache-rs
 
+[![DOCS](https://img.shields.io/badge/Docs-Click%20Here-blue?colorA=24292e&colorB=0366d6&logo=github)](https://7rikazhexde.github.io/gist-cache-rs/)
+
 A CLI tool (Rust implementation) for efficiently caching, searching, and executing GitHub Gists.
 
 ## Features
