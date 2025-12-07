@@ -249,7 +249,10 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
 
     // Select gist
     let gist = if matches!(search_mode, SearchMode::Id) && results.len() == 1 {
-        println!("{}", format!("ID specification mode: {}", results[0].id).cyan());
+        println!(
+            "{}",
+            format!("ID specification mode: {}", results[0].id).cyan()
+        );
         results[0]
     } else {
         search::select_from_results(&results)?
@@ -386,10 +389,7 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
                         println!("{}", format!("ID: {}", gist.id).green());
                         println!("  Description: {}", desc);
                         println!("  Files: {}", files.join(", "));
-                        println!(
-                            "  Updated: {}",
-                            gist.updated_at.format("%Y-%m-%d %H:%M:%S")
-                        );
+                        println!("  Updated: {}", gist.updated_at.format("%Y-%m-%d %H:%M:%S"));
                         println!();
                     } else {
                         println!("{}", format!("ID: {}", gist_id).green());
@@ -410,7 +410,10 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
                     println!("  {}", gist_id.green());
                 }
                 println!();
-                println!("{}", format!("Total: {} items", gist_ids.len()).cyan().bold());
+                println!(
+                    "{}",
+                    format!("Total: {} items", gist_ids.len()).cyan().bold()
+                );
             }
         }
         CacheCommands::Size => {
@@ -420,10 +423,7 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
             let total_size = content_cache.total_size()?;
             let gist_count = content_cache.list_cached_gists()?.len();
 
-            println!(
-                "{}",
-                format!("Cached Gists: {} items", gist_count).green()
-            );
+            println!("{}", format!("Cached Gists: {} items", gist_count).green());
             println!(
                 "{}",
                 format!("Total size: {}", format_bytes(total_size)).green()

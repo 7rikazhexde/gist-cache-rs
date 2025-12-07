@@ -1,18 +1,18 @@
-# インストールガイド
+# Installation Guide
 
-## 📋 前提条件
+## 📋 Prerequisites
 
-### 必須
+### Required
 
-- **Rust toolchain** (1.85以降)
+- **Rust toolchain** (1.85 or later)
 
   **Linux / macOS:**
 
   ```bash
-  rustc --version  # 確認
+  rustc --version  # Verify
   ```
 
-  インストール方法:
+  Installation method:
 
   ```bash
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -21,344 +21,344 @@
   **Windows:**
 
   ```powershell
-  rustc --version  # 確認
+  rustc --version  # Verify
   ```
 
-  インストール方法: [rustup.rs](https://rustup.rs/) からダウンロード
+  Installation method: Download from [rustup.rs](https://rustup.rs/)
 
-- **GitHub CLI** (`gh`) - 認証済み
+- **GitHub CLI** (`gh`) - Authenticated
 
   **Linux / macOS:**
 
   ```bash
-  gh --version     # 確認
-  gh auth status   # 認証状態確認
+  gh --version     # Verify
+  gh auth status   # Check authentication status
   ```
 
   **Windows:**
 
   ```powershell
-  gh --version     # 確認
-  gh auth status   # 認証状態確認
+  gh --version     # Verify
+  gh auth status   # Check authentication status
   ```
 
-  認証方法:
+  Authentication method:
 
   ```bash
   gh auth login
   ```
 
-  インストール: [GitHub CLI](https://cli.github.com/)
+  Installation: [GitHub CLI](https://cli.github.com/)
 
-### 推奨
+### Recommended
 
-- Git (リポジトリクローン用)
+- Git (for repository cloning)
 
-## 🔧 インストール方法
+## 🔧 Installation Methods
 
-### 方法1: セットアップスクリプト（推奨）
+### Method 1: Setup Script (Recommended)
 
-対話的にすべてのステップを実行します。
+Interactively performs all steps.
 
 #### Linux / macOS
 
 ```bash
-# リポジトリをクローン
+# Clone the repository
 git clone https://github.com/7rikazhexde/gist-cache-rs.git
 cd gist-cache-rs
 
-# セットアップスクリプトを実行
+# Run the setup script
 ./script/setup.sh install
 ```
 
-**実行される処理:**
+**Actions performed:**
 
-1. ✅ 前提条件の確認
-2. 📁 プロジェクトディレクトリの検出
-3. 🔨 リリースビルド
-4. 📦 インストール方法の選択
-5. ⚙️ インストール実行
-6. 🔄 初回キャッシュ作成
-7. ⌨️ エイリアス設定（オプション）
+1. ✅ Prerequisite check
+2. 📁 Project directory detection
+3. 🔨 Release build
+4. 📦 Select installation method
+5. ⚙️ Perform installation
+6. 🔄 Initial cache creation
+7. ⌨️ Alias setup (optional)
 
 #### Windows
 
 ```powershell
-# リポジトリをクローン
+# Clone the repository
 git clone https://github.com/7rikazhexde/gist-cache-rs.git
 cd gist-cache-rs
 
-# セットアップスクリプトを実行
+# Run the setup script
 .\script\setup.ps1 install
 ```
 
-**実行される処理:**
+**Actions performed:**
 
-1. ✅ 前提条件の確認（Rust、GitHub CLI）
-2. 🔨 リリースビルド
-3. 📦 cargoインストール実行
-4. 🔄 初回キャッシュ作成（オプション）
+1. ✅ Prerequisite check (Rust, GitHub CLI)
+2. 🔨 Release build
+3. 📦 Perform cargo install
+4. 🔄 Initial cache creation (optional)
 
-**インストール先:**
+**Installation location:**
 
-- バイナリ: `%USERPROFILE%\.cargo\bin\gist-cache-rs.exe`
-- キャッシュ: `%LOCALAPPDATA%\gist-cache\`
+- Binary: `%USERPROFILE%\.cargo\bin\gist-cache-rs.exe`
+- Cache: `%LOCALAPPDATA%\gist-cache\`
 
-### 方法2: cargo install（すべてのプラットフォーム共通）
+### Method 2: cargo install (All platforms)
 
 ```bash
-cargo build --release
-cargo install --path .
+car go build --release
+car go install --path .
 ```
 
-**インストール先:**
+**Installation location:**
 
 - Linux/macOS: `~/.cargo/bin/gist-cache-rs`
 - Windows: `%USERPROFILE%\.cargo\bin\gist-cache-rs.exe`
 
-**PATH設定:**
+**PATH setting:**
 
 **Linux / macOS:**
-通常は自動設定済み。未設定の場合：
+Usually set automatically. If not set:
 
 ```bash
-# ~/.bashrc または ~/.zshrc に追加
+# Add to ~/.bashrc or ~/.zshrc
 export PATH="$HOME/.cargo/bin:$PATH"
 source ~/.bashrc
 ```
 
 **Windows:**
-Cargoのbinディレクトリが自動的にPATHに追加されます。未設定の場合：
+Cargo's bin directory is automatically added to PATH. If not set:
 
-1. 「システム環境変数の編集」を開く
-2. 「環境変数」ボタンをクリック
-3. ユーザー環境変数の「Path」を編集
-4. `%USERPROFILE%\.cargo\bin` を追加
+1. Open "Edit the system environment variables"
+2. Click "Environment Variables..." button
+3. Edit "Path" under User variables
+4. Add `%USERPROFILE%\.cargo\bin`
 
-### 方法3: システムディレクトリ
+### Method 3: System directory
 
 ```bash
-cargo build --release
+car go build --release
 sudo cp target/release/gist-cache-rs /usr/local/bin/
 ```
 
-**インストール先:** `/usr/local/bin/gist-cache-rs`
-**特徴:** 全ユーザーで共有、sudo権限が必要
+**Installation location:** `/usr/local/bin/gist-cache-rs`
+**Feature:** Shared by all users, requires sudo privileges
 
-### 方法4: ユーザーディレクトリ
+### Method 4: User directory
 
 ```bash
-cargo build --release
+car go build --release
 mkdir -p ~/bin
 cp target/release/gist-cache-rs ~/bin/
 ```
 
-**インストール先:** `~/bin/gist-cache-rs`
+**Installation location:** `~/bin/gist-cache-rs`
 
-**PATH設定:**
+**PATH setting:**
 
 ```bash
-# ~/.bashrc または ~/.zshrc に追加
+# Add to ~/.bashrc or ~/.zshrc
 export PATH="$HOME/bin:$PATH"
 source ~/.bashrc
 ```
 
-### 方法5: シンボリックリンク（開発者向け）
+### Method 5: Symbolic link (for developers)
 
 ```bash
-cargo build --release
+car go build --release
 
-# /usr/local/bin にリンク（要sudo）
+# Link to /usr/local/bin (requires sudo)
 sudo ln -sf "$(pwd)/target/release/gist-cache-rs" /usr/local/bin/gist-cache-rs
 
-# または ~/bin にリンク
+# Or link to ~/bin
 mkdir -p ~/bin
 ln -sf "$(pwd)/target/release/gist-cache-rs" ~/bin/gist-cache-rs
 ```
 
-**特徴:** ビルド後に自動反映、開発時に便利
+**Feature:** Automatically reflected after build, convenient for development
 
-## ⚙️ インストール後の設定
+## ⚙️ Post-Installation Setup
 
-### 1. 初回キャッシュ作成
+### 1. Initial Cache Creation
 
 ```bash
 gist-cache-rs update
 ```
 
-詳細表示:
+Detailed display:
 
 ```bash
 gist-cache-rs update --verbose
 ```
 
-### 2. エイリアス設定（オプション）
+### 2. Alias Setting (Optional)
 
-#### 自動設定（setup.sh使用時）
+#### Automatic setting (when using setup.sh)
 
-インストール時に対話的に設定：
+Set interactively during installation:
 
 ```bash
-推奨エイリアス名（gcrsu, gcrsr）を使用しますか？ [Y/n]: y
+Use recommended alias names (gcrsu, gcrsr)? [Y/n]: y
 ```
 
-または
+Or
 
 ```bash
-推奨エイリアス名（gcrsu, gcrsr）を使用しますか？ [Y/n]: n
-gist-cache-rs update 用のエイリアス名: gcu
-gist-cache-rs run 用のエイリアス名: gcr
+Use recommended alias names (gcrsu, gcrsr)? [Y/n]: n
+Alias name for gist-cache-rs update: gcu
+Alias name for gist-cache-rs run: gcr
 ```
 
-#### 手動設定
+#### Manual setting
 
 ```bash
-# ~/.bashrc または ~/.zshrc に追加
+# Add to ~/.bashrc or ~/.zshrc
 alias gcrsu='gist-cache-rs update'
 alias gcrsr='gist-cache-rs run'
 
-# 反映
+# Apply settings
 source ~/.bashrc
 ```
 
-## ✅ インストール確認
+## ✅ Installation Verification
 
 ```bash
-# バージョン確認
+# Check version
 gist-cache-rs --version
 
-# ヘルプ表示
+# Display help
 gist-cache-rs --help
 
-# キャッシュ状態確認
+# Check cache status
 gist-cache-rs update --verbose
 ```
 
-## 🔍 トラブルシューティング
+## 🔍 Troubleshooting
 
 ### command not found: gist-cache-rs
 
-**原因:** PATHが設定されていない
+**Cause:** PATH is not set
 
-**解決方法（Linux/macOS）:**
+**Solution (Linux/macOS):**
 
 ```bash
-# インストール場所を確認
+# Check installation location
 which gist-cache-rs
 
-# PATHを確認
+# Check PATH
 echo $PATH
 
-# ~/.cargo/bin の場合
+# If in ~/.cargo/bin
 export PATH="$HOME/.cargo/bin:$PATH"
 
-# ~/bin の場合
+# If in ~/bin
 export PATH="$HOME/bin:$PATH"
 
-# 設定を反映
+# Apply settings
 source ~/.bashrc
 ```
 
-**解決方法（Windows）:**
+**Solution (Windows):**
 
 ```powershell
-# インストール場所を確認
+# Check installation location
 where.exe gist-cache-rs
 
-# PATHを確認
+# Check PATH
 $env:PATH
 
-# 環境変数の設定（PowerShell）
+# Set environment variable (PowerShell)
 $env:PATH += ";$env:USERPROFILE\.cargo\bin"
 
-# 永続的に設定する場合
+# For persistent setting
 [System.Environment]::SetEnvironmentVariable("Path", $env:PATH, [System.EnvironmentVariableTarget]::User)
 ```
 
-### 権限エラー
+### Permission error
 
-**原因:** 実行権限がない
+**Cause:** No execution permission
 
-**解決方法:**
+**Solution:**
 
 ```bash
-# 実行権限を付与
+# Grant execution permission
 chmod +x ~/.cargo/bin/gist-cache-rs
-# または
+# Or
 chmod +x /usr/local/bin/gist-cache-rs
-# または
+# Or
 chmod +x ~/bin/gist-cache-rs
 ```
 
-### ビルドエラー
+### Build error
 
-**原因:** Rustのバージョンが古い、依存関係の問題
+**Cause:** Outdated Rust version, dependency issues
 
-**解決方法:**
+**Solution:**
 
 ```bash
-# Rustを最新化
+# Update Rust
 rustup update
 
-# 依存関係を更新
-cargo update
+# Update dependencies
+car go update
 
-# クリーンビルド
-cargo clean
-cargo build --release
+# Clean build
+car go clean
+car go build --release
 ```
 
-### GitHub CLI認証エラー
+### GitHub CLI authentication error
 
-**エラー:** `GitHub CLI (gh) is not authenticated`
+**Error:** `GitHub CLI (gh) is not authenticated`
 
-**解決方法:**
+**Solution:**
 
 ```bash
 gh auth login
 ```
 
-### PowerShell実行ポリシーエラー（Windows）
+### PowerShell execution policy error (Windows)
 
-**エラー:** `このシステムではスクリプトの実行が無効になっているため...`
+**Error:** `This system\'s script execution is disabled...`
 
-**解決方法:**
+**Solution:**
 
 ```powershell
-# 現在のユーザーに対してスクリプト実行を許可
+# Allow script execution for current user
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-# または、特定のスクリプトのみバイパス
+# Or bypass for specific script only
 powershell -ExecutionPolicy Bypass -File .\script\setup.ps1 install
 ```
 
-### キャッシュが作成されない
+### Cache not created
 
-**エラー:** `Cache file not found`
+**Error:** `Cache file not found`
 
-**解決方法:**
+**Solution:**
 
 ```bash
-# 初回キャッシュ作成
+# Initial cache creation
 gist-cache-rs update
 
-# 詳細情報を表示
+# Display detailed information
 gist-cache-rs update --verbose
 ```
 
-### レートリミットエラー
+### Rate limit error
 
-**警告:** `レートリミット残量が低いです`
+**Warning:** `Rate limit remaining is low`
 
-**解決方法:**
+**Solution:**
 
-- しばらく待ってから再試行
-- `--force` オプションを避ける
-- 差分更新を使用
+- Wait for a while and retry
+- Avoid `--force` option
+- Use differential update
 
-## 🗑️ アンインストール
+## 🗑️ Uninstallation
 
-### 自動アンインストール
+### Automatic Uninstallation
 
 #### Linux / macOS
 
@@ -366,11 +366,11 @@ gist-cache-rs update --verbose
 ./script/setup.sh uninstall
 ```
 
-対話的に以下を選択：
+Interactively select:
 
-- バイナリ削除
-- キャッシュディレクトリ削除
-- エイリアス削除
+- Binary deletion
+- Cache directory deletion
+- Alias deletion
 
 #### Windows
 
@@ -378,30 +378,30 @@ gist-cache-rs update --verbose
 .\script\setup.ps1 uninstall
 ```
 
-対話的に以下を選択：
+Interactively select:
 
-- バイナリ削除
-- キャッシュディレクトリ削除
+- Binary deletion
+- Cache directory deletion
 
-### 手動アンインストール
+### Manual Uninstallation
 
 #### Linux / macOS
 
 ```bash
-# cargo でインストールした場合
-cargo uninstall gist-cache-rs
+# If installed with cargo
+car go uninstall gist-cache-rs
 
-# システムディレクトリにインストールした場合
+# If installed in system directory
 sudo rm /usr/local/bin/gist-cache-rs
 
-# ユーザーディレクトリにインストールした場合
+# If installed in user directory
 rm ~/bin/gist-cache-rs
 
-# キャッシュディレクトリを削除
+# Delete cache directory
 rm -rf ~/.cache/gist-cache/
 
-# エイリアスを削除（~/.bashrc または ~/.zshrc から該当行を削除）
-# 例:
+# Remove aliases (delete relevant lines from ~/.bashrc or ~/.zshrc)
+# Example:
 # alias gcrsu='gist-cache-rs update'
 # alias gcrsr='gist-cache-rs run'
 ```
@@ -409,15 +409,15 @@ rm -rf ~/.cache/gist-cache/
 #### Windows
 
 ```powershell
-# cargo でインストールした場合
-cargo uninstall gist-cache-rs
+# If installed with cargo
+car go uninstall gist-cache-rs
 
-# キャッシュディレクトリを削除
+# Delete cache directory
 Remove-Item -Recurse -Force "$env:LOCALAPPDATA\gist-cache"
 ```
 
-## ➡️ 次のステップ
+## ➡️ Next Steps
 
-- [QUICKSTART.md](QUICKSTART.md) - クイックスタートガイド
-- [EXAMPLES.md](EXAMPLES.md) - 実用例
-- [README.md](../README.md) - プロジェクト概要
+- [QUICKSTART.md](QUICKSTART.md) - Quick Start Guide
+- [EXAMPLES.md](EXAMPLES.md) - Practical Examples
+- [README.md](../README.md) - Project Overview

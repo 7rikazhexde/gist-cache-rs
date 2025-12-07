@@ -121,7 +121,7 @@ The codebase follows a modular architecture with clear separation of concerns:
 **`cache/`** - Cache management layer (2-layer caching structure)
 
 - `types.rs`: Core data structures (`GistCache`, `GistInfo`, `GistFile`, `CacheMetadata`)
-- `update.rs`: `CacheUpdater` handles incremental metadata cache updates using GitHub API`s `since` parameter. Automatically deletes corresponding content cache when Gist updates are detected.
+- `update.rs`: `CacheUpdater` handles incremental metadata cache updates using GitHub API`s`since` parameter. Automatically deletes corresponding content cache when Gist updates are detected.
 - `content.rs`: `ContentCache` manages individual Gist content files in `~/.cache/gist-cache/contents/{gist_id}/{filename}`. Created on first execution, speeding up subsequent executions (approx. 20x).
 
 **`github/`** - GitHub API integration
@@ -141,9 +141,9 @@ The codebase follows a modular architecture with clear separation of concerns:
 - `uv` interpreter uses file-based execution for PEP 723 metadata support.
 - `pwsh` (PowerShell Core) and `powershell` (Windows PowerShell) use file-based execution for compatibility with script execution policies.
 - TypeScript interpreters (`ts-node`, `deno`, `bun`) use file-based execution for module resolution.
-    - `ts-node`: Executes TypeScript on Node.js
-    - `deno`: Uses `deno run` command in Deno runtime
-    - `bun`: Executes in Bun runtime
+  - `ts-node`: Executes TypeScript on Node.js
+  - `deno`: Uses `deno run` command in Deno runtime
+  - `bun`: Executes in Bun runtime
 - Interactive mode for scripts using `read`, etc.
 
 **`self_update/`** - Application self-update feature
@@ -168,7 +168,7 @@ The codebase follows a modular architecture with clear separation of concerns:
 
 ### Key Design Patterns
 
-1. **Incremental Updates**: Metadata cache updates use GitHub API`s `since` parameter to fetch only changed gists. Timestamp stored in `last_updated` of `cache.json`.
+1. **Incremental Updates**: Metadata cache updates use GitHub API`s`since` parameter to fetch only changed gists. Timestamp stored in `last_updated` of `cache.json`.
 
 2. **2-Layer Caching (On-demand)**:
    - **Metadata Cache**: Stores gist metadata (id, description, files, updated_at) in `cache.json`. Updated with the `update` command.
@@ -217,7 +217,7 @@ Structure of `cache.json`:
     "total_count": 42,
     "github_user": "username"
   },
-  "gists": [...] 
+  "gists": [...]
 }
 ```
 

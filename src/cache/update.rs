@@ -63,7 +63,10 @@ impl<C: GitHubClient> CacheUpdater<C> {
             );
         }
         if self.verbose {
-            println!("{}", format!("Rate limit remaining: {}", rate_limit).green());
+            println!(
+                "{}",
+                format!("Rate limit remaining: {}", rate_limit).green()
+            );
         }
 
         // Load existing cache if available
@@ -73,11 +76,7 @@ impl<C: GitHubClient> CacheUpdater<C> {
                 println!("{}", "Detected existing cache".green());
                 println!(
                     "{}",
-                    format!(
-                        "GitHub user (cache reused): {}",
-                        cache.metadata.github_user
-                    )
-                    .green()
+                    format!("GitHub user (cache reused): {}", cache.metadata.github_user).green()
                 );
                 println!(
                     "{}",
@@ -151,22 +150,14 @@ impl<C: GitHubClient> CacheUpdater<C> {
                                     if self.verbose {
                                         println!(
                                             "{}",
-                                            format!(
-                                                "  → Deleted cache: {}",
-                                                new_gist.id
-                                            )
-                                            .green()
+                                            format!("  → Deleted cache: {}", new_gist.id).green()
                                         );
                                     }
                                 } else if self.verbose {
                                     // If it didn't exist (display only in verbose mode)
                                     println!(
                                         "{}",
-                                        format!(
-                                            "  → Cache did not exist: {}",
-                                            new_gist.id
-                                        )
-                                        .cyan()
+                                        format!("  → Cache did not exist: {}", new_gist.id).cyan()
                                     );
                                 }
                             }

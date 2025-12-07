@@ -148,8 +148,7 @@ impl ScriptRunner {
                     // Self-healing principle: Fetch from API if cache read fails
                     eprintln!(
                         "{}",
-                        format!("  Warning: Cache read failed, fetching from API: {}", e)
-                            .yellow()
+                        format!("  Warning: Cache read failed, fetching from API: {}", e).yellow()
                     );
                     let fetched =
                         GitHubApi::new().fetch_gist_content(&self.gist.id, &main_file.filename)?;

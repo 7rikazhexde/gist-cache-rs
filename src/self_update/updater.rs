@@ -142,7 +142,10 @@ impl Updater {
         let repo_path = self.get_repository_path()?;
 
         if self.options.verbose {
-            println!("Repository path: {}", repo_path.display().to_string().cyan());
+            println!(
+                "Repository path: {}",
+                repo_path.display().to_string().cyan()
+            );
         }
 
         // Pull latest changes
@@ -176,9 +179,8 @@ impl Updater {
 
         // Replace the current binary with the new one
         println!("{}", "Replacing executable...".cyan());
-        self_replace::self_replace(&new_binary).map_err(|e| {
-            GistCacheError::SelfUpdate(format!("Failed to replace binary: {}", e))
-        })?;
+        self_replace::self_replace(&new_binary)
+            .map_err(|e| GistCacheError::SelfUpdate(format!("Failed to replace binary: {}", e)))?;
 
         println!("{}", "Update completed".green().bold());
         println!("Please restart with the new version.");
@@ -242,9 +244,7 @@ impl Updater {
             .args(["pull", "--ff-only"])
             .current_dir(repo_path)
             .output()
-            .map_err(|e| {
-                GistCacheError::SelfUpdate(format!("Failed to run git pull: {}", e))
-            })?;
+            .map_err(|e| GistCacheError::SelfUpdate(format!("Failed to run git pull: {}", e)))?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
@@ -305,9 +305,7 @@ impl Updater {
             .args(&args)
             .current_dir(repo_path)
             .output()
-            .map_err(|e| {
-                GistCacheError::SelfUpdate(format!("Failed to run cargo build: {}", e))
-            })?;
+            .map_err(|e| GistCacheError::SelfUpdate(format!("Failed to run cargo build: {}", e)))?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);

@@ -1,171 +1,171 @@
-# ⚡ クイックスタートガイド
+# ⚡ Quick Start Guide
 
-5分でgist-cache-rsを始めるための最小限のガイドです。
+A minimal guide to get started with `gist-cache-rs` in 5 minutes.
 
-## ステップ1: ✅ 前提条件の確認
+## Step 1: ✅ Verify Prerequisites
 
 ```bash
-# Rustがインストールされているか確認
+# Check if Rust is installed
 rustc --version
 
-# GitHub CLIがインストールされているか確認
+# Check if GitHub CLI is installed
 gh --version
 
-# GitHub CLIで認証されているか確認
+# Check if authenticated with GitHub CLI
 gh auth status
 ```
 
-未インストールの場合は[INSTALL.md](INSTALL.md)を参照してください。
+If not installed, please refer to [INSTALL.md](INSTALL.md).
 
-## ステップ2: 📥 インストール
+## Step 2: 📥 Installation
 
 ```bash
-# リポジトリをクローン
+# Clone the repository
 git clone https://github.com/7rikazhexde/gist-cache-rs.git
 cd gist-cache-rs
 
-# ビルドとインストール
+# Build and install
 cargo build --release
 cargo install --path .
 
-# インストール確認
+# Verify installation
 gist-cache-rs --version
 ```
 
-その他のインストール方法は [INSTALL.md](INSTALL.md) を参照してください。
+For other installation methods, please refer to [INSTALL.md](INSTALL.md).
 
-## ステップ3: 🔄 初回キャッシュ作成
+## Step 3: 🔄 Initial Cache Creation
 
 ```bash
-# キャッシュを作成
+# Create cache
 gist-cache-rs update
 
-# 詳細表示付き（推奨）
+# With detailed output (recommended)
 gist-cache-rs update --verbose
 ```
 
-**出力例:**
+**Example Output:**
 
 ```bash
-Gistキャッシュを更新しています...
-モード: 強制全件更新
-レートリミット残量: 4999
-GitHub APIからGist情報を取得中...
-取得したGist数: 42
-新規/更新: 42件
-キャッシュ更新が完了しました
-総Gist数: 42
+Updating Gist cache...
+Mode: Force full update
+Rate limit remaining: 4999
+Fetching Gist information from GitHub API...
+Gists fetched: 42
+New/Updated: 42 items
+Cache update completed
+Total Gists: 42
 ```
 
-## ステップ4: 🚀 Gistを検索して実行
+## Step 4: 🚀 Search and Execute Gist
 
-### 👁️ プレビュー（実行せず内容確認）
+### 👁️ Preview (Check content without executing)
 
 ```bash
-# キーワードで検索してプレビュー
+# Search by keyword and preview
 gist-cache-rs run --preview backup
 ```
 
-### ▶️ 実際に実行
+### ▶️ Actually Execute
 
 ```bash
-# Bashスクリプトを実行
+# Execute a Bash script
 gist-cache-rs run backup bash
 
-# Python スクリプトを実行
+# Execute a Python script
 gist-cache-rs run data_analysis.py python3
 
-# uvでPythonスクリプトを実行
+# Execute a Python script with uv
 gist-cache-rs run ml-script uv
 ```
 
-### 📝 引数を渡して実行
+### 📝 Execute with Arguments
 
 ```bash
-# スクリプトに引数を渡す
+# Pass arguments to a script
 gist-cache-rs run backup bash /src /dst
 
-# Pythonスクリプトに引数を渡す
+# Pass arguments to a Python script
 gist-cache-rs run data_analysis.py python3 input.csv --output result.json
 ```
 
-## ステップ5: ⚡ エイリアス設定（オプション）
+## Step 5: ⚡ Alias Setting (Optional)
 
-より便利に使用するため、エイリアスを設定します：
+To use it more conveniently, set up aliases:
 
 ```bash
-# ~/.bashrc に追加
+# Add to ~/.bashrc
 echo 'alias gcrsu="gist-cache-rs update"' >> ~/.bashrc
 echo 'alias gcrsr="gist-cache-rs run"' >> ~/.bashrc
 source ~/.bashrc
 
-# これで短縮形で使用可能
-gcrsu                # キャッシュ更新
-gcrsr backup bash    # Gist実行
+# Now you can use the shortened forms
+gcrsu                # Update cache
+gcrsr backup bash    # Execute Gist
 ```
 
-## 📚 よく使うコマンド
+## 📚 Frequently Used Commands
 
-### 🔄 キャッシュ管理
+### 🔄 Cache Management
 
 ```bash
-# 差分更新（通常）
+# Differential update (normal)
 gist-cache-rs update
 
-# 強制全件更新
+# Force full update
 gist-cache-rs update --force
 
-# 詳細表示
+# Detailed display
 gist-cache-rs update --verbose
 ```
 
-### 🗂️ コンテンツキャッシュ管理
+### 🗂️ Content Cache Management
 
 ```bash
-# キャッシュ一覧表示
+# Display cache list
 gist-cache-rs cache list
 
-# キャッシュサイズ確認
+# Check cache size
 gist-cache-rs cache size
 
-# 全キャッシュ削除
+# Clear all caches
 gist-cache-rs cache clear
 ```
 
-### 🔍 Gist検索・実行
+### 🔍 Gist Search and Execution
 
 ```bash
-# 基本的な検索と実行
+# Basic search and execution
 gist-cache-rs run keyword
 
-# プレビュー（実行せず内容確認）
+# Preview (check content without executing)
 gist-cache-rs run -p keyword
 
-# 対話モード（readコマンドなど使用時）
+# Interactive mode (when using read command, etc.)
 gist-cache-rs run -i interactive-script
 
-# ダウンロードフォルダに保存
+# Save to download folder
 gist-cache-rs run --download backup bash
 
-# プレビュー後にダウンロード
+# Download after preview
 gist-cache-rs run -p --download script
 
-# ファイル名で検索
+# Search by filename
 gist-cache-rs run --filename setup.sh
 
-# 説明文で検索
+# Search by description
 gist-cache-rs run --description deployment
 
-# 実行前に最新情報を取得（強制更新）
+# Get latest information before execution (force update)
 gist-cache-rs run --force backup bash
 ```
 
-### 🔧 インタープリタ指定
+### 🔧 Specify Interpreter
 
-引数指定などはスクリプトに依存します。
+Argument specifications depend on the script.
 
 ```bash
-# Bash（デフォルト）
+# Bash (default)
 gist-cache-rs run script bash arg1 arg2 ...
 
 # Python3
@@ -177,61 +177,61 @@ gist-cache-rs run script ruby arg1 arg2 ...
 # Node.js
 gist-cache-rs run script node arg1 arg2 ...
 
-# uv（PEP 723対応）
+# uv (PEP 723 compatible)
 gist-cache-rs run script uv arg1 arg2 ...
 ```
 
-## 💼 実用例
+## 💼 Practical Examples
 
-[EXAMPLES.md](EXAMPLES.md)を確認してください。
+Please check [EXAMPLES.md](EXAMPLES.md).
 
-## 🔧 トラブルシューティング
+## 🔧 Troubleshooting
 
-### ❌ キャッシュが見つからない
+### ❌ Cache not found
 
 ```bash
-# エラー: Cache file not found
-→ gist-cache-rs update を実行
+# Error: Cache file not found
+→ Run gist-cache-rs update
 ```
 
-### 🔐 GitHub認証エラー
+### 🔐 GitHub authentication error
 
 ```bash
-# エラー: GitHub CLI is not authenticated
-→ gh auth login を実行
+# Error: GitHub CLI is not authenticated
+→ Run gh auth login
 ```
 
-### 🚫 コマンドが見つからない
+### 🚫 Command not found
 
 ```bash
-# コマンドが見つからない場合
-→ which gist-cache-rs でパスを確認
-→ ~/.cargo/bin または /usr/local/bin がPATHに含まれているか確認
+# If command not found
+→ Check path with which gist-cache-rs
+→ Check if ~/.cargo/bin or /usr/local/bin is in PATH
 ```
 
-### 🔎 検索結果が見つからない
+### 🔎 Search results not found
 
 ```bash
-# キャッシュが古い可能性
-→ gist-cache-rs update で最新化
+# Cache might be old
+→ Update with gist-cache-rs update
 ```
 
-## 🎯 関連情報
+## 🎯 Related Information
 
-- [README.md](../README.md) - 詳細な機能説明
-- [INSTALL.md](INSTALL.md) - インストール詳細
-- [EXAMPLES.md](EXAMPLES.md) - 実例集（実際の使用例）
+- [README.md](../README.md) - Detailed feature description
+- [INSTALL.md](INSTALL.md) - Installation details
+- [EXAMPLES.md](EXAMPLES.md) - Practical examples (actual usage examples)
 
-## ❓ ヘルプ
+## ❓ Help
 
 ```bash
-# 全体のヘルプ
+# Overall help
 gist-cache-rs --help
 
-# サブコマンドのヘルプ
+# Subcommand help
 gist-cache-rs update --help
 gist-cache-rs run --help
 
-# 引数なしで実行してもヘルプが表示される
+# Running without arguments also displays help
 gist-cache-rs run
 ```

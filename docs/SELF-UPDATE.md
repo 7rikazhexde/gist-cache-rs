@@ -1,429 +1,429 @@
-# Self-Update機能の設計
+# Self-Update Feature Design
 
-## 概要
+## Overview
 
-`gist-cache-rs self update` コマンドを追加し、ユーザーがアプリケーション自身を簡単に更新できるようにします。
+The `gist-cache-rs self update` command will be added to allow users to easily update the application itself.
 
-## 目的
+## Objective
 
-- セットアップスクリプトを再実行せずに、バイナリのみを更新する
-- エイリアス設定やPATH設定などの環境設定を変更しない
-- クロスプラットフォーム対応（Linux、macOS、Windows）
+- Update only the binary without re-running the setup script.
+- Do not change environment settings such as alias settings or PATH settings.
+- Cross-platform compatibility (Linux, macOS, Windows).
 
-## 設計方針
+## Design Policy
 
-### セットアップスクリプトとの違い
+### Differences from the setup script
 
-| 機能 | セットアップスクリプト | self update コマンド |
-|------|----------------------|---------------------|
-| 前提条件の確認 | ✓ | - |
-| ビルド＆インストール | ✓ | ✓ |
-| PATH設定 | ✓（オプション） | - |
-| エイリアス設定 | ✓（オプション） | - |
-| 初回キャッシュ作成 | ✓（オプション） | - |
+| Feature                | Setup Script | `self update` command |
+|------------------------|--------------|-----------------------|
+| Prerequisite check     | ✓            | -                     |
+| Build & Install        | ✓            | ✓                     |
+| PATH setting           | ✓ (optional) | -                     |
+| Alias setting          | ✓ (optional) | -                     |
+| Initial cache creation | ✓ (optional) | -                     |
 
-**self updateは「バイナリの更新のみ」に特化**します。これにより：
+The `self update` command **focuses solely on "binary updates"**. This ensures:
 
-- エイリアス設定を再実行しない
-- PATH設定を変更しない
-- キャッシュをクリアしない
-- 既存の環境設定を保持
+- No re-execution of alias settings.
+- No changes to PATH settings.
+- No cache clearing.
+- Preservation of existing environment settings.
 
-## 実装方針
+## Implementation Policy
 
-### アプローチ1: GitHub Releasesからバイナリをダウンロード（推奨）
+### Approach 1: Download binary from GitHub Releases (Recommended)
 
-**メリット**:
+**Advantages**:
 
-- 高速（ビルド不要）
-- ネットワーク経由で最新版を取得
-- ユーザーのビルド環境に依存しない
+- Fast (no build required).
+- Obtains the latest version via network.
+- Not dependent on the user's build environment.
 
-**デメリット**:
+**Disadvantages**:
 
-- GitHub Releasesにプラットフォーム別バイナリをアップロードする必要がある
-- リリースプロセスの追加作業
+- Requires uploading platform-specific binaries to GitHub Releases.
+- Additional work for the release process.
 
-**実装方法**:
+**Implementation Method**:
 
-- [`self_update`](https://crates.io/crates/self_update) crateを使用
-- GitHub Releasesから対応するプラットフォームのバイナリをダウンロード
-- 現在実行中のバイナリを置き換え
+- Use the [`self_update`](https://crates.io/crates/self_update) crate.
+- Download the corresponding platform binary from GitHub Releases.
+- Replace the currently running binary.
 
-**セキュリティ考慮事項**:
+**Security Considerations**:
 
-- HTTPS通信（TLS検証）
-- リリースタグの検証
-- （将来的に）バイナリ署名の検証
+- HTTPS communication (TLS verification).
+- Release tag verification.
+- (Future) Binary signature verification.
 
-### アプローチ2: ソースからビルド（フォールバック）
+### Approach 2: Build from source (Fallback)
 
-**メリット**:
+**Advantages**:
 
-- 最新のmain/masterブランチを取得可能
-- リリースが存在しない場合でも更新可能
-- 既存のツール（git、cargo）を活用
+- Can get the latest `main`/`master` branch.
+- Can update even if no release exists.
+- Utilizes existing tools (git, cargo).
 
-**デメリット**:
+**Disadvantages**:
 
-- ビルドに時間がかかる
-- Rustツールチェーンが必要
-- ディスク容量を消費
+- Building takes time.
+- Requires Rust toolchain.
+- Consumes disk space.
 
-**実装方法**:
+**Implementation Method**:
 
-1. リポジトリのクローンまたはpull
-2. `cargo install --path .` でビルド＆インストール
+1. Clone or pull the repository.
+2. Build & install with `cargo install --path .`.
 
-### 推奨実装：ハイブリッドアプローチ
+### Recommended Implementation: Hybrid Approach
 
-1. **デフォルト**: GitHub Releasesからダウンロード
-2. **フォールバック**: `--from-source` フラグでソースからビルド
-3. **オプション**: `--check` で更新の有無のみ確認
+1. **Default**: Download from GitHub Releases.
+2. **Fallback**: Build from source with the `--from-source` flag.
+3. **Option**: Check only for updates with `--check`.
 
-## コマンド設計
+## Command Design
 
-### 基本コマンド
+### Basic Commands
 
 ```bash
-# 最新版に更新（GitHub Releasesから）
+# Update to the latest version (from GitHub Releases)
 gist-cache-rs self update
 
-# ソースからビルドして更新
+# Build from source and update
 gist-cache-rs self update --from-source
 
-# 更新の有無を確認（実際には更新しない）
+# Check only for updates (do not actually update)
 gist-cache-rs self update --check
 
-# 強制更新（バージョンが同じでも更新）
+# Force update (even if the version is the same)
 gist-cache-rs self update --force
 
-# 特定のバージョンに更新
+# Update to a specific version
 gist-cache-rs self update --version 0.5.0
 ```
 
-### オプション
+### Options
 
-| オプション | 説明 |
-|-----------|------|
-| `--from-source` | GitHub Releasesではなく、ソースからビルドして更新 |
-| `--check` | 更新の有無のみ確認（実際には更新しない） |
-| `--force` | バージョンが同じでも強制的に更新 |
-| `--version <VERSION>` | 特定のバージョンに更新 |
-| `--verbose` | 詳細な進捗情報を表示 |
+| Option          | Description                                         |
+|-----------------|-----------------------------------------------------|
+| `--from-source` | Build and update from source instead of GitHub Releases |
+| `--check`       | Check only for updates (do not actually update)     |
+| `--force`       | Force update even if the version is the same        |
+| `--version <VERSION>` | Update to a specific version                        |
+| `--verbose`     | Display detailed progress information               |
 
-## 処理フロー
+## Processing Flow
 
-### GitHub Releasesからの更新
+### Update from GitHub Releases
 
 ```text
-1. 現在のバージョンを取得
-2. GitHub API で最新リリースを確認
-3. 新しいバージョンが存在するか確認
-   - なければ終了
-4. プラットフォームに対応するアセットを検索
+1. Get the current version.
+2. Check for the latest release via GitHub API.
+3. Check if a new version exists.
+   - If not, exit.
+4. Search for assets corresponding to the platform.
    - Linux: gist-cache-rs-linux-x86_64.tar.gz
    - macOS: gist-cache-rs-macos-x86_64.tar.gz / gist-cache-rs-macos-aarch64.tar.gz
    - Windows: gist-cache-rs-windows-x86_64.zip
-5. アセットをダウンロード
-6. アーカイブを展開
-7. 現在のバイナリを新しいバイナリで置き換え
-8. パーミッション設定（Unix系のみ）
-9. 完了メッセージを表示
+5. Download the asset.
+6. Extract the archive.
+7. Replace the current binary with the new binary.
+8. Set permissions (Unix-like systems only).
+9. Display completion message.
 ```
 
-### ソースからの更新
+### Update from Source
 
 ```text
-1. git コマンドと cargo コマンドの存在を確認
-2. リポジトリの場所を確認
-   a. 環境変数 GIST_CACHE_REPO でオーバーライド可能
-   b. デフォルト: cargo metadata から取得
-   c. フォールバック: git clone を促すエラーを表示
-3. git pull --ff-only で最新版を取得
-   - 注意: ローカルリポジトリの状態によっては、fast-forwardマージができずエラーになる場合があります。その場合は、リポジトリをクリーンな状態にする（例: `GIST_CACHE_REPO`で指定されたディレクトリを削除して再クローンする）か、GitHub Releasesからの更新（`--from-source`なし）を利用してください。
-4. cargo build --release でビルド
-5. ビルドされたバイナリで現在の実行ファイルを置き換え (self-replace)
-6. 完了メッセージを表示
+1. Verify the existence of git and cargo commands.
+2. Determine repository location.
+   a. Overridable by environment variable GIST_CACHE_REPO.
+   b. Default: Obtain from cargo metadata.
+   c. Fallback: Display an error prompting git clone.
+3. Get the latest version with `git pull --ff-only`.
+   - Note: Depending on the state of the local repository, a fast-forward merge may not be possible, resulting in an error. In such cases, clean the repository (e.g., delete the directory specified by `GIST_CACHE_REPO` and re-clone) or use the update from GitHub Releases (without `--from-source`).
+4. Build with `cargo build --release`.
+5. Replace the current executable with the built binary (self-replace).
+6. Display completion message.
 ```
 
-## プラットフォーム対応
+## Platform Support
 
 ### Linux
 
-- バイナリ名: `gist-cache-rs`
-- インストール先: `~/.cargo/bin/gist-cache-rs`
-- アセット名: `gist-cache-rs-linux-x86_64.tar.gz`
+- Binary name: `gist-cache-rs`
+- Installation location: `~/.cargo/bin/gist-cache-rs`
+- Asset name: `gist-cache-rs-linux-x86_64.tar.gz`
 
 ### macOS
 
-- バイナリ名: `gist-cache-rs`
-- インストール先: `~/.cargo/bin/gist-cache-rs`
-- アセット名:
+- Binary name: `gist-cache-rs`
+- Installation location: `~/.cargo/bin/gist-cache-rs`
+- Asset name:
   - Intel: `gist-cache-rs-macos-x86_64.tar.gz`
   - Apple Silicon: `gist-cache-rs-macos-aarch64.tar.gz`
 
 ### Windows
 
-- バイナリ名: `gist-cache-rs.exe`
-- インストール先: `%USERPROFILE%\.cargo\bin\gist-cache-rs.exe`
-- アセット名: `gist-cache-rs-windows-x86_64.zip`
+- Binary name: `gist-cache-rs.exe`
+- Installation location: `%USERPROFILE%\.cargo\bin\gist-cache-rs.exe`
+- Asset name: `gist-cache-rs-windows-x86_64.zip`
 
-## 依存関係
+## Dependencies
 
-### 新規追加
+### Newly Added
 
 ```toml
 [dependencies]
-self_update = "0.41"  # GitHub Releasesからの自動更新
+self_update = "0.41"  # Automatic updates from GitHub Releases
 ```
 
-### 既存の依存関係
+### Existing Dependencies
 
-- `anyhow` / `thiserror`: エラー処理
-- `tokio`: 非同期処理
-- `clap`: CLI引数パース
+- `anyhow` / `thiserror`: Error handling
+- `tokio`: Asynchronous processing
+- `clap`: CLI argument parsing
 
-## エラー処理
+## Error Handling
 
-### 想定されるエラー
+### Expected Errors
 
-1. **ネットワークエラー**
-   - GitHub APIにアクセスできない
-   - アセットをダウンロードできない
-   - 対処: リトライまたはエラーメッセージ表示
+1. **Network Errors**
+   - Cannot access GitHub API.
+   - Cannot download assets.
+   - Action: Retry or display error message.
 
-2. **パーミッションエラー**
-   - バイナリを置き換えられない
-   - 対処: sudo権限が必要な旨を表示
+2. **Permission Errors**
+   - Cannot replace binary.
+   - Action: Display message indicating sudo privileges are required.
 
-3. **プラットフォーム未対応**
-   - 対応するアセットが存在しない
-   - 対処: `--from-source` の使用を提案
+3. **Unsupported Platform**
+   - No corresponding asset.
+   - Action: Suggest using `--from-source`.
 
-4. **バージョン取得エラー**
-   - 現在のバージョンを取得できない
-   - 対処: `--force` の使用を提案
+4. **Version Acquisition Error**
+   - Cannot get current version.
+   - Action: Suggest using `--force`.
 
-5. **ビルドエラー**（`--from-source` 使用時）
-   - Rustツールチェーンが存在しない
-   - ビルドに失敗
-   - 対処: セットアップスクリプトの実行を提案
+5. **Build Errors** (when using `--from-source`)
+   - Rust toolchain not present.
+   - Build failed.
+   - Action: Suggest running the setup script.
 
-## セキュリティ考慮事項
+## Security Considerations
 
-### 現時点
+### Current
 
-1. **HTTPS通信**: TLS/SSL検証を実施
-2. **GitHub API認証**: GitHub APIのレート制限を考慮
-3. **実行中バイナリの置き換え**: プラットフォーム固有の安全な方法を使用
+1. **HTTPS Communication**: Performs TLS/SSL verification.
+2. **GitHub API Authentication**: Considers GitHub API rate limits.
+3. **Replacing Running Binary**: Uses platform-specific safe methods.
 
-### 将来的に検討
+### Future Considerations
 
-1. **バイナリ署名の検証**: GPG署名またはコード署名
-2. **チェックサムの検証**: SHA256ハッシュの比較
-3. **ロールバック機能**: 更新失敗時に前のバージョンに戻す
+1. **Binary Signature Verification**: GPG signature or code signing.
+2. **Checksum Verification**: SHA256 hash comparison.
+3. **Rollback Functionality**: Revert to the previous version if update fails.
 
-## テスト方針
+## Testing Policy
 
-### ユニットテスト
+### Unit Tests
 
-- バージョン比較ロジック
-- プラットフォーム検出
-- エラーハンドリング
+- Version comparison logic.
+- Platform detection.
+- Error handling.
 
-### 統合テスト
+### Integration Tests
 
-- モックGitHub APIを使用したダウンロードテスト
-- ファイル置き換えのテスト（一時ディレクトリで実施）
+- Download tests using mock GitHub API.
+- File replacement tests (performed in temporary directories).
 
-### E2Eテスト（手動）
+### E2E Tests (Manual)
 
-- 実際のGitHub Releasesからの更新
-- プラットフォーム別の動作確認
+- Actual updates from GitHub Releases.
+- Platform-specific behavior verification.
 
-## リリースプロセスの変更
+## Changes to Release Process
 
-### GitHub Actions で自動ビルド＆リリース
+### Automated Build & Release with GitHub Actions
 
-新しいリリース時に以下を自動化：
+Automate the following upon a new release:
 
-1. プラットフォーム別のバイナリをビルド
+1. Build platform-specific binaries.
    - Linux (x86_64)
    - macOS (x86_64, aarch64)
    - Windows (x86_64)
 
-2. アーカイブを作成
+2. Create archives.
    - Linux/macOS: `.tar.gz`
    - Windows: `.zip`
 
-3. GitHub Releasesにアップロード
+3. Upload to GitHub Releases.
 
-**参考**: 既存のRustプロジェクトで使用されているGitHub Actions例
+**Reference**: Examples of GitHub Actions used in existing Rust projects
 
 - `rust-lang/cargo`
 - `BurntSushi/ripgrep`
 
-## マイルストーン
+## Milestones
 
-### Phase 1: 基本実装
+### Phase 1: Basic Implementation
 
-- [x] `self update` サブコマンドの追加
-- [x] `self_update` crateの統合
-- [x] GitHub Releasesからのダウンロード機能
-- [x] バイナリ置き換え機能
-- [x] 基本的なエラーハンドリング
+- [x] Add `self update` subcommand.
+- [x] Integrate `self_update` crate.
+- [x] Download functionality from GitHub Releases.
+- [x] Binary replacement functionality.
+- [x] Basic error handling.
 
-### Phase 2: ソースビルド対応
+### Phase 2: Source Build Support
 
-- [x] `--from-source` オプションの実装
-- [x] git pull + cargo install の統合
-- [x] リポジトリパスの検出ロジック
-- [x] トラッキング情報がない場合のフォールバック（origin/main）
+- [x] Implement `--from-source` option.
+- [x] Integrate `git pull` + `cargo install`.
+- [x] Repository path detection logic.
+- [x] Fallback for no tracking information (origin/main).
 
-### Phase 3: 追加機能
+### Phase 3: Additional Features
 
-- [x] `--check` オプション（更新確認のみ）
-- [x] `--version` オプション（特定バージョンへの更新）
-- [x] `--force` オプション（強制更新）
-- [ ] プログレスバー表示（self_update crateが対応済み）
+- [x] `--check` option (update check only).
+- [x] `--version` option (update to a specific version).
+- [x] `--force` option (force update).
+- [ ] Progress bar display (supported by `self_update` crate).
 
-### Phase 4: CI/CD統合
+### Phase 4: CI/CD Integration
 
-- [x] GitHub Actionsでのリリースビルド自動化
-- [x] プラットフォーム別バイナリの作成
-- [x] リリースノートの自動生成
-- [x] Matrix buildによる並列ビルド
-- [x] 自動アセットアップロード
+- [x] Automate release builds with GitHub Actions.
+- [x] Create platform-specific binaries.
+- [x] Automate release note generation.
+- [x] Parallel builds with Matrix build.
+- [x] Automatic asset upload.
 
-### Phase 5: セキュリティ強化（将来）
+### Phase 5: Security Enhancement (Future)
 
-- [ ] バイナリ署名の実装
-- [ ] チェックサム検証
-- [ ] ロールバック機能
+- [ ] Implement binary signing.
+- [ ] Checksum verification.
+- [ ] Rollback functionality.
 
-## 参考資料
+## References
 
-### 類似プロジェクトの実装
+### Implementations in similar projects
 
-- **rustup**: Rust toolchainの自己更新
-- **cargo-update**: cargoパッケージの更新
-- **ripgrep**: GitHub Releasesからの自己更新
+- **rustup**: Self-update for Rust toolchain.
+- **cargo-update**: Update cargo packages.
+- **ripgrep**: Self-update from GitHub Releases.
 
-### 使用するcrate
+### Crates to be used
 
 - [**self_update**](https://crates.io/crates/self_update)
-  - GitHub Releasesからの自動更新をサポート
-  - プラットフォーム検出
-  - バイナリ置き換え
+  - Supports automatic updates from GitHub Releases.
+  - Platform detection.
+  - Binary replacement.
 
-### ドキュメント
+### Documentation
 
 - [GitHub Releases API](https://docs.github.com/en/rest/releases)
 - [cargo install](https://doc.rust-lang.org/cargo/commands/cargo-install.html)
 
-## リリースプロセス
+## Release Process
 
-### 自動リリースビルド
+### Automated Release Builds
 
-GitHub Actionsを使用して、タグをプッシュすると自動的にリリースビルドが実行されます。
+Release builds are automatically executed via GitHub Actions when a tag is pushed.
 
-**手順**:
+**Steps**:
 
-1. バージョン番号を更新（Cargo.toml）
-2. CHANGELOGを更新
-3. コミットしてプッシュ
-4. タグを作成してプッシュ
+1. Update version number (Cargo.toml).
+2. Update CHANGELOG.
+3. Commit and push.
+4. Create and push tag.
 
 ```bash
-# 1. バージョン更新とCHANGELOG編集
+# 1. Update version and edit CHANGELOG
 vim Cargo.toml
 vim CHANGELOG.md
 git add Cargo.toml CHANGELOG.md
 git commit -m "🔖 Bump version to 0.5.0"
 
-# 2. タグを作成してプッシュ
+# 2. Create and push tag
 git tag v0.5.0
 git push origin main
 git push origin v0.5.0
 ```
 
-### ビルドされるプラットフォーム
+### Platforms Built
 
-GitHub Actionsは以下のプラットフォーム用のバイナリを自動生成します：
+GitHub Actions automatically generates binaries for the following platforms:
 
-| プラットフォーム | アーキテクチャ | アセット名 |
-|-----------------|--------------|-----------|
-| Linux | x86_64 | `gist-cache-rs-linux-x86_64.tar.gz` |
-| macOS (Intel) | x86_64 | `gist-cache-rs-macos-x86_64.tar.gz` |
-| macOS (Apple Silicon) | aarch64 | `gist-cache-rs-macos-aarch64.tar.gz` |
-| Windows | x86_64 | `gist-cache-rs-windows-x86_64.zip` |
+| Platform               | Architecture | Asset Name                                 |
+|------------------------|--------------|--------------------------------------------|
+| Linux                  | x86_64       | `gist-cache-rs-linux-x86_64.tar.gz`        |
+| macOS (Intel)          | x86_64       | `gist-cache-rs-macos-x86_64.tar.gz`        |
+| macOS (Apple Silicon)  | aarch64      | `gist-cache-rs-macos-aarch64.tar.gz`       |
+| Windows                | x86_64       | `gist-cache-rs-windows-x86_64.zip`         |
 
-### ワークフローの詳細
+### Workflow Details
 
-`.github/workflows/release.yml`で定義されたワークフロー：
+Workflow defined in `.github/workflows/release.yml`:
 
-1. **create-release**: リリースページを作成
-   - タグからバージョンを抽出
-   - リリースノートを生成（CHANGELOGを参照）
-   - インストール手順を含める
+1. **create-release**: Creates a release page.
+   - Extracts version from tag.
+   - Generates release notes (referring to CHANGELOG).
+   - Includes installation instructions.
 
-2. **build-release**: プラットフォーム別ビルド（並列実行）
-   - Rustツールチェーンのインストール
-   - リリースビルドの実行
-   - バイナリのstrip（Linux/macOS）
-   - アーカイブの作成
-   - GitHub Releasesへのアップロード
+2. **build-release**: Platform-specific builds (parallel execution).
+   - Installs Rust toolchain.
+   - Executes release build.
+   - Strips binary (Linux/macOS).
+   - Creates archive.
+   - Uploads to GitHub Releases.
 
-### トラブルシューティング
+### Troubleshooting
 
-**ビルドが失敗する場合**:
+**If build fails**:
 
-- Cargo.tomlのバージョンが正しいか確認
-- 依存関係が最新か確認（`cargo update`）
-- GitHub Actionsのログを確認
+- Verify Cargo.toml version is correct.
+- Verify dependencies are up-to-date (`cargo update`).
+- Check GitHub Actions logs.
 
-**アセットがアップロードされない場合**:
+**If assets are not uploaded**:
 
-- GitHubトークンの権限を確認
-- ワークフローファイルの構文エラーを確認
+- Check GitHub token permissions.
+- Check workflow file for syntax errors.
 
 ## FAQ
 
-### Q1: セットアップスクリプトとの使い分けは？
+### Q1: How to differentiate between setup script and self-update?
 
 **A**:
 
-- **セットアップスクリプト**: 初回インストール時に使用（PATH設定、エイリアス設定を含む）
-- **self update**: インストール後のバージョンアップ時に使用（バイナリのみ更新）
+- **Setup Script**: Used for initial installation (including PATH and alias settings).
+- **Self Update**: Used for updating the installed version (updates only the binary).
 
-### Q2: なぜセットアップスクリプトを内部で実行しないのか？
+### Q2: Why not execute the setup script internally?
 
-**A**: セットアップスクリプトはエイリアス設定やPATH設定を含むため、更新のたびに再実行すると不要な操作が発生します。`self update`はバイナリの更新のみに特化することで、シンプルかつ予測可能な動作を実現します。
+**A**: The setup script includes alias and PATH settings, so re-executing it with every update would lead to unnecessary operations. `self update` focuses solely on binary updates, achieving simple and predictable behavior.
 
-### Q3: GitHub Releasesが存在しない場合は？
+### Q3: What if GitHub Releases does not exist?
 
-**A**: `--from-source` オプションを使用してソースからビルドできます。また、従来通り `cargo install --path .` や `cargo install --git` も使用可能です。
+**A**: You can use the `--from-source` option to build from source. Alternatively, you can still use `cargo install --path .` or `cargo install --git` as before.
 
-### Q4: 更新中にエラーが発生したら？
+### Q4: What if an error occurs during an update?
 
-**A**: 現在のバイナリは保持されるため、再度実行できます。将来的にはロールバック機能を検討します。
+**A**: The current binary will be preserved, allowing you to run it again. Rollback functionality will be considered in the future.
 
-### Q5: プラットフォーム固有の注意事項は？
+### Q5: Are there any platform-specific considerations?
 
 **A**:
 
-- **Windows**: 実行中のバイナリを置き換える場合、一時的に別名で保存してから置き換えます
-- **Linux/macOS**: パーミッションを適切に設定（`chmod +x`）します
+- **Windows**: When replacing a running binary, it is temporarily saved under a different name before replacement.
+- **Linux/macOS**: Permissions are set appropriately (`chmod +x`).
 
-## まとめ
+## Summary
 
-`gist-cache-rs self update` コマンドは、セットアップスクリプトとは異なり、**バイナリの更新のみ**に特化します。これにより：
+The `gist-cache-rs self update` command, unlike the setup script, **focuses solely on binary updates**. This ensures:
 
-1. ✓ エイリアス設定を再実行しない
-2. ✓ PATH設定を変更しない
-3. ✓ 既存の環境設定を保持
-4. ✓ シンプルかつ予測可能な動作
-5. ✓ クロスプラットフォーム対応
+1. ✓ No re-execution of alias settings.
+2. ✓ No changes to PATH settings.
+3. ✓ Preservation of existing environment settings.
+4. ✓ Simple and predictable behavior.
+5. ✓ Cross-platform compatibility.
 
-Phase 1では基本的なGitHub Releasesからの更新を実装し、その後段階的に機能を追加していきます。
+Phase 1 implemented basic updates from GitHub Releases, and features will be added incrementally thereafter.
