@@ -1,218 +1,218 @@
-# テスト戦略と実行ガイド
+# Test Strategy and Execution Guide
 
-## 概要
+## Overview
 
-gist-cache-rsは、ユニットテスト、統合テスト、E2Eテストの3層構造でテスト戦略を構成しています。
+gist-cache-rs's test strategy is structured in a three-layer architecture: unit tests, integration tests, and E2E tests.
 
-**現在のカバレッジ**: 68.95% (533/773 lines)
-**自動テスト数**: 153個 (ユニット 120 + 統合 33)
-**手動E2Eテスト**: 26ケース
+**Current Coverage**: 68.95% (533/773 lines)
+**Number of Automated Tests**: 153 (Unit 120 + Integration 33)
+**Manual E2E Tests**: 26 cases
 
 ---
 
-## テストピラミッド構成
+## Test Pyramid Structure
 
-| テスト種別  | 数    | 配置                      | 実行方法               |
+| Test Type | Count | Location | Execution Method |
 | :---------- | :---- | :------------------------ | :--------------------- |
-| **ユニットテスト** | 120個 | `src/` 内の `#[cfg(test)]` | `cargo test` (自動) |
-| **統合テスト** | 33個 | `tests/` ディレクトリ | `cargo test` (自動) |
-| **E2Eテスト** | 26ケース | `docs/tests/` | 手動実行 |
-| **合計** | **153個** | - | - |
+| **Unit Tests** | 120 | `src/` within `#[cfg(test)]` | `cargo test` (auto) |
+| **Integration Tests** | 33 | `tests/` directory | `cargo test` (auto) |
+| **E2E Tests** | 26 cases | `docs/tests/` | Manual execution |
+| **Total** | **153** | - | - |
 
-**テストピラミッドの原則**:
+**Principles of the Test Pyramid**:
 
-- ユニットテストが最も多い（78%）- 高速、外部依存なし
-- 統合テストは中間（22%）- 実際のプロセス実行を検証
-- E2Eテストは最小（手動）- ユーザー視点の包括的検証
+- Most unit tests (78%) - Fast, no external dependencies
+- Integration tests in the middle (22%) - Verifies actual process execution
+- Minimal E2E tests (manual) - Comprehensive user-centric verification
 
 ---
 
-## テスト実行
+## Test Execution
 
-### 基本的なテスト実行
+### Basic Test Execution
 
 ```bash
-# 全テスト実行
+# Run all tests
 cargo test
 
-# 詳細出力付き
+# With verbose output
 cargo test -- --nocapture
 
-# 特定のテストのみ
+# Run specific tests only
 cargo test test_cache_content
 ```
 
-### ignore属性のテスト実行
+### Running Tests with `ignore` Attribute
 
 ```bash
-# ignore属性のテストを含めて実行
+# Run tests including those with the ignore attribute
 cargo test -- --include-ignored
 
-# ignore属性のテストのみ実行
+# Run only tests with the ignore attribute
 cargo test -- --ignored
 ```
 
-### カバレッジ測定
+### Coverage Measurement
 
 ```bash
-# 標準出力にカバレッジを表示
+# Display coverage to standard output
 cargo tarpaulin --out Stdout
 
-# HTMLレポート生成
+# Generate HTML report
 cargo tarpaulin --out Html --output-dir coverage
 
-# 詳細は docs/testing/COVERAGE.md を参照
+# See docs/testing/COVERAGE.md for details
 ```
 
 ---
 
-## テスト構成
+## Test Configuration
 
-### 1. ユニットテスト (120個)
+### 1. Unit Tests (120)
 
-**場所**: `src/` 内の `#[cfg(test)]` モジュール
+**Location**: `src/` within `#[cfg(test)]` module
 
-**カバレッジ対象**:
+**Coverage Target**:
 
-- データ構造とシリアライゼーション (`cache/types.rs`)
-- キャッシュ管理ロジック (`cache/content.rs`, `cache/update.rs`)
-- 検索ロジック (`search/query.rs`)
-- CLI引数処理 (`cli.rs`)
-- 設定管理 (`config.rs`)
-- エラーハンドリング (`error.rs`)
-- 実行ランナーの基本機能 (`execution/runner.rs`)
-- GitHub API モック (`github/client.rs`)
+- Data structures and serialization (`cache/types.rs`)
+- Cache management logic (`cache/content.rs`, `cache/update.rs`)
+- Search logic (`search/query.rs`)
+- CLI argument processing (`cli.rs`)
+- Configuration management (`config.rs`)
+- Error handling (`error.rs`)
+- Basic functionality of the execution runner (`execution/runner.rs`)
+- GitHub API mock (`github/client.rs`)
 
-**特徴**:
+**Features**:
 
-- 高速実行（外部依存なし）
-- MockGitHubClientでGitHub API依存を排除
-- 自動CI/CD実行可能
+- Fast execution (no external dependencies)
+- Excludes GitHub API dependencies with MockGitHubClient
+- Automatable in CI/CD
 
-### 2. 統合テスト (33個)
+### 2. Integration Tests (33)
 
-**場所**: `tests/` ディレクトリ
+**Location**: `tests/` directory
 
-#### 2.1 CLIテスト (`tests/cli_tests.rs`) - 15個
+#### 2.1 CLI Tests (`tests/cli_tests.rs`) - 15
 
-- コマンドライン引数処理の検証
-- サブコマンド動作検証 (`update`, `run`, `cache`)
-- エラーケース検証（認証エラー、キャッシュなしなど）
-- フラグ組み合わせ検証 (`--preview`, `--force`, `--filename` など)
+- Verification of command-line argument processing
+- Subcommand operation verification (`update`, `run`, `cache`)
+- Error case verification (authentication errors, no cache, etc.)
+- Flag combination verification (`--preview`, `--force`, `--filename`, etc.)
 
-#### 2.2 インタープリタ統合テスト (`tests/integration_test.rs`) - 12個
+#### 2.2 Interpreter Integration Tests (`tests/integration_test.rs`) - 12
 
-- Bash, Python, Node.js実行テスト
-- TypeScript (ts-node, deno, bun) 実行テスト
-- Ruby, Perl, PHP 実行テスト
-- 引数渡し、エラーハンドリング
-- プレビューモードの動作確認
+- Bash, Python, Node.js execution tests
+- TypeScript (ts-node, deno, bun) execution tests
+- Ruby, Perl, PHP execution tests
+- Argument passing, error handling
+- Preview mode operation verification
 
-#### 2.3 ランナーテスト (`tests/runner_test.rs`) - 6個
+#### 2.3 Runner Tests (`tests/runner_test.rs`) - 6
 
-- スクリプト実行ロジックの詳細検証
-- キャッシュ作成動作の確認
-- ダウンロードモードの動作検証
-- force_file_based実行の確認
-- 複数ファイルGistの選択ロジック
+- Detailed verification of script execution logic
+- Cache creation operation verification
+- Download mode operation verification
+- Force file-based execution verification
+- Multi-file Gist selection logic
 
-**特徴**:
+**Features**:
 
-- 実際のプロセス実行を検証
-- Unix環境のみ実行 (`#[cfg_attr]`で制御)
-- インタープリタ未インストール時は自動スキップ
+- Verifies actual process execution
+- Unix environment only (`#[cfg_attr]` controlled)
+- Automatically skipped if interpreter is not installed
 
-### 3. E2Eテスト (26ケース、手動)
+### 3. E2E Tests (26 cases, manual)
 
-**場所**: `docs/tests/`
+**Location**: `docs/tests/`
 
-**テストセット**:
+**Test Sets**:
 
-1. キャッシング機能 (`test_set_01_caching.md`) - 8ケース
-2. 検索機能 (`test_set_02_search.md`) - 6ケース
-3. インタープリタ (`test_set_03_interpreter.md`) - 7ケース
-4. プレビュー機能 (`test_set_04_preview.md`) - 5ケース
+1. Caching functionality (`test_set_01_caching.md`) - 8 cases
+2. Search functionality (`test_set_02_search.md`) - 6 cases
+3. Interpreter (`test_set_03_interpreter.md`) - 7 cases
+4. Preview functionality (`test_set_04_preview.md`) - 5 cases
 
-**特徴**:
+**Features**:
 
-- 実際のGistを使用した包括的検証
-- ユーザー視点のワークフロー確認
-- 再実行可能な詳細手順付き
-
----
-
-## テスト方針
-
-### 何をユニットテストでカバーするか
-
-✅ **対象**:
-
-- ビジネスロジック
-- データ変換・シリアライゼーション
-- エラーハンドリング
-- モック可能な外部依存
-
-❌ **対象外**:
-
-- 外部プロセス実行（bash, python等） → 統合テストで検証
-- GitHub CLI (`gh`コマンド) → MockGitHubClientで代替、または #[ignore] テスト
-- ユーザー入力処理 → E2Eテストで検証
-
-### テストの品質指標
-
-**目標カバレッジ**: 60-70% (CLIツールの標準)
-**現在のカバレッジ**: 68.95% ✅ 目標達成
-
-**達成理由**:
-
-- コアロジックは高カバレッジ (types 100%, config 96%, content 83%, cli 78%)
-- 外部プロセス依存コード (runner.rs 20%, api.rs 8%) は統合テストで検証
-- thin wrapperは低カバレッジで妥当
+- Comprehensive verification using actual Gists
+- User-centric workflow verification
+- Detailed reproducible steps included
 
 ---
 
-## トラブルシューティング
+## Testing Policy
 
-### テストが filtered out される
+### What to Cover with Unit Tests
 
-**原因**: Unix環境以外で実行、またはインタープリタが未インストール
+✅ **Targets**:
 
-**解決策**:
+- Business logic
+- Data transformation/serialization
+- Error handling
+- Mockable external dependencies
 
-- 統合テストはUnix環境を推奨
-- インタープリタ (bash, python, node等) をインストール
-- または、自動スキップされるのは正常動作
+❌ **Not Targets**:
 
-### カバレッジが測定できない
+- External process execution (bash, python, etc.) → Verified by integration tests
+- GitHub CLI (`gh` command) → Replaced by MockGitHubClient, or #[ignore] tests
+- User input processing → Verified by E2E tests
 
-**原因**: tarpaulinが未インストール
+### Test Quality Metrics
 
-**解決策**:
+**Target Coverage**: 60-70% (Standard for CLI tools)
+**Current Coverage**: 68.95% ✅ Target achieved
+
+**Reasons for Achievement**:
+
+- Core logic has high coverage (types 100%, config 96%, content 83%, cli 78%)
+- External process dependent code (runner.rs 20%, api.rs 8%) verified by integration tests
+- Low coverage for thin wrappers is acceptable
+
+---
+
+## Troubleshooting
+
+### Tests are filtered out
+
+**Cause**: Execution in non-Unix environment, or interpreter not installed
+
+**Solution**:
+
+- Unix environment recommended for integration tests
+- Install interpreters (bash, python, node, etc.)
+- Or, automatic skipping is normal behavior
+
+### Coverage cannot be measured
+
+**Cause**: tarpaulin is not installed
+
+**Solution**:
 
 ```bash
 cargo install cargo-tarpaulin
 ```
 
-### 統合テストが失敗する
+### Integration tests fail
 
-**原因**: インタープリタ (bash, python, node等) が未インストール
+**Cause**: Interpreter (bash, python, node, etc.) not installed
 
-**解決策**:
+**Solution**:
 
-- 必要なインタープリタをインストール
-- または、スキップされるのは正常動作
-
----
-
-## 詳細ドキュメント
-
-- **カバレッジ測定**: [COVERAGE.md](./COVERAGE.md) - 測定方法とモジュール別詳細
-- **テストインベントリ**: [TEST_INVENTORY.md](./TEST_INVENTORY.md) - 全テストの分類と概要
-- **GitHub CLI関連テスト評価**: [GH_TESTING_EVALUATION.md](./GH_TESTING_EVALUATION.md) - gh コマンドテストの評価
+- Install necessary interpreters
+- Or, skipping is normal behavior
 
 ---
 
-## 参考資料
+## Detailed Documentation
+
+- **Coverage Measurement**: [COVERAGE.md](./COVERAGE.md) - Measurement methods and module-specific details
+- **Test Inventory**: [TEST_INVENTORY.md](./TEST_INVENTORY.md) - Classification and overview of all tests
+- **GitHub CLI Related Test Evaluation**: [GH_TESTING_EVALUATION.md](./GH_TESTING_EVALUATION.md) - Evaluation of gh command tests
+
+---
+
+## References
 
 - [Rust Testing Guide](https://doc.rust-lang.org/book/ch11-00-testing.html)
 - [cargo-tarpaulin](https://github.com/xd009642/tarpaulin)
@@ -220,7 +220,7 @@ cargo install cargo-tarpaulin
 
 ---
 
-**最終更新**: 2025-11-06
-**現在のカバレッジ**: 68.95%
-**自動テスト数**: 153個
-**カバー行数**: 533/773 lines
+**Last Updated**: 2025-11-06
+**Current Coverage**: 68.95%
+**Number of Automated Tests**: 153
+**Covered Lines**: 533/773 lines

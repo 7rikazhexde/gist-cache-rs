@@ -1,145 +1,145 @@
-# コードカバレッジ測定ガイド
+# Code Coverage Measurement Guide
 
-## 📊 現在のカバレッジ状況
+## 📊 Current Coverage Status
 
-**全体カバレッジ**: 68.95% (533/773 lines)
-**自動テスト数**: 153個 (ユニット 120 + 統合 33)
-**目標**: 60-70% ✅ 達成
+**Overall Coverage**: 68.95% (533/773 lines)
+**Number of Automated Tests**: 153 (Unit 120 + Integration 33)
+**Target**: 60-70% ✅ Achieved
 
-### モジュール別カバレッジ
+### Module-wise Coverage
 
-| モジュール | カバレッジ | カバー済み/全体 | 状態 |
-|-----------|-----------|----------------|------|
-| `cache/types.rs` | 100.00% | 15/15 | ✅ 完璧 |
-| `config.rs` | 96.15% | 25/26 | ✅ 優秀 |
-| `cache/content.rs` | 83.54% | 66/79 | ✅ 良好 |
-| `cli.rs` | 78.16% | 161/206 | ✅ 良好 |
-| `search/query.rs` | 70.59% | 48/68 | 🟡 良好 |
-| `cache/update.rs` | 62.24% | 89/143 | 🟡 改善 |
-| `execution/runner.rs` | 19.88% | 34/171 | 🔴 外部依存多数 |
-| `github/api.rs` | 8.33% | 5/60 | 🔴 外部依存多数 |
-| `error.rs` | 0.00% | 0/1 | 🟡 テスト不要 |
-| `main.rs` | 0.00% | 0/4 | 🟡 E2Eで検証 |
+| Module | Coverage | Covered/Total | Status |
+|---|---|---|---|
+| `cache/types.rs` | 100.00% | 15/15 | ✅ Perfect |
+| `config.rs` | 96.15% | 25/26 | ✅ Excellent |
+| `cache/content.rs` | 83.54% | 66/79 | ✅ Good |
+| `cli.rs` | 78.16% | 161/206 | ✅ Good |
+| `search/query.rs` | 70.59% | 48/68 | 🟡 Good |
+| `cache/update.rs` | 62.24% | 89/143 | 🟡 Improvement needed |
+| `execution/runner.rs` | 19.88% | 34/171 | 🔴 Many external dependencies |
+| `github/api.rs` | 8.33% | 5/60 | 🔴 Many external dependencies |
+| `error.rs` | 0.00% | 0/1 | 🟡 No test required |
+| `main.rs` | 0.00% | 0/4 | 🟡 Verified by E2E |
 
 ---
 
-## 📏 カバレッジ測定コマンド
+## 📏 Coverage Measurement Commands
 
-### 基本的な測定
+### Basic Measurement
 
 ```bash
-# 標準出力にカバレッジを表示
+# Display coverage to standard output
 cargo tarpaulin --out Stdout
 
-# HTMLレポートを生成
+# Generate HTML report
 cargo tarpaulin --out Html --output-dir coverage
 
-# 両方生成
+# Generate both
 cargo tarpaulin --out Html --out Stdout --output-dir coverage
 ```
 
-### 詳細な測定
+### Detailed Measurement
 
 ```bash
-# 詳細出力付き（各行のカバレッジ情報）
+# With detailed output (coverage information per line)
 cargo tarpaulin --out Stdout --verbose
 
-# タイムアウト設定（大規模プロジェクト向け）
+# Timeout setting (for large projects)
 cargo tarpaulin --out Stdout --timeout 120
 
-# 最後の100行のみ表示（長い出力を省略）
+# Display only the last 100 lines (abbreviates long output)
 cargo tarpaulin --out Stdout 2>&1 | tail -100
 ```
 
-### モジュール別の測定
+### Module-wise Measurement
 
 ```bash
-# 特定のモジュールのみテスト
+# Test only specific modules
 cargo tarpaulin --out Stdout --lib
 
-# 特定のファイルを除外
+# Exclude specific files
 cargo tarpaulin --out Stdout --exclude-files 'tests/*'
 
-# 特定のテストのみ実行
+# Run only specific tests
 cargo tarpaulin --out Stdout --test integration_test
 ```
 
-### justfile経由の測定
+### Measurement via justfile
 
 ```bash
-# justfileにカバレッジタスクを追加済みの場合
+# If coverage task is already added to justfile
 just coverage
 
-# または直接
-just check  # lint + test（カバレッジなし）
+# Or directly
+just check  # lint + test (no coverage)
 ```
 
 ---
 
-## 🎯 カバレッジ設計の考え方
+## 🎯 Coverage Design Philosophy
 
-### 高カバレッジモジュール（70%以上）
+### High Coverage Modules (70% or more)
 
-コアビジネスロジックは高カバレッジを維持：
+Core business logic maintains high coverage:
 
-- **cache/types.rs (100%)**: データ構造、シリアライゼーション
-- **config.rs (96%)**: 設定管理、プラットフォーム別パス
-- **cache/content.rs (84%)**: コンテンツキャッシュ管理
-- **cli.rs (78%)**: CLI引数処理
-- **search/query.rs (71%)**: 検索ロジック
+- **cache/types.rs (100%)**: Data structures, serialization
+- **config.rs (96%)**: Configuration management, platform-specific paths
+- **cache/content.rs (84%)**: Content cache management
+- **cli.rs (78%)**: CLI argument processing
+- **search/query.rs (71%)**: Search logic
 
-### 中カバレッジモジュール（50-70%）
+### Medium Coverage Modules (50-70%)
 
-外部依存の影響を受けるが、ビジネスロジックをモックでカバー：
+Affected by external dependencies, but business logic covered by mocks:
 
-- **cache/update.rs (62%)**: GitHubClient をモック化してテスト
+- **cache/update.rs (62%)**: Tested with mocked GitHubClient
 
-### 低カバレッジモジュール（50%未満）
+### Low Coverage Modules (less than 50%)
 
-外部プロセス・コマンド依存が多く、統合テストで品質担保：
+Highly dependent on external processes/commands, quality ensured by integration tests:
 
-- **execution/runner.rs (20%)**: bash, python等の実際の実行 → 統合テストで12言語を検証
-- **github/api.rs (8%)**: `gh` コマンド実行 → MockGitHubClientで代替
-- **main.rs (0%)**: エントリーポイント → E2Eテストで検証
-- **error.rs (0%)**: 単純な型定義 → 実行時にテスト
+- **execution/runner.rs (20%)**: Actual execution of bash, python, etc. → 12 languages verified by integration tests
+- **github/api.rs (8%)**: `gh` command execution → Replaced by MockGitHubClient
+- **main.rs (0%)**: Entry point → Verified by E2E tests
+- **error.rs (0%)**: Simple type definition → Tested at runtime
 
 ---
 
-## 📝 カバレッジレポートの見方
+## 📝 How to Read Coverage Reports
 
-### 標準出力の解釈
+### Interpretation of Standard Output
 
 ```bash
 || Uncovered Lines:
 || src/cache/content.rs: 88, 90, 116, 118, ...
 ```
 
-これは、各ファイルのどの行がカバーされていないかを示しています。
+This indicates which lines in each file are not covered.
 
-### HTMLレポート
+### HTML Report
 
-HTMLレポート（`coverage/index.html`）では:
+In the HTML report (`coverage/index.html`):
 
-- 緑: カバーされた行
-- 赤: カバーされていない行
-- グレー: 実行不可能な行（コメント、空行など）
+- Green: Covered lines
+- Red: Uncovered lines
+- Gray: Unexecutable lines (comments, blank lines, etc.)
 
-ブラウザで開くには:
+To open in a browser:
 
 ```bash
-# Linuxの場合
+# For Linux
 xdg-open coverage/index.html
 
-# macOSの場合
+# For macOS
 open coverage/index.html
 
-# Windowsの場合
+# For Windows
 start coverage/index.html
 ```
 
 ---
 
-## 🚀 CI/CDでの使用
+## 🚀 Usage in CI/CD
 
 ### GitHub Actions
 
@@ -155,39 +155,39 @@ start coverage/index.html
 
 ---
 
-## 🔍 トラブルシューティング
+## 🔍 Troubleshooting
 
-### cargo-tarpaulinがインストールされていない
+### cargo-tarpaulin is not installed
 
 ```bash
 cargo install cargo-tarpaulin
 ```
 
-### タイムアウトエラー
+### Timeout error
 
 ```bash
-# タイムアウトを延長
+# Extend timeout
 cargo tarpaulin --out Stdout --timeout 300
 ```
 
-### メモリ不足
+### Out of memory
 
 ```bash
-# 並列実行数を制限
+# Limit parallel execution
 cargo tarpaulin --out Stdout --jobs 1
 ```
 
 ---
 
-## 📚 参考資料
+## 📚 References
 
-- [cargo-tarpaulin公式ドキュメント](https://github.com/xd009642/tarpaulin)
-- [TESTING.md](./TESTING.md) - テスト戦略と実行ガイド
-- [TEST_INVENTORY.md](./TEST_INVENTORY.md) - 全テストの分類と概要
+- [cargo-tarpaulin Official Documentation](https://github.com/xd009642/tarpaulin)
+- [TESTING.md](./TESTING.md) - Test Strategy and Execution Guide
+- [TEST_INVENTORY.md](./TEST_INVENTORY.md) - Classification and Overview of All Tests
 
 ---
 
-**最終更新**: 2025-11-06
-**現在のカバレッジ**: 68.95%
-**自動テスト数**: 153個
-**カバー行数**: 533/773 lines
+**Last Updated**: 2025-11-06
+**Current Coverage**: 68.95%
+**Number of Automated Tests**: 153
+**Covered Lines**: 533/773 lines
