@@ -1,6 +1,6 @@
 # Code Coverage Measurement Guide
 
-## 📊 Current Coverage Status
+## Current Coverage Status
 
 **Overall Coverage**: 68.95% (533/773 lines)
 **Number of Automated Tests**: 153 (Unit 120 + Integration 33)
@@ -23,7 +23,7 @@
 
 ---
 
-## 📏 Coverage Measurement Commands
+## Coverage Measurement Commands
 
 ### Basic Measurement
 
@@ -76,7 +76,7 @@ just check  # lint + test (no coverage)
 
 ---
 
-## 🎯 Coverage Design Philosophy
+## Coverage Design Philosophy
 
 ### High Coverage Modules (70% or more)
 
@@ -105,7 +105,7 @@ Highly dependent on external processes/commands, quality ensured by integration 
 
 ---
 
-## 📝 How to Read Coverage Reports
+## How to Read Coverage Reports
 
 ### Interpretation of Standard Output
 
@@ -139,7 +139,7 @@ start coverage/index.html
 
 ---
 
-## 🚀 Usage in CI/CD
+## Usage in CI/CD
 
 ### GitHub Actions
 
@@ -155,7 +155,7 @@ start coverage/index.html
 
 ---
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### cargo-tarpaulin is not installed
 
@@ -179,7 +179,7 @@ cargo tarpaulin --out Stdout --jobs 1
 
 ---
 
-## 📚 References
+## References
 
 - [cargo-tarpaulin Official Documentation](https://github.com/xd009642/tarpaulin)
 - [TESTING.md](./TESTING.md) - Test Strategy and Execution Guide

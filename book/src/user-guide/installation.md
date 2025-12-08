@@ -1,6 +1,6 @@
 # Installation Guide
 
-## 📋 Prerequisites
+## Prerequisites
 
 ### Required
 
@@ -54,7 +54,7 @@
 
 - Git (for repository cloning)
 
-## 🔧 Installation Methods
+## Installation Methods
 
 ### Method 1: Setup Script (Recommended)
 
@@ -178,7 +178,7 @@ ln -sf "$(pwd)/target/release/gist-cache-rs" ~/bin/gist-cache-rs
 
 **Feature:** Automatically reflected after build, convenient for development
 
-## ⚙️ Post-Installation Setup
+## Post-Installation Setup
 
 ### 1. Initial Cache Creation
 
@@ -221,7 +221,7 @@ alias gcrsr='gist-cache-rs run'
 source ~/.bashrc
 ```
 
-## ✅ Installation Verification
+## Installation Verification
 
 ```bash
 # Check version
@@ -234,7 +234,7 @@ gist-cache-rs --help
 gist-cache-rs update --verbose
 ```
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### command not found: gist-cache-rs
 
@@ -356,7 +356,7 @@ gist-cache-rs update --verbose
 - Avoid `--force` option
 - Use differential update
 
-## 🗑️ Uninstallation
+## Uninstallation
 
 ### Automatic Uninstallation
 
@@ -416,7 +416,7 @@ car go uninstall gist-cache-rs
 Remove-Item -Recurse -Force "$env:LOCALAPPDATA\gist-cache"
 ```
 
-## ➡️ Next Steps
+## Next Steps
 
 - [QUICKSTART.md](QUICKSTART.md) - Quick Start Guide
 - [EXAMPLES.md](EXAMPLES.md) - Practical Examples

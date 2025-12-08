@@ -1,6 +1,6 @@
 # mdbook Documentation Setup
 
-This document describes how to set up and deploy the mdbook documentation for gist-cache-rs.
+This guide describes how to set up, build, and deploy the mdbook documentation for gist-cache-rs.
 
 ## Local Development
 
@@ -26,7 +26,7 @@ mdbook serve
 
 ### Directory Structure
 
-```
+```text
 gist-cache-rs/
 ├── book.toml                     # mdbook configuration
 ├── book/
@@ -51,11 +51,10 @@ gist-cache-rs/
    - Under "Source", select `GitHub Actions`
 
 2. **Push Changes to Main Branch**
-   - The workflow will automatically trigger when changes to documentation files are pushed
+   - The workflow automatically triggers when changes to documentation files are pushed
    - Monitored paths:
      - `book/**`
      - `book.toml`
-     - `docs/**`
      - `README.md`
      - `.github/workflows/deploy-mdbook.yml`
 
@@ -91,18 +90,19 @@ After deployment:
 
 #### Workflow fails with "Pages deployment is not enabled"
 
-- **Solution**: Ensure GitHub Pages is enabled in repository settings with source set to "GitHub Actions"
+**Solution**: Ensure GitHub Pages is enabled in repository settings with source set to "GitHub Actions"
 
 #### Changes not reflected after deployment
 
-- **Solution**:
-  - Check that your changes were committed to the main branch
-  - Wait a few minutes for GitHub Pages cache to update
-  - Try a hard refresh in your browser (Ctrl+Shift+R)
+**Solution**:
+
+- Check that your changes were committed to the main branch
+- Wait a few minutes for GitHub Pages cache to update
+- Try a hard refresh in your browser (Ctrl+Shift+R)
 
 #### Build fails with "mdbook not found"
 
-- **Solution**: This should not happen in CI as the workflow installs mdbook automatically. For local development, run `cargo install mdbook`
+**Solution**: This should not happen in CI as the workflow installs mdbook automatically. For local development, run `cargo install mdbook`
 
 ## Updating Documentation
 
@@ -121,6 +121,7 @@ After deployment:
    - Test specifications: `book/src/test-specs/`
 
 2. Add the new page to `book/src/SUMMARY.md`:
+
    ```markdown
    - [New Page Title](path/to/new-page.md)
    ```
