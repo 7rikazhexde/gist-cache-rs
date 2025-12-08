@@ -1,6 +1,6 @@
 # gist-cache-rs
 
-[![DOCS](https://img.shields.io/badge/Docs-Click%20Here-blue?colorA=24292e&colorB=0366d6&logo=github)](https://7rikazhexde.github.io/gist-cache-rs/)
+[![Deploy Docs](https://github.com/7rikazhexde/gist-cache-rs/actions/workflows/deploy-mdbook.yml/badge.svg)](https://7rikazhexde.github.io/gist-cache-rs/)
 [![Crates.io](https://img.shields.io/crates/v/gist-cache-rs.svg)](https://crates.io/crates/gist-cache-rs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
