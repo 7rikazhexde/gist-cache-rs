@@ -1,8 +1,8 @@
-# ⚡ Quick Start Guide
+# Quick Start Guide
 
 A minimal guide to get started with `gist-cache-rs` in 5 minutes.
 
-## Step 1: ✅ Verify Prerequisites
+## Step 1: Verify Prerequisites
 
 ```bash
 # Check if Rust is installed
@@ -17,7 +17,7 @@ gh auth status
 
 If not installed, please refer to [INSTALL.md](INSTALL.md).
 
-## Step 2: 📥 Installation
+## Step 2: Installation
 
 ```bash
 # Clone the repository
@@ -34,7 +34,7 @@ gist-cache-rs --version
 
 For other installation methods, please refer to [INSTALL.md](INSTALL.md).
 
-## Step 3: 🔄 Initial Cache Creation
+## Step 3: Initial Cache Creation
 
 ```bash
 # Create cache
@@ -57,16 +57,16 @@ Cache update completed
 Total Gists: 42
 ```
 
-## Step 4: 🚀 Search and Execute Gist
+## Step 4: Search and Execute Gist
 
-### 👁️ Preview (Check content without executing)
+### Preview (Check content without executing)
 
 ```bash
 # Search by keyword and preview
 gist-cache-rs run --preview backup
 ```
 
-### ▶️ Actually Execute
+### Actually Execute
 
 ```bash
 # Execute a Bash script
@@ -79,7 +79,7 @@ gist-cache-rs run data_analysis.py python3
 gist-cache-rs run ml-script uv
 ```
 
-### 📝 Execute with Arguments
+### Execute with Arguments
 
 ```bash
 # Pass arguments to a script
@@ -89,7 +89,7 @@ gist-cache-rs run backup bash /src /dst
 gist-cache-rs run data_analysis.py python3 input.csv --output result.json
 ```
 
-## Step 5: ⚡ Alias Setting (Optional)
+## Step 5: Alias Setting (Optional)
 
 To use it more conveniently, set up aliases:
 
@@ -104,9 +104,9 @@ gcrsu                # Update cache
 gcrsr backup bash    # Execute Gist
 ```
 
-## 📚 Frequently Used Commands
+## Frequently Used Commands
 
-### 🔄 Cache Management
+### Cache Management
 
 ```bash
 # Differential update (normal)
@@ -119,7 +119,7 @@ gist-cache-rs update --force
 gist-cache-rs update --verbose
 ```
 
-### 🗂️ Content Cache Management
+### Content Cache Management
 
 ```bash
 # Display cache list
@@ -132,7 +132,7 @@ gist-cache-rs cache size
 gist-cache-rs cache clear
 ```
 
-### 🔍 Gist Search and Execution
+### Gist Search and Execution
 
 ```bash
 # Basic search and execution
@@ -160,7 +160,7 @@ gist-cache-rs run --description deployment
 gist-cache-rs run --force backup bash
 ```
 
-### 🔧 Specify Interpreter
+### Specify Interpreter
 
 Argument specifications depend on the script.
 
@@ -181,27 +181,27 @@ gist-cache-rs run script node arg1 arg2 ...
 gist-cache-rs run script uv arg1 arg2 ...
 ```
 
-## 💼 Practical Examples
+## Practical Examples
 
 Please check [EXAMPLES.md](EXAMPLES.md).
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
-### ❌ Cache not found
+### Cache not found
 
 ```bash
 # Error: Cache file not found
 → Run gist-cache-rs update
 ```
 
-### 🔐 GitHub authentication error
+### GitHub authentication error
 
 ```bash
 # Error: GitHub CLI is not authenticated
 → Run gh auth login
 ```
 
-### 🚫 Command not found
+### Command not found
 
 ```bash
 # If command not found
@@ -209,20 +209,20 @@ Please check [EXAMPLES.md](EXAMPLES.md).
 → Check if ~/.cargo/bin or /usr/local/bin is in PATH
 ```
 
-### 🔎 Search results not found
+### Search results not found
 
 ```bash
 # Cache might be old
 → Update with gist-cache-rs update
 ```
 
-## 🎯 Related Information
+## Related Information
 
 - [README.md](../README.md) - Detailed feature description
 - [INSTALL.md](INSTALL.md) - Installation details
 - [EXAMPLES.md](EXAMPLES.md) - Practical examples (actual usage examples)
 
-## ❓ Help
+## Help
 
 ```bash
 # Overall help

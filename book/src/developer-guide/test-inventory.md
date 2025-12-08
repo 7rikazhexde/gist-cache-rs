@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Test Classification
+## Test Classification
 
 ### Test Pyramid Structure
 
@@ -19,7 +19,7 @@
 
 ---
 
-## 🧪 1. Unit Tests (120)
+## 1. Unit Tests (120)
 
 ### 1.1 cache/types.rs (11)
 
@@ -299,7 +299,7 @@
 
 ---
 
-## 🔗 2. Integration Tests (12)
+## 2. Integration Tests (12)
 
 ### 2.1 tests/integration_test.rs (6)
 
@@ -356,7 +356,7 @@
 
 ---
 
-## 📝 3. E2E Tests (26 Cases, Manual)
+## 3. E2E Tests (26 Cases, Manual)
 
 ### 3.1 E2E Test Overview
 
@@ -381,7 +381,7 @@ tests/e2e/
 
 ---
 
-## 📊 Test Classification Summary
+## Test Classification Summary
 
 | Classification | Number of Tests | Coverage Contribution | Windows Support | Status |
 |---|---|---|---|---|
@@ -392,7 +392,7 @@ tests/e2e/
 
 ---
 
-## 🎯 Test Importance Criteria
+## Test Importance Criteria
 
 | Mark | Meaning | Description |
 |---|---|---|
@@ -402,7 +402,7 @@ tests/e2e/
 
 ---
 
-## 🔍 Coverage Contribution
+## Coverage Contribution
 
 ### High Contribution (10% or more)
 
@@ -420,7 +420,7 @@ tests/e2e/
 
 ---
 
-## 📝 Test Implementation History
+## Test Implementation History
 
 ### Phase 1-5 (Unit Tests): 120
 

@@ -1,8 +1,8 @@
-# 💡 Examples Collection
+# Examples Collection
 
 This document presents practical examples of `gist-cache-rs` usage.
 
-## 🚀 Basic Usage
+## Basic Usage
 
 ### Cache Update
 
@@ -39,13 +39,13 @@ Total Gists: 124
 
 ---
 
-## 🐚 Bash Script Examples
+## Bash Script Examples
 
 ### Example 1: Sequential Folder Creation Script
 
 **Gist Description:** A script to create 100 folders with sequential numbers (start number to end number) in a specified path.
 
-#### 📋 Preview content in preview mode
+#### Preview content in preview mode
 
 ```bash
 $ gist-cache-rs run -p create_folder
@@ -66,7 +66,7 @@ show_usage() {
 # ... (script body)
 ```
 
-#### 🎯 Select from multiple candidates with partial matching search
+#### Select from multiple candidates with partial matching search
 
 ```bash
 $ gist-cache-rs run -p create
@@ -87,7 +87,7 @@ Files: create_folders.sh
 # ... (content displayed)
 ```
 
-#### 💬 Execute in interactive mode
+#### Execute in interactive mode
 
 ```bash
 $ gist-cache-rs run -i create_folder
@@ -137,13 +137,13 @@ Processing completed.
 
 ---
 
-## 🐍 Python Script Examples
+## Python Script Examples
 
 ### Example 2: Pandas/NumPy Data Analysis (PEP 723 Compatible)
 
 **Gist Description:** data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv
 
-#### 🏷️ Search by tag (Preview)
+#### Search by tag (Preview)
 
 ```bash
 $ gist-cache-rs run -p '#pep723'
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     main()
 ```
 
-#### 📦 Execute with uv (automatic dependency management)
+#### Execute with uv (automatic dependency management)
 
 ```bash
 $ gist-cache-rs run 723 uv sample/input.csv
@@ -261,7 +261,7 @@ Added random column 'Random':
 
 ---
 
-## 🔍 Search Techniques
+## Search Techniques
 
 ### Tips for Keyword Search
 
@@ -309,7 +309,7 @@ $ gist-cache-rs run --id [your_gist_id] uv input.csv
 
 ---
 
-## 🗂️ Cache Management Examples
+## Cache Management Examples
 
 ### Check Cache List
 
@@ -357,7 +357,7 @@ All caches deleted
 
 ---
 
-## 🔄 `--force` Option Usage Examples
+## `--force` Option Usage Examples
 
 ### Always execute development Gists with the latest version
 
@@ -390,7 +390,7 @@ $ gist-cache-rs run --force --filename deploy.sh bash
 
 ---
 
-## 📥 File Download
+## File Download
 
 ### Basic Download
 
@@ -488,7 +488,7 @@ Executing: utility.sh (bash)
 
 ---
 
-## 🎯 Tips & Tricks
+## Tips & Tricks
 
 ### 1. Quickly Execute Recently Updated Gists
 
@@ -527,7 +527,7 @@ analyze mydata.csv
 
 ---
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Q: Script not found
 
@@ -561,7 +561,7 @@ $ gist-cache-rs run script-name python3
 
 ---
 
-## 📚 Related Documentation
+## Related Documentation
 
 - [README.md](../README.md) - Project overview and basic features
 - [INSTALL.md](INSTALL.md) - Installation guide

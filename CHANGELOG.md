@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Documentation Restructuring**
+  - Reorganized mdbook structure with clear section separators
+  - Improved introduction page with better navigation and feature highlights
+  - Added comprehensive Architecture & Design guide in developer section
+  - Simplified README.md to focus on quick start and documentation links
+  - Updated CLAUDE.md to reference online documentation
+  - Removed duplicate docs/ directory - all content now in mdbook (book/src/)
+  - Fixed all internal documentation links
+
 ## [0.6.0] - 2025-12-08
 
 ### Added
