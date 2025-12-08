@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2025-12-09
+
 ### Changed
 
 - **Documentation Restructuring**
@@ -18,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed duplicate docs/ directory - all content now in mdbook (book/src/)
   - Fixed all internal documentation links
   - Changed documentation badge to reflect deployment status
+
+### Added
+
+- **Repository Management**
+  - Branch protection settings for main branch (PR-based workflow)
+  - Markdownlint configuration for consistent documentation style
 
 ## [0.6.0] - 2025-12-08
 
