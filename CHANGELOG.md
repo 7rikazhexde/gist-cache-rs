@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2025-12-09
+
+### Removed
+
+- **Self-Update Feature** (Closes #22)
+  - Removed `gist-cache-rs self update` command to unify installation methods
+  - Removed `src/self_update/` module (~450 lines)
+  - Removed `self-replace` and `self_update` dependencies
+  - Users should now update using `cargo install gist-cache-rs`
+  - This change eliminates redundancy and aligns with standard Rust tooling
+
+### Changed
+
+- **Documentation**
+  - Simplified documentation badge display name from "Deploy Docs" to "Docs"
+  - Updated all documentation to reflect removal of self-update feature
+  - Updated release workflow to guide users to use `cargo install` for updates
+
+### Fixed
+
+- Fixed test assertions to use English messages consistently
+
 ## [0.6.1] - 2025-12-09
 
 ### Changed
