@@ -93,10 +93,10 @@ pub fn check_auth(&self) -> Result<()> {
 
 **Implementation Characteristics**:
 
-1.  **Simple Command Execution**: Just calls the `gh` CLI command
-2.  **Minimal Logic**: No logic other than error handling and JSON parsing
-3.  **Clear Responsibilities**: Only responsible for GitHub access
-4.  **Trait Separation**: Coupled with business logic only via traits
+1. **Simple Command Execution**: Just calls the `gh` CLI command
+2. **Minimal Logic**: No logic other than error handling and JSON parsing
+3. **Clear Responsibilities**: Only responsible for GitHub access
+4. **Trait Separation**: Coupled with business logic only via traits
 
 ## Test Coverage Analysis
 
@@ -108,43 +108,43 @@ pub fn check_auth(&self) -> Result<()> {
 
 **Important Insights**:
 
--   **Low coverage of github/api.rs is not an issue**: It is a thin wrapper and contains no business logic.
--   **Business logic has high coverage**: Code dependent on the GitHubClient trait is sufficiently tested by MockGitHubClient.
+- **Low coverage of github/api.rs is not an issue**: It is a thin wrapper and contains no business logic.
+- **Business logic has high coverage**: Code dependent on the GitHubClient trait is sufficiently tested by MockGitHubClient.
 
 ## Evaluation of the Necessity of Additional Automated Tests
 
 ### Advantages
 
-1.  **Automated Verification in CI/CD**: Automatically detects gh-related regressions
-2.  **Improved Developer Experience**: Can verify gh operations locally
-3.  **Synchronization of Documentation and Code**: Automates manual tests
+1. **Automated Verification in CI/CD**: Automatically detects gh-related regressions
+2. **Improved Developer Experience**: Can verify gh operations locally
+3. **Synchronization of Documentation and Code**: Automates manual tests
 
 ### Disadvantages
 
-1.  **Addition of External Dependencies**:
-    -   Requires GitHub authentication settings in CI environment
-    -   Token management becomes complex even with GitHub Actions secrets
-    -   Tests become unstable due to network failures
+1. **Addition of External Dependencies**:
+    - Requires GitHub authentication settings in CI environment
+    - Token management becomes complex even with GitHub Actions secrets
+    - Tests become unstable due to network failures
 
-2.  **API Rate Limit**:
-    -   Each test consumes GitHub API
-    -   Rate limit decreases with each CI execution
-    -   `fetch_gists` tests consume particularly large amounts
+2. **API Rate Limit**:
+    - Each test consumes GitHub API
+    - Rate limit decreases with each CI execution
+    - `fetch_gists` tests consume particularly large amounts
 
-3.  **Brittleness**:
-    -   Affected by GitHub API changes
-    -   Tests break if they rely on actual Gist data which changes
-    -   Requires creation and management of Gists for testing
+3. **Brittleness**:
+    - Affected by GitHub API changes
+    - Tests break if they rely on actual Gist data which changes
+    - Requires creation and management of Gists for testing
 
-4.  **Duplication of Tests**:
-    -   Business logic is already covered by MockGitHubClient
-    -   Verification of gh CLI command behavior is outside the scope of this project
-    -   Limited added value
+4. **Duplication of Tests**:
+    - Business logic is already covered by MockGitHubClient
+    - Verification of gh CLI command behavior is outside the scope of this project
+    - Limited added value
 
-5.  **Maintenance Cost**:
-    -   Complex test environment setup
-    -   Additional CI configuration maintenance
-    -   Requires 대응 to GitHub API changes
+5. **Maintenance Cost**:
+    - Complex test environment setup
+    - Additional CI configuration maintenance
+    - Requires 대응 to GitHub API changes
 
 ## Recommendations
 
@@ -152,25 +152,25 @@ pub fn check_auth(&self) -> Result<()> {
 
 **Reasons**:
 
-1.  **Appropriate separation of concerns is achieved**
-    -   Business logic: Automated tests with MockGitHubClient (high coverage)
-    -   gh CLI wrapper: Thin wrapper with no complex logic
-    -   E2E verification: Comprehensively verified by manual tests
+1. **Appropriate separation of concerns is achieved**
+    - Business logic: Automated tests with MockGitHubClient (high coverage)
+    - gh CLI wrapper: Thin wrapper with no complex logic
+    - E2E verification: Comprehensively verified by manual tests
 
-2.  **Inappropriate risk/cost ratio**
-    -   Bugs detectable by additional tests: gh CLI command syntax errors, output format changes
-    -   These are sufficiently covered by existing #[ignore] tests and functional verification tests
-    -   Low value compared to increased CI environment complexity and maintenance costs
+2. **Inappropriate risk/cost ratio**
+    - Bugs detectable by additional tests: gh CLI command syntax errors, output format changes
+    - These are sufficiently covered by existing #[ignore] tests and functional verification tests
+    - Low value compared to increased CI environment complexity and maintenance costs
 
-3.  **Current testing strategy is appropriate**
-    -   Automated tests: Full coverage of business logic (using MockGitHubClient)
-    -   Manual tests: Verify gh CLI behavior as needed (#[ignore] tests)
-    -   E2E verification: Comprehensive user-centric verification (docs/tests)
+3. **Current testing strategy is appropriate**
+    - Automated tests: Full coverage of business logic (using MockGitHubClient)
+    - Manual tests: Verify gh CLI behavior as needed (#[ignore] tests)
+    - E2E verification: Comprehensive user-centric verification (docs/tests)
 
-4.  **Minimization of external dependencies**
-    -   gh CLI is assumed to work in the user's environment
-    -   Value of configuring gh authentication in CI environment is limited
-    -   Developers can manually verify with `cargo test -- --ignored` as needed
+4. **Minimization of external dependencies**
+    - gh CLI is assumed to work in the user's environment
+    - Value of configuring gh authentication in CI environment is limited
+    - Developers can manually verify with `cargo test -- --ignored` as needed
 
 ### Alternatives (if automation is needed in the future)
 
@@ -196,9 +196,9 @@ jobs:
 
 **Features**:
 
--   Manual trigger only (does not run with every CI execution)
--   Used as final verification before release
--   Minimizes impact on rate limit
+- Manual trigger only (does not run with every CI execution)
+- Used as final verification before release
+- Minimizes impact on rate limit
 
 #### Option 2: Provide test scripts
 
@@ -225,9 +225,9 @@ echo "Completed!"
 
 **Features**:
 
--   Developers run manually as needed
--   No impact on CI environment
--   Simple re-execution steps
+- Developers run manually as needed
+- No impact on CI environment
+- Simple re-execution steps
 
 ## Summary
 
@@ -241,9 +241,9 @@ echo "Completed!"
 
 **Final Recommendation**:
 
--   Maintain current testing strategy
--   Do not implement additional automated tests
--   Manually verify with `cargo test -- --ignored` as needed
--   In CI/CD, run only existing automated tests (using MockGitHubClient)
+- Maintain current testing strategy
+- Do not implement additional automated tests
+- Manually verify with `cargo test -- --ignored` as needed
+- In CI/CD, run only existing automated tests (using MockGitHubClient)
 
 This strategy optimizes the balance between test coverage and maintenance costs.
