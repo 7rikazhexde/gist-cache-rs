@@ -167,11 +167,13 @@ jobs:
             move gist-cache-rs.exe $env:USERPROFILE\.cargo\bin\
             ```
 
-            ## Self-Update
+            ## Updating
 
-            After installation, you can update using:
+            To update to a newer version, use:
             ```bash
-            gist-cache-rs self update
+            cargo install gist-cache-rs
             ```
+
+            Or download and install from a newer release manually.
           files: |
             gist-cache-rs-*-*.tar.gz

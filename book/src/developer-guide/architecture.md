@@ -33,16 +33,13 @@ src/
 ├── search/             # Search functionality
 │   ├── query.rs        # Search query processing (420 lines)
 │   └── mod.rs
-├── self_update/        # Self-update feature
-│   ├── updater.rs      # Application update logic
-│   └── mod.rs
 ├── cli.rs              # CLI argument processing (967 lines)
 ├── config.rs           # Configuration management (163 lines)
 ├── error.rs            # Error type definitions (160 lines)
 ├── lib.rs              # Library root
 └── main.rs             # Entry point
 
-Total: 18 files, approx. 4,600 lines
+Total: 16 files, approx. 4,200 lines
 ```
 
 ### Cache Module (`cache/`)
@@ -118,18 +115,6 @@ Handles multi-interpreter script execution:
   - `deno`: Uses `deno run` command in Deno runtime
   - `bun`: Executes in Bun runtime
 - **Interactive mode**: Uses `inherit()` for stdio to support commands like `read`
-
-### Self-Update Module (`self_update/`)
-
-Implements application self-update functionality:
-
-**`updater.rs`**: `Updater` implementation
-
-- **GitHub Releases update**: Binary download using `self_update` crate
-- **Source build update**: Build update via git pull + cargo install
-- Supports update checks (`--check`), forced updates (`--force`), and version-specific updates
-- Repository path detection: environment variable → cargo metadata → error
-- Automatically fetches from origin/main if no tracking info is available
 
 ### Configuration (`config.rs`)
 
@@ -363,12 +348,6 @@ cargo run -- run --download <query>  # Save to download folder
 cargo run -- cache list
 cargo run -- cache size
 cargo run -- cache clear
-
-# Application self-update
-cargo run -- self update --check         # Check for updates only
-cargo run -- self update                 # Update to latest version
-cargo run -- self update --from-source   # Update by building from source
-cargo run -- self update --verbose
 ```
 
 ## Dependencies
@@ -383,7 +362,6 @@ cargo run -- self update --verbose
 - `anyhow`/`thiserror`: Error handling
 - `dirs`: Platform-specific directory detection
 - `colored`: Terminal output coloring
-- `self_update`: Automatic updates from GitHub Releases
 
 ### Development Dependencies
 
@@ -422,5 +400,3 @@ Defined in `.github/workflows/release.yml`:
 
 1. `create-release`: Creates release page, generates release notes
 2. `build-release`: Parallel builds (4 platforms), uploads assets
-
-For details, refer to the [Self-Update Guide](self-update.md).

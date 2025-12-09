@@ -17,7 +17,6 @@ A high-performance CLI tool written in Rust for efficiently caching, searching, 
 - 📦 **Modern Python**: uv support with PEP 723 metadata compatibility
 - 📥 **Easy Downloads**: Save Gist files to your download folder
 - 🗂️ **Cache Management**: Powerful cache inspection and maintenance
-- 🔃 **Self-Updating**: Built-in update functionality
 
 **Supported Platforms**: Linux, macOS, Windows 10 or later
 
@@ -79,17 +78,18 @@ gist-cache-rs run --download backup bash
 gist-cache-rs run --force backup bash
 ```
 
-### Update the Tool
+## Updating the Tool
+
+To update `gist-cache-rs` to the latest version, use `cargo install`:
 
 ```bash
-# Update to latest version
-gist-cache-rs self update
+cargo install gist-cache-rs
+```
 
-# Check for updates only
-gist-cache-rs self update --check
+For local development builds, use:
 
-# Update by building from source
-gist-cache-rs self update --from-source
+```bash
+cargo install --path .
 ```
 
 ## Documentation
@@ -101,7 +101,6 @@ gist-cache-rs self update --from-source
 - [Installation Guide](https://7rikazhexde.github.io/gist-cache-rs/user-guide/installation.html)
 - [Quick Start](https://7rikazhexde.github.io/gist-cache-rs/user-guide/quickstart.html)
 - [Usage Examples](https://7rikazhexde.github.io/gist-cache-rs/user-guide/examples.html)
-- [Self-Update Guide](https://7rikazhexde.github.io/gist-cache-rs/user-guide/self-update.html)
 
 ### For Developers
 

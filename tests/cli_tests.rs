@@ -75,7 +75,7 @@ fn test_cache_list_empty() {
         .arg("list")
         .assert()
         .success()
-        .stdout(predicate::str::contains("キャッシュされたGistはありません"));
+        .stdout(predicate::str::contains("No cached Gists"));
 }
 
 #[test]
@@ -89,7 +89,7 @@ fn test_cache_size() {
         .arg("size")
         .assert()
         .success()
-        .stdout(predicate::str::contains("キャッシュサイズ情報"));
+        .stdout(predicate::str::contains("Cache size information"));
 }
 
 #[test]
