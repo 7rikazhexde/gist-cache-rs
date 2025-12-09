@@ -42,5 +42,6 @@ book/book/
 .env
 .env.local
 
-# Claude Code working directory
+# Claude Code
 .claude_request/
+.claude/settings.local.json
