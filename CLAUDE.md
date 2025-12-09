@@ -39,7 +39,6 @@ just ci-check     # CI checks
 cargo run -- update
 cargo run -- run <query> [interpreter] [args...]
 cargo run -- cache list
-cargo run -- self update --check
 
 # Coverage
 cargo tarpaulin --out Stdout
@@ -105,7 +104,7 @@ GitHub Actions automatically builds releases for:
 
 ## Dependencies
 
-**Runtime**: tokio, serde, clap, chrono, anyhow, thiserror, dirs, colored, self_update
+**Runtime**: tokio, serde, clap, chrono, anyhow, thiserror, dirs, colored
 **Development**: mockall, tempfile, assert_cmd
 
 For detailed information, always refer to the [full documentation](https://7rikazhexde.github.io/gist-cache-rs/).
