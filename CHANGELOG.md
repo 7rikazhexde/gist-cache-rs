@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2025-12-09
+
+### Fixed
+
+- **Release Workflow**
+  - Simplified release workflow logic to resolve linter warnings
+  - Unified archive naming to include 'v' prefix (e.g., `gist-cache-rs-v0.6.3-...`)
+
+### Changed
+
+- **Documentation**
+  - Updated installation instructions in release notes to reflect new archive names
+- **Repository**
+  - Added `.claude/settings.local.json` to `.gitignore` to exclude user-specific settings
+
 ## [0.6.2] - 2025-12-09
 
 ### Removed
@@ -276,6 +291,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Search and execute Gists
 - Metadata caching
 
+[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.2...v0.6.3
+[0.6.2]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.1...v0.6.2
+[0.6.1]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.8...v0.6.0
+[0.5.8]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.7...v0.5.8
+[0.5.7]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.6...v0.5.7
+[0.5.6]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.5.2...v0.5.3
