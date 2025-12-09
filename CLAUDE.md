@@ -63,7 +63,6 @@ src/
 ├── github/        # GitHub CLI wrapper
 ├── execution/     # Multi-interpreter script runner
 ├── search/        # Flexible search with multiple modes
-├── self_update/   # Application self-update
 ├── cli.rs         # CLI argument processing
 ├── config.rs      # Configuration management
 └── error.rs       # Error types

@@ -10,7 +10,6 @@
 - [Installation](user-guide/installation.md)
 - [Quick Start](user-guide/quickstart.md)
 - [Usage Examples](user-guide/examples.md)
-- [Self-Update](user-guide/self-update.md)
 
 ---
 

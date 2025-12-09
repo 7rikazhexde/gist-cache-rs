@@ -20,9 +20,6 @@ pub enum Commands {
     Run(RunArgs),
     /// Cache management
     Cache(CacheArgs),
-    /// Update the application itself
-    #[command(name = "self")]
-    SelfUpdate(SelfUpdateArgs),
 }
 
 #[derive(Args)]
@@ -96,41 +93,6 @@ pub enum CacheCommands {
     Clear,
 }
 
-#[derive(Args)]
-pub struct SelfUpdateArgs {
-    #[command(subcommand)]
-    pub command: SelfUpdateCommands,
-}
-
-#[derive(Subcommand)]
-pub enum SelfUpdateCommands {
-    /// Update application to latest version
-    Update(SelfUpdateOptions),
-}
-
-#[derive(Args)]
-pub struct SelfUpdateOptions {
-    /// Build from source and update
-    #[arg(long)]
-    pub from_source: bool,
-
-    /// Only check for updates (do not actually update)
-    #[arg(long)]
-    pub check: bool,
-
-    /// Force update even if version is the same
-    #[arg(short, long)]
-    pub force: bool,
-
-    /// Update to specific version
-    #[arg(long)]
-    pub version: Option<String>,
-
-    /// Display detailed progress information
-    #[arg(short, long)]
-    pub verbose: bool,
-}
-
 pub fn run_cli() -> Result<()> {
     let cli = Cli::parse();
     let config = Config::new()?;
@@ -157,9 +119,6 @@ pub fn run_cli() -> Result<()> {
         }
         Commands::Cache(args) => {
             handle_cache_command(config, args)?;
-        }
-        Commands::SelfUpdate(args) => {
-            handle_self_update_command(args)?;
         }
     }
 
@@ -480,27 +439,6 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
                 println!();
                 println!("{}", "Cancelled".cyan());
             }
-        }
-    }
-
-    Ok(())
-}
-
-pub fn handle_self_update_command(args: SelfUpdateArgs) -> Result<()> {
-    use crate::self_update::updater::{UpdateOptions, Updater};
-
-    match args.command {
-        SelfUpdateCommands::Update(opts) => {
-            let options = UpdateOptions {
-                from_source: opts.from_source,
-                check: opts.check,
-                force: opts.force,
-                version: opts.version,
-                verbose: opts.verbose,
-            };
-
-            let updater = Updater::new(options);
-            updater.update()?;
         }
     }
 
