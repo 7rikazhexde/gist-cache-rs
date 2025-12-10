@@ -35,7 +35,7 @@
 **現状 (Before)**:
 
 ```bash
-$ gist-cache cache clean
+$ gist-cache-rs cache clean
 Error: The 'cache clean' subcommand is not yet implemented.
 ```
 
@@ -49,17 +49,17 @@ Error: The 'cache clean' subcommand is not yet implemented.
 
 ```bash
 # 30日以上古いキャッシュエントリを削除
-$ gist-cache cache clean --older-than 30 --dry-run
+$ gist-cache-rs cache clean --older-than 30 --dry-run
 以下のキャッシュエントリを削除します:
   - abc123def456 (60日前に更新) [メタデータ + コンテンツ]
   - def456ghi789 (45日前に更新) [メタデータのみ]
 削除されるファイル: 2件、合計サイズ: 1.2 MB
 
-$ gist-cache cache clean --older-than 30
+$ gist-cache-rs cache clean --older-than 30
 ✓ 2件のキャッシュエントリを削除しました (1.2 MB削減)
 
 # 孤立したコンテンツキャッシュを削除
-$ gist-cache cache clean --orphaned
+$ gist-cache-rs cache clean --orphaned
 ✓ 5件の孤立ファイルを削除しました (500 KB削減)
 ```
 
@@ -87,16 +87,16 @@ $ gist-cache cache clean --orphaned
 
 ```bash
 # 指定日数より古いキャッシュエントリを削除
-gist-cache cache clean --older-than <DAYS>
+gist-cache-rs cache clean --older-than <DAYS>
 
 # 孤立したコンテンツキャッシュファイルを削除（メタデータに対応するものがない）
-gist-cache cache clean --orphaned
+gist-cache-rs cache clean --orphaned
 
 # 削除せずにプレビュー
-gist-cache cache clean --dry-run
+gist-cache-rs cache clean --dry-run
 
 # オプションの組み合わせ
-gist-cache cache clean --older-than 30 --orphaned --dry-run
+gist-cache-rs cache clean --older-than 30 --orphaned --dry-run
 ```
 
 **実装詳細**:
@@ -122,9 +122,9 @@ gist-cache cache clean --older-than 30 --orphaned --dry-run
 
 ```bash
 # Python3をデフォルトで使いたいが、毎回指定が必要
-$ gist-cache run my-script python3
-$ gist-cache run another-script python3
-$ gist-cache run yet-another python3
+$ gist-cache-rs run my-script python3
+$ gist-cache-rs run another-script python3
+$ gist-cache-rs run yet-another python3
 
 # 実行前確認を無効化したいが、オプションが存在しない
 # キャッシュの保持期間もカスタマイズ不可
@@ -158,17 +158,17 @@ colors = true                     # カラー出力有効
 
 ```bash
 # インタプリタ指定不要！設定ファイルから自動的にpython3が使われる
-$ gist-cache run my-script
+$ gist-cache-rs run my-script
 ✓ Python3でスクリプトを実行しました
 
 # 設定を確認
-$ gist-cache config show
+$ gist-cache-rs config show
 デフォルトインタプリタ: python3
 実行前確認: 無効
 キャッシュ保持期間: 30日
 
 # CLIオプションで上書き可能
-$ gist-cache run my-script bash  # 今回だけbashを使用
+$ gist-cache-rs run my-script bash  # 今回だけbashを使用
 ```
 
 **改善 (Improvement)**:
@@ -246,8 +246,8 @@ verbose = false
   - 設定ファイルとCLI引数をマージ（CLIが優先）
   - 設定値の検証
 - すべてのコマンドを設定に準拠するよう更新
-- `gist-cache config show`コマンドで現在の設定を表示
-- `gist-cache config edit`コマンドでエディタで設定を開く
+- `gist-cache-rs config show`コマンドで現在の設定を表示
+- `gist-cache-rs config edit`コマンドでエディタで設定を開く
 
 **推定工数**: 中（3-5日）
 
@@ -263,15 +263,15 @@ verbose = false
 
 ```bash
 # すべて手動で入力が必要
-$ gist-cache ru  # Tabを押しても何も起こらない
-$ gist-cache run --int  # Tabを押しても補完されない
+$ gist-cache-rs ru  # Tabを押しても何も起こらない
+$ gist-cache-rs run --int  # Tabを押しても補完されない
 
 # オプションを忘れた場合、--helpで確認が必要
-$ gist-cache run --help
+$ gist-cache-rs run --help
 ... (長いヘルプメッセージを読む必要がある)
 
 # タイプミスが発生しやすい
-$ gist-cache rnu my-script  # "run"のタイプミス
+$ gist-cache-rs rnu my-script  # "run"のタイプミス
 Error: 'rnu' is not a valid subcommand
 ```
 
@@ -285,27 +285,27 @@ Error: 'rnu' is not a valid subcommand
 
 ```bash
 # サブコマンドの補完
-$ gist-cache ru[Tab]
-$ gist-cache run ✓  # 自動的に "run" に補完される
+$ gist-cache-rs ru[Tab]
+$ gist-cache-rs run ✓  # 自動的に "run" に補完される
 
 # オプションの候補表示
-$ gist-cache run --[Tab][Tab]
+$ gist-cache-rs run --[Tab][Tab]
 --interactive  --preview  --force  --download  --id  --filename
 
 # サブコマンドの候補表示
-$ gist-cache [Tab][Tab]
+$ gist-cache-rs [Tab][Tab]
 update   run   cache   create   edit   completions   help
 
 # 長いオプションも素早く入力
-$ gist-cache run --int[Tab]
-$ gist-cache run --interactive ✓
+$ gist-cache-rs run --int[Tab]
+$ gist-cache-rs run --interactive ✓
 ```
 
 インストール:
 
 ```bash
 # Bash用の補完スクリプトを生成してインストール
-$ gist-cache completions bash > ~/.local/share/bash-completion/completions/gist-cache
+$ gist-cache-rs completions bash > ~/.local/share/bash-completion/completions/gist-cache
 # シェル再起動後、Tab補完が有効に
 ```
 
@@ -337,14 +337,14 @@ $ gist-cache completions bash > ~/.local/share/bash-completion/completions/gist-
 
 ```bash
 # 通常の入力
-$ gist-cache ru[Tab]  # 自動的に "run" に補完される
+$ gist-cache-rs ru[Tab]  # 自動的に "run" に補完される
 
 # オプション候補の表示
-$ gist-cache run --[Tab][Tab]
+$ gist-cache-rs run --[Tab][Tab]
 --interactive  --preview  --force  --download  --id  --filename
 
 # ファイル名補完
-$ gist-cache create scr[Tab]  # "script.py" に補完される
+$ gist-cache-rs create scr[Tab]  # "script.py" に補完される
 ```
 
 **サポートシェル**: bash, zsh, fish, PowerShell
@@ -354,7 +354,7 @@ $ gist-cache create scr[Tab]  # "script.py" に補完される
 この機能を実現するため、`completions`という新しいサブコマンドを追加します。
 
 ```bash
-gist-cache completions <SHELL>
+gist-cache-rs completions <SHELL>
 ```
 
 このコマンドは、指定したシェル（bash、zsh、fish、powershell）用の補完スクリプトを生成し、標準出力に出力します。ユーザーはこの出力を適切な場所に保存することで、シェル補完を有効化できます。
@@ -362,7 +362,7 @@ gist-cache completions <SHELL>
 **実装詳細**:
 
 - `clap_complete` crate を使用（clap v4に組み込み）
-- サブコマンド: `gist-cache completions <SHELL>`
+- サブコマンド: `gist-cache-rs completions <SHELL>`
   - 引数: `bash` | `zsh` | `fish` | `powershell`
   - 出力: 指定シェル用の補完スクリプト（標準出力）
 - READMEにインストール手順を追加
@@ -371,21 +371,21 @@ gist-cache completions <SHELL>
 
 ```bash
 # Bash（システム全体）
-gist-cache completions bash | sudo tee /etc/bash_completion.d/gist-cache
+gist-cache-rs completions bash | sudo tee /etc/bash_completion.d/gist-cache
 
 # Bash（ユーザー専用）
 mkdir -p ~/.local/share/bash-completion/completions
-gist-cache completions bash > ~/.local/share/bash-completion/completions/gist-cache
+gist-cache-rs completions bash > ~/.local/share/bash-completion/completions/gist-cache
 
 # Zsh
-gist-cache completions zsh > ~/.zsh/completion/_gist-cache
+gist-cache-rs completions zsh > ~/.zsh/completion/_gist-cache
 # .zshrcに以下を追加: fpath=(~/.zsh/completion $fpath)
 
 # Fish
-gist-cache completions fish > ~/.config/fish/completions/gist-cache.fish
+gist-cache-rs completions fish > ~/.config/fish/completions/gist-cache.fish
 
 # PowerShell（プロファイルに追加）
-gist-cache completions powershell >> $PROFILE
+gist-cache-rs completions powershell >> $PROFILE
 ```
 
 **推定工数**: 小（1日）
@@ -404,14 +404,14 @@ gist-cache completions powershell >> $PROFILE
 
 ```bash
 # 基本的な部分一致検索のみ
-$ gist-cache run backup
+$ gist-cache-rs run backup
 見つかったgist:
   - daily_backup_script.sh
   - backup_database.py
   - old_backup_2023.sh  # これは不要なのに表示される
 
 # 特定言語のスクリプトだけを検索できない
-$ gist-cache cache list
+$ gist-cache-rs cache list
 200件のgist一覧が表示される（Python, Bash, Ruby, Node.js混在）
 目的のPythonスクリプトを探すのに時間がかかる
 
@@ -427,7 +427,7 @@ $ gist-cache cache list
 
 ```bash
 # 正規表現で高度な検索
-$ gist-cache run --regex "^test_.*\.py$"
+$ gist-cache-rs run --regex "^test_.*\.py$"
 見つかったgist:
   - test_backup.py
   - test_database.py
@@ -435,20 +435,20 @@ $ gist-cache run --regex "^test_.*\.py$"
 # "test_"で始まり".py"で終わるファイルのみを正確に抽出
 
 # 言語でフィルタリング
-$ gist-cache cache list --language python
+$ gist-cache-rs cache list --language python
 Pythonスクリプトのみ表示（全200件中50件）:
   - backup_database.py
   - data_analysis.py
   - api_client.py
 
 # 複数の条件を組み合わせ
-$ gist-cache run --language bash --regex "backup"
+$ gist-cache-rs run --language bash --regex "backup"
 Bash言語で"backup"を含むgistのみ:
   - daily_backup.sh
   - backup_database.sh
 
 # タグベース検索（GitHub gistのトピック機能を活用）
-$ gist-cache run --tag automation --tag devops
+$ gist-cache-rs run --tag automation --tag devops
 automationとdevopsタグが付いたgistのみを表示
 ```
 
@@ -477,8 +477,8 @@ automationとdevopsタグが付いたgistのみを表示
 #### 2.1.1 正規表現検索
 
 ```bash
-gist-cache run --regex "test_.*\.py"
-gist-cache run --regex "^backup.*\.sh$"
+gist-cache-rs run --regex "test_.*\.py"
+gist-cache-rs run --regex "^backup.*\.sh$"
 ```
 
 **目的**: パターンマッチングによる高度な検索
@@ -487,9 +487,9 @@ gist-cache run --regex "^backup.*\.sh$"
 #### 2.1.2 言語/ファイルタイプフィルタ
 
 ```bash
-gist-cache run query --language python
-gist-cache run query --extension .rs
-gist-cache cache list --language bash
+gist-cache-rs run query --language python
+gist-cache-rs run query --extension .rs
+gist-cache-rs cache list --language bash
 ```
 
 **目的**: 特定言語のgistのみを表示
@@ -498,8 +498,8 @@ gist-cache cache list --language bash
 #### 2.1.3 タグベース検索
 
 ```bash
-gist-cache run --tag automation --tag backup
-gist-cache cache list --tag devops
+gist-cache-rs run --tag automation --tag backup
+gist-cache-rs cache list --tag devops
 ```
 
 **目的**: gistのトピック/タグで分類・検索
@@ -526,7 +526,7 @@ gist-cache cache list --tag devops
 **現状 (Before)**:
 
 ```bash
-$ gist-cache update
+$ gist-cache-rs update
 (何も表示されない... 30秒経過... まだ何も表示されない...)
 (フリーズしたのか?Ctrl+Cで中断すべきか?悩む...)
 (60秒後)
@@ -541,7 +541,7 @@ Cache updated successfully.
 **提案 (After)**:
 
 ```bash
-$ gist-cache update
+$ gist-cache-rs update
 キャッシュを更新中...
 [████████████████░░░░] 80% (120/150 gists) ETA: 10s
 
@@ -555,7 +555,7 @@ $ gist-cache update
 小規模な操作では:
 
 ```bash
-$ gist-cache run my-script
+$ gist-cache-rs run my-script
 gistをフェッチ中... ⠋
 ✓ スクリプトを実行中
 ```
@@ -615,7 +615,7 @@ gistをフェッチ中... ⠋ (3/150)
 **現状 (Before)**:
 
 ```bash
-$ gist-cache run backup
+$ gist-cache-rs run backup
 複数のgistが見つかりました:
 1. backup_daily.sh
 2. backup_files.py
@@ -633,7 +633,7 @@ $ gist-cache run backup
 **提案 (After)**:
 
 ```bash
-$ gist-cache run backup
+$ gist-cache-rs run backup
 ? gistを選択 (↑↓で移動、Enterで選択):
   > backup_daily.sh - 日次バックアップスクリプト
     backup_files.py - ファイルバックアップ
@@ -699,7 +699,7 @@ $ gist-cache run backup
 
 **使用シーン**:
 
-現在の`gist-cache cache list`は人間が読むためのテキスト形式で出力されますが、以下のような場合に不便です：
+現在の`gist-cache-rs cache list`は人間が読むためのテキスト形式で出力されますが、以下のような場合に不便です：
 
 1. **スクリプトで処理したい**: gist IDだけを抽出したい
 2. **大量のgistを管理**: 見やすく整理して表示したい
@@ -709,7 +709,7 @@ $ gist-cache run backup
 #### JSON出力（スクリプト連携用）
 
 ```bash
-gist-cache cache list --format json
+gist-cache-rs cache list --format json
 ```
 
 ```json
@@ -727,10 +727,10 @@ gist-cache cache list --format json
 
 ```bash
 # gist IDだけを抽出
-gist-cache cache list --format json | jq -r '.[].id'
+gist-cache-rs cache list --format json | jq -r '.[].id'
 
 # スクリプトで処理
-for gist_id in $(gist-cache cache list --format json | jq -r '.[].id'); do
+for gist_id in $(gist-cache-rs cache list --format json | jq -r '.[].id'); do
   echo "Processing: $gist_id"
 done
 ```
@@ -741,7 +741,7 @@ done
 #### テーブルフォーマット
 
 ```bash
-gist-cache cache list --format table
+gist-cache-rs cache list --format table
 ```
 
 ```text
@@ -784,7 +784,7 @@ $ # 公開設定を選択...
 $ # 作成ボタンをクリック...
 
 # 作成後、gist-cacheで使うにはキャッシュ更新が必要
-$ gist-cache update
+$ gist-cache-rs update
 
 # 既存gistを編集したい場合も同様にブラウザ経由
 # CLIワークフローが中断される
@@ -799,28 +799,28 @@ $ gist-cache update
 
 ```bash
 # ローカルファイルから瞬時にgist作成
-$ gist-cache create my_script.py --description "便利なスクリプト" --public
+$ gist-cache-rs create my_script.py --description "便利なスクリプト" --public
 ✓ Gist作成完了: https://gist.github.com/abc123def456
 ✓ キャッシュに追加されました
 
 # すぐに実行可能
-$ gist-cache run my_script
+$ gist-cache-rs run my_script
 # ブラウザ不要、すべてCLIで完結
 
 # 複数ファイルのgistも簡単
-$ gist-cache create script.py config.json README.md --description "プロジェクト"
+$ gist-cache-rs create script.py config.json README.md --description "プロジェクト"
 ✓ マルチファイルgist作成完了
 
 # 標準入力からも作成可能（パイプライン統合）
-$ echo "SELECT * FROM users;" | gist-cache create query.sql --private
+$ echo "SELECT * FROM users;" | gist-cache-rs create query.sql --private
 ✓ Gist作成完了
 
 # 既存gistの編集もCLIで
-$ gist-cache edit abc123 --file script.py --content "$(cat updated_script.py)"
+$ gist-cache-rs edit abc123 --file script.py --content "$(cat updated_script.py)"
 ✓ Gist更新完了、キャッシュも同期済み
 
 # 不要なgistは削除
-$ gist-cache delete abc123 --confirm
+$ gist-cache-rs delete abc123 --confirm
 ⚠️  gist 'backup_old.sh' を削除します。本当によろしいですか? [y/N]: y
 ✓ Gist削除完了
 ```
@@ -851,13 +851,13 @@ $ gist-cache delete abc123 --confirm
 
 ```bash
 # ファイルから作成
-gist-cache create script.py --description "マイスクリプト" --public
+gist-cache-rs create script.py --description "マイスクリプト" --public
 
 # 標準入力から作成
-echo "print('hello')" | gist-cache create hello.py --private
+echo "print('hello')" | gist-cache-rs create hello.py --private
 
 # マルチファイルgist作成
-gist-cache create file1.py file2.py --description "プロジェクトファイル"
+gist-cache-rs create file1.py file2.py --description "プロジェクトファイル"
 ```
 
 **目的**: CLIからgistを作成
@@ -867,13 +867,13 @@ gist-cache create file1.py file2.py --description "プロジェクトファイ�
 
 ```bash
 # gist内の特定ファイルを編集
-gist-cache edit <gist-id> --file script.py
+gist-cache-rs edit <gist-id> --file script.py
 
 # ファイルコンテンツを更新
-gist-cache edit <gist-id> --file script.py --content "$(cat new_script.py)"
+gist-cache-rs edit <gist-id> --file script.py --content "$(cat new_script.py)"
 
 # 説明を更新
-gist-cache edit <gist-id> --description "新しい説明"
+gist-cache-rs edit <gist-id> --description "新しい説明"
 ```
 
 **目的**: gistの更新を容易に
@@ -882,7 +882,7 @@ gist-cache edit <gist-id> --description "新しい説明"
 #### Gist削除
 
 ```bash
-gist-cache delete <gist-id> --confirm
+gist-cache-rs delete <gist-id> --confirm
 ```
 
 **目的**: 不要なgistのクリーンアップ
@@ -909,10 +909,10 @@ gist-cache delete <gist-id> --confirm
 
 ```bash
 # よく使うgistを実行したい
-$ gist-cache run abc123def456ghi789jkl012mno345pqr678  # 32文字のIDを入力...タイプミスしやすい
+$ gist-cache-rs run abc123def456ghi789jkl012mno345pqr678  # 32文字のIDを入力...タイプミスしやすい
 
 # 説明で検索することもできるが
-$ gist-cache run "daily backup"
+$ gist-cache-rs run "daily backup"
 複数のgistが見つかりました:
 1. daily_backup_v1.sh
 2. daily_backup_v2.sh
@@ -932,22 +932,22 @@ $ gist-cache run "daily backup"
 
 ```bash
 # よく使うgistにエイリアスを設定
-$ gist-cache alias add backup abc123def456...
+$ gist-cache-rs alias add backup abc123def456...
 ✓ エイリアス 'backup' を作成しました
 
-$ gist-cache alias add deploy def456ghi789...
+$ gist-cache-rs alias add deploy def456ghi789...
 ✓ エイリアス 'deploy' を作成しました
 
 # 短い名前で瞬時に実行
-$ gist-cache run backup
+$ gist-cache-rs run backup
 ✓ 'backup' (abc123def456...) を実行中
 # 32文字 → 6文字に短縮！
 
-$ gist-cache run deploy
+$ gist-cache-rs run deploy
 ✓ 'deploy' (def456ghi789...) を実行中
 
 # エイリアス一覧を確認
-$ gist-cache alias list
+$ gist-cache-rs alias list
 backup  → abc123def456... (daily_backup_script.sh)
 deploy  → def456ghi789... (deploy_production.sh)
 report  → ghi789jkl012... (generate_report.py)
@@ -987,16 +987,16 @@ $ cp ~/.config/gist-cache/config.toml /path/to/team-repo/gist-cache-config.toml
 
 ```bash
 # エイリアス作成
-gist-cache alias add my-backup abc123def456
+gist-cache-rs alias add my-backup abc123def456
 
 # エイリアス使用
-gist-cache run my-backup
+gist-cache-rs run my-backup
 
 # エイリアス一覧
-gist-cache alias list
+gist-cache-rs alias list
 
 # エイリアス削除
-gist-cache alias remove my-backup
+gist-cache-rs alias remove my-backup
 ```
 
 **保存方法**: 設定ファイル内:
@@ -1043,10 +1043,10 @@ deploy-prod = "ghi789jkl012"
 
 ```bash
 # gistを監視して変更時に実行
-gist-cache watch <gist-id> --interval 60
+gist-cache-rs watch <gist-id> --interval 60
 
 # カスタムコマンドで監視
-gist-cache watch <gist-id> --command "python3 {file}"
+gist-cache-rs watch <gist-id> --command "python3 {file}"
 ```
 
 **ユースケース**:
@@ -1089,13 +1089,13 @@ gist-cache watch <gist-id> --command "python3 {file}"
 
 ```bash
 # 全体統計を表示
-gist-cache stats
+gist-cache-rs stats
 
 # 最も頻繁に実行されたgist
-gist-cache stats top
+gist-cache-rs stats top
 
 # 実行履歴
-gist-cache stats history --limit 20
+gist-cache-rs stats history --limit 20
 ```
 
 **出力例**:
@@ -1138,7 +1138,7 @@ Gist キャッシュ統計
 
 ```bash
 # 150個のgistをキャッシュ更新
-$ time gist-cache update
+$ time gist-cache-rs update
 Updating cache...
 # gist 1をフェッチ... 完了
 # gist 2をフェッチ... 完了
@@ -1159,7 +1159,7 @@ real    2m30s  # 150秒かかる（1gistあたり1秒）
 
 ```bash
 # 同じ150個のgistを並列フェッチ（最大10並列）
-$ time gist-cache update
+$ time gist-cache-rs update
 Updating cache...
 [████████████████████] 100% (150/150 gists) ETA: 0s
 並列フェッチ: 10スレッド
@@ -1282,7 +1282,7 @@ compression_level = 3  # 1-22、高いほど圧縮率が良いが遅い
 
 ```bash
 # gistを実行
-$ gist-cache run cleanup
+$ gist-cache-rs run cleanup
 実行中...
 # 問答無用で実行開始
 # 中身が何か確認できない
@@ -1302,7 +1302,7 @@ rm -rf /  # 危険！
 
 ```bash
 # gistを実行しようとすると自動的に確認プロンプト
-$ gist-cache run cleanup
+$ gist-cache-rs run cleanup
 
 スクリプト: cleanup.sh (ID: abc123...)
 インタプリタ: bash
@@ -1324,7 +1324,7 @@ find /var/log -name "*.old" -delete
 ✓ 完了
 
 # 信頼できるgistはスキップ可能
-$ gist-cache run cleanup --no-confirm
+$ gist-cache-rs run cleanup --no-confirm
 実行中... (確認スキップ)
 ```
 
@@ -1363,7 +1363,7 @@ trusted_gists = ["abc123def456"]   # 信頼するgist（確認スキップ）
 
 ```bash
 # 常にプレビューを表示して実行前に確認
-gist-cache run <query>
+gist-cache-rs run <query>
 
 # 出力:
 スクリプト: backup.sh (ID: abc123...)
@@ -2000,7 +2000,7 @@ jobs:
 
 ### A.2 組み込みGistエディタ
 
-**却下理由**: ユーザーの好みのエディタ（$EDITOR）と統合する方が良い。`gist-cache edit`はエディタを自動で開くことができる。
+**却下理由**: ユーザーの好みのエディタ（$EDITOR）と統合する方が良い。`gist-cache-rs edit`はエディタを自動で開くことができる。
 
 ### A.3 キャッシュのクラウド同期
 
