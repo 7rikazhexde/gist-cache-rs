@@ -1,4 +1,7 @@
+use crate::cache::types::GistCache;
 use crate::error::{GistCacheError, Result};
+use chrono::{Duration, Utc};
+use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -265,6 +268,126 @@ impl ContentCache {
 
         Ok(())
     }
+
+    /// Clean old cache entries
+    ///
+    /// # Arguments
+    /// * `metadata_cache` - Metadata cache to check against
+    /// * `options` - Clean options
+    ///
+    /// # Returns
+    /// Result containing deleted gists and their total size
+    pub fn clean(&self, metadata_cache: &GistCache, options: &CleanOptions) -> Result<CleanResult> {
+        let mut result = CleanResult {
+            deleted_gists: Vec::new(),
+            deleted_size: 0,
+            orphaned_files: Vec::new(),
+        };
+
+        // Create set of valid gist IDs from metadata
+        let valid_gist_ids: HashSet<String> =
+            metadata_cache.gists.iter().map(|g| g.id.clone()).collect();
+
+        // Get all cached gist IDs
+        let cached_gist_ids = self.list_cached_gists()?;
+
+        // Process each cached gist
+        for gist_id in &cached_gist_ids {
+            let should_delete =
+                self.should_delete_gist(gist_id, &valid_gist_ids, metadata_cache, options)?;
+
+            if should_delete {
+                // Calculate size before deletion
+                let gist_dir = self.get_gist_dir(gist_id);
+                let size = self.calculate_dir_size(&gist_dir)?;
+                result.deleted_size += size;
+                result.deleted_gists.push(gist_id.clone());
+
+                // Actually delete if not dry run
+                if !options.dry_run {
+                    self.delete_gist(gist_id)?;
+                }
+            }
+        }
+
+        Ok(result)
+    }
+
+    /// Check if a gist should be deleted based on clean options
+    fn should_delete_gist(
+        &self,
+        gist_id: &str,
+        valid_gist_ids: &HashSet<String>,
+        metadata_cache: &GistCache,
+        options: &CleanOptions,
+    ) -> Result<bool> {
+        // Check for orphaned (not in metadata)
+        if options.orphaned && !valid_gist_ids.contains(gist_id) {
+            return Ok(true);
+        }
+
+        // Check for old entries
+        if let Some(days) = options.older_than_days {
+            if let Some(gist_info) = metadata_cache.gists.iter().find(|g| g.id == gist_id) {
+                let cutoff_date = Utc::now() - Duration::days(days as i64);
+                if gist_info.updated_at < cutoff_date {
+                    return Ok(true);
+                }
+            }
+        }
+
+        Ok(false)
+    }
+
+    /// Calculate size of a directory
+    fn calculate_dir_size(&self, path: &Path) -> Result<u64> {
+        let mut total_size = 0u64;
+
+        if !path.exists() {
+            return Ok(0);
+        }
+
+        fn calc_recursive(path: &Path, total: &mut u64) -> std::io::Result<()> {
+            for entry in fs::read_dir(path)? {
+                let entry = entry?;
+                let path = entry.path();
+
+                if path.is_file() {
+                    if let Ok(metadata) = fs::metadata(&path) {
+                        *total += metadata.len();
+                    }
+                } else if path.is_dir() {
+                    calc_recursive(&path, total)?;
+                }
+            }
+            Ok(())
+        }
+
+        calc_recursive(path, &mut total_size)?;
+        Ok(total_size)
+    }
+}
+
+/// Options for cache cleaning
+#[derive(Debug, Clone, Default)]
+pub struct CleanOptions {
+    /// Remove entries older than specified days
+    pub older_than_days: Option<u32>,
+    /// Remove orphaned content cache files
+    pub orphaned: bool,
+    /// Preview mode (don't actually delete)
+    pub dry_run: bool,
+}
+
+/// Result of cache cleaning operation
+#[derive(Debug, Clone, Default)]
+pub struct CleanResult {
+    /// List of deleted gist IDs
+    pub deleted_gists: Vec<String>,
+    /// Total size of deleted data in bytes
+    pub deleted_size: u64,
+    /// List of orphaned files (for information)
+    pub orphaned_files: Vec<PathBuf>,
 }
 
 #[cfg(test)]
@@ -537,5 +660,332 @@ mod tests {
 
         let path = cache.get_cache_path("test_id", "test_file.sh");
         assert_eq!(path, cache_dir.join("test_id").join("test_file.sh"));
+    }
+
+    #[test]
+    fn test_clean_with_older_than() {
+        use crate::cache::types::{CacheMetadata, GistCache, GistFile, GistInfo};
+        use chrono::{Duration, Utc};
+
+        let (_temp, cache) = setup_test_cache();
+
+        // Create old and new gists
+        let old_date = Utc::now() - Duration::days(40);
+        let new_date = Utc::now() - Duration::days(10);
+
+        let old_gist = GistInfo {
+            id: "old_gist".to_string(),
+            description: Some("Old gist".to_string()),
+            files: vec![GistFile {
+                filename: "old.sh".to_string(),
+                language: Some("Shell".to_string()),
+                size: 100,
+            }],
+            updated_at: old_date,
+            public: true,
+            html_url: "https://gist.github.com/old_gist".to_string(),
+        };
+
+        let new_gist = GistInfo {
+            id: "new_gist".to_string(),
+            description: Some("New gist".to_string()),
+            files: vec![GistFile {
+                filename: "new.sh".to_string(),
+                language: Some("Shell".to_string()),
+                size: 100,
+            }],
+            updated_at: new_date,
+            public: true,
+            html_url: "https://gist.github.com/new_gist".to_string(),
+        };
+
+        let metadata_cache = GistCache {
+            metadata: CacheMetadata {
+                last_updated: Utc::now(),
+                total_count: 2,
+                github_user: "testuser".to_string(),
+            },
+            gists: vec![old_gist, new_gist],
+        };
+
+        // Write both to cache
+        cache.write("old_gist", "old.sh", "echo old").unwrap();
+        cache.write("new_gist", "new.sh", "echo new").unwrap();
+
+        // Clean entries older than 30 days
+        let options = CleanOptions {
+            older_than_days: Some(30),
+            orphaned: false,
+            dry_run: false,
+        };
+
+        let result = cache.clean(&metadata_cache, &options).unwrap();
+
+        // Only old gist should be deleted
+        assert_eq!(result.deleted_gists.len(), 1);
+        assert!(result.deleted_gists.contains(&"old_gist".to_string()));
+        assert!(!cache.exists("old_gist", "old.sh"));
+        assert!(cache.exists("new_gist", "new.sh"));
+    }
+
+    #[test]
+    fn test_clean_with_orphaned() {
+        use crate::cache::types::{CacheMetadata, GistCache, GistFile, GistInfo};
+        use chrono::Utc;
+
+        let (_temp, cache) = setup_test_cache();
+
+        // Create metadata cache with only one gist
+        let valid_gist = GistInfo {
+            id: "valid_gist".to_string(),
+            description: Some("Valid gist".to_string()),
+            files: vec![GistFile {
+                filename: "valid.sh".to_string(),
+                language: Some("Shell".to_string()),
+                size: 100,
+            }],
+            updated_at: Utc::now(),
+            public: true,
+            html_url: "https://gist.github.com/valid_gist".to_string(),
+        };
+
+        let metadata_cache = GistCache {
+            metadata: CacheMetadata {
+                last_updated: Utc::now(),
+                total_count: 1,
+                github_user: "testuser".to_string(),
+            },
+            gists: vec![valid_gist],
+        };
+
+        // Write valid gist and orphaned gist to cache
+        cache.write("valid_gist", "valid.sh", "echo valid").unwrap();
+        cache
+            .write("orphaned_gist", "orphaned.sh", "echo orphaned")
+            .unwrap();
+
+        // Clean orphaned entries
+        let options = CleanOptions {
+            older_than_days: None,
+            orphaned: true,
+            dry_run: false,
+        };
+
+        let result = cache.clean(&metadata_cache, &options).unwrap();
+
+        // Only orphaned gist should be deleted
+        assert_eq!(result.deleted_gists.len(), 1);
+        assert!(result.deleted_gists.contains(&"orphaned_gist".to_string()));
+        assert!(cache.exists("valid_gist", "valid.sh"));
+        assert!(!cache.exists("orphaned_gist", "orphaned.sh"));
+    }
+
+    #[test]
+    fn test_clean_with_dry_run() {
+        use crate::cache::types::{CacheMetadata, GistCache, GistFile, GistInfo};
+        use chrono::{Duration, Utc};
+
+        let (_temp, cache) = setup_test_cache();
+
+        let old_gist = GistInfo {
+            id: "old_gist".to_string(),
+            description: Some("Old gist".to_string()),
+            files: vec![GistFile {
+                filename: "old.sh".to_string(),
+                language: Some("Shell".to_string()),
+                size: 100,
+            }],
+            updated_at: Utc::now() - Duration::days(40),
+            public: true,
+            html_url: "https://gist.github.com/old_gist".to_string(),
+        };
+
+        let metadata_cache = GistCache {
+            metadata: CacheMetadata {
+                last_updated: Utc::now(),
+                total_count: 1,
+                github_user: "testuser".to_string(),
+            },
+            gists: vec![old_gist],
+        };
+
+        cache.write("old_gist", "old.sh", "echo old").unwrap();
+
+        // Dry run with older_than
+        let options = CleanOptions {
+            older_than_days: Some(30),
+            orphaned: false,
+            dry_run: true,
+        };
+
+        let result = cache.clean(&metadata_cache, &options).unwrap();
+
+        // Should report what would be deleted
+        assert_eq!(result.deleted_gists.len(), 1);
+        assert!(result.deleted_gists.contains(&"old_gist".to_string()));
+        // But file should still exist
+        assert!(cache.exists("old_gist", "old.sh"));
+    }
+
+    #[test]
+    fn test_clean_with_no_criteria() {
+        use crate::cache::types::{CacheMetadata, GistCache, GistFile, GistInfo};
+        use chrono::Utc;
+
+        let (_temp, cache) = setup_test_cache();
+
+        let gist = GistInfo {
+            id: "test_gist".to_string(),
+            description: Some("Test gist".to_string()),
+            files: vec![GistFile {
+                filename: "test.sh".to_string(),
+                language: Some("Shell".to_string()),
+                size: 100,
+            }],
+            updated_at: Utc::now(),
+            public: true,
+            html_url: "https://gist.github.com/test_gist".to_string(),
+        };
+
+        let metadata_cache = GistCache {
+            metadata: CacheMetadata {
+                last_updated: Utc::now(),
+                total_count: 1,
+                github_user: "testuser".to_string(),
+            },
+            gists: vec![gist],
+        };
+
+        cache.write("test_gist", "test.sh", "echo test").unwrap();
+
+        // No criteria specified
+        let options = CleanOptions {
+            older_than_days: None,
+            orphaned: false,
+            dry_run: false,
+        };
+
+        let result = cache.clean(&metadata_cache, &options).unwrap();
+
+        // Nothing should be deleted
+        assert_eq!(result.deleted_gists.len(), 0);
+        assert!(cache.exists("test_gist", "test.sh"));
+    }
+
+    #[test]
+    fn test_clean_with_both_criteria() {
+        use crate::cache::types::{CacheMetadata, GistCache, GistFile, GistInfo};
+        use chrono::{Duration, Utc};
+
+        let (_temp, cache) = setup_test_cache();
+
+        // Create an old gist (in metadata)
+        let old_gist = GistInfo {
+            id: "old_gist".to_string(),
+            description: Some("Old gist".to_string()),
+            files: vec![GistFile {
+                filename: "old.sh".to_string(),
+                language: Some("Shell".to_string()),
+                size: 100,
+            }],
+            updated_at: Utc::now() - Duration::days(40),
+            public: true,
+            html_url: "https://gist.github.com/old_gist".to_string(),
+        };
+
+        let metadata_cache = GistCache {
+            metadata: CacheMetadata {
+                last_updated: Utc::now(),
+                total_count: 1,
+                github_user: "testuser".to_string(),
+            },
+            gists: vec![old_gist],
+        };
+
+        // Write old gist and orphaned gist to cache
+        cache.write("old_gist", "old.sh", "echo old").unwrap();
+        cache
+            .write("orphaned_gist", "orphaned.sh", "echo orphaned")
+            .unwrap();
+
+        // Clean with both criteria
+        let options = CleanOptions {
+            older_than_days: Some(30),
+            orphaned: true,
+            dry_run: false,
+        };
+
+        let result = cache.clean(&metadata_cache, &options).unwrap();
+
+        // Both old and orphaned gists should be deleted
+        assert_eq!(result.deleted_gists.len(), 2);
+        assert!(result.deleted_gists.contains(&"old_gist".to_string()));
+        assert!(result.deleted_gists.contains(&"orphaned_gist".to_string()));
+        assert!(!cache.exists("old_gist", "old.sh"));
+        assert!(!cache.exists("orphaned_gist", "orphaned.sh"));
+    }
+
+    #[test]
+    fn test_clean_when_nothing_matches() {
+        use crate::cache::types::{CacheMetadata, GistCache, GistFile, GistInfo};
+        use chrono::Utc;
+
+        let (_temp, cache) = setup_test_cache();
+
+        let gist = GistInfo {
+            id: "recent_gist".to_string(),
+            description: Some("Recent gist".to_string()),
+            files: vec![GistFile {
+                filename: "recent.sh".to_string(),
+                language: Some("Shell".to_string()),
+                size: 100,
+            }],
+            updated_at: Utc::now(),
+            public: true,
+            html_url: "https://gist.github.com/recent_gist".to_string(),
+        };
+
+        let metadata_cache = GistCache {
+            metadata: CacheMetadata {
+                last_updated: Utc::now(),
+                total_count: 1,
+                github_user: "testuser".to_string(),
+            },
+            gists: vec![gist],
+        };
+
+        cache
+            .write("recent_gist", "recent.sh", "echo recent")
+            .unwrap();
+
+        // Try to clean entries older than 30 days (but there are none)
+        let options = CleanOptions {
+            older_than_days: Some(30),
+            orphaned: false,
+            dry_run: false,
+        };
+
+        let result = cache.clean(&metadata_cache, &options).unwrap();
+
+        // Nothing should be deleted
+        assert_eq!(result.deleted_gists.len(), 0);
+        assert_eq!(result.deleted_size, 0);
+        assert!(cache.exists("recent_gist", "recent.sh"));
+    }
+
+    #[test]
+    fn test_calculate_dir_size() {
+        let (_temp, cache) = setup_test_cache();
+
+        // Write files with known sizes
+        cache.write("size_test", "file1.sh", "12345").unwrap();
+        cache.write("size_test", "file2.sh", "1234567890").unwrap();
+
+        let gist_dir = cache.get_gist_dir("size_test");
+        let size = cache.calculate_dir_size(&gist_dir).unwrap();
+
+        // Size should be the sum of file contents
+        // file1.sh: 5 bytes, file2.sh: 10 bytes
+        assert_eq!(size, 15);
     }
 }

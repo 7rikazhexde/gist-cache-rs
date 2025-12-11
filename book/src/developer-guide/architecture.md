@@ -19,7 +19,7 @@ The codebase follows a modular architecture with clear separation of concerns:
 ```text
 src/
 ├── cache/              # Cache management layer
-│   ├── content.rs      # Content cache (541 lines)
+│   ├── content.rs      # Content cache (1001 lines)
 │   ├── types.rs        # Data type definitions (246 lines)
 │   ├── update.rs       # Incremental update logic (849 lines)
 │   └── mod.rs
@@ -39,7 +39,7 @@ src/
 ├── lib.rs              # Library root
 └── main.rs             # Entry point
 
-Total: 16 files, approx. 4,200 lines
+Total: 16 files, approx. 4,660 lines
 ```
 
 ### Cache Module (`cache/`)
@@ -64,6 +64,11 @@ The cache layer implements a sophisticated 2-layer caching structure:
 - Manages individual Gist content files in `~/.cache/gist-cache/contents/{gist_id}/{filename}`
 - Created on-demand during first execution
 - Provides approximately 20x performance improvement for subsequent executions
+- Implements cache cleaning functionality:
+  - `clean()`: Remove old or orphaned cache entries
+  - `--older-than`: Delete entries based on Gist's `updated_at` timestamp
+  - `--orphaned`: Remove content cache files without corresponding metadata
+  - `--dry-run`: Preview deletion without actually removing files
 
 ### GitHub Module (`github/`)
 

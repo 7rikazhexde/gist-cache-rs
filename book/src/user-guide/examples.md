@@ -341,6 +341,69 @@ Total size: 89.45 KB
 Cache directory: /home/user/.cache/gist-cache/contents
 ```
 
+### Clean Old Cache Entries
+
+```bash
+# Preview what would be deleted (dry-run mode)
+$ gist-cache-rs cache clean --dry-run --older-than 30
+Clean cache entries
+
+DRY RUN MODE - No files will be deleted
+
+  Removing entries older than 30 days
+
+Would delete 3 entries:
+
+  ID: 7bcb324e9291fa350334df8efb7f0deb
+    Description: old script #bash
+    Updated: 2025-09-15 10:20:30
+
+  ID: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+    Description: deprecated utility
+    Updated: 2025-09-01 08:15:22
+
+  ID: 9f8e7d6c5b4a3210fedcba9876543210
+    Description: test script
+    Updated: 2025-08-28 14:45:10
+
+Would free up: 145.23 KB
+
+# Actually delete old entries
+$ gist-cache-rs cache clean --older-than 30
+Clean cache entries
+
+  Removing entries older than 30 days
+
+Deleted 3 entries:
+
+  ID: 7bcb324e9291fa350334df8efb7f0deb
+    Description: old script #bash
+    Updated: 2025-09-15 10:20:30
+
+  ID: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+    Description: deprecated utility
+    Updated: 2025-09-01 08:15:22
+
+  ID: 9f8e7d6c5b4a3210fedcba9876543210
+    Description: test script
+    Updated: 2025-08-28 14:45:10
+
+Freed up: 145.23 KB
+
+# Remove orphaned cache files (content without metadata)
+$ gist-cache-rs cache clean --orphaned
+Clean cache entries
+
+  Removing orphaned content cache files
+
+Deleted 2 entries:
+
+  ID: orphaned123456 (orphaned)
+  ID: deleted789abc (orphaned)
+
+Freed up: 23.45 KB
+```
+
 ### Clear All Caches
 
 ```bash
