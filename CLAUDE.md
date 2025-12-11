@@ -84,17 +84,35 @@ src/
 
 ## Release Process
 
+**CRITICAL: ALWAYS update Cargo.toml version BEFORE creating tags. This is MANDATORY and non-negotiable.**
+
 ```bash
-# Update version
-vim Cargo.toml CHANGELOG.md
+# Step 1: Update version in Cargo.toml (MANDATORY - DO NOT SKIP)
+vim Cargo.toml  # Change version = "X.Y.Z"
+
+# Step 2: Update CHANGELOG.md (if exists)
+vim CHANGELOG.md
+
+# Step 3: Commit version bump
 git add Cargo.toml CHANGELOG.md
 git commit -m "🔖 Bump version to X.Y.Z"
 
-# Create and push tag
-git tag vX.Y.Z
+# Step 4: Push to main
 git push origin main
+
+# Step 5: Create and push tag (ONLY after Cargo.toml is updated)
+git tag -a vX.Y.Z -m "Release vX.Y.Z"
 git push origin vX.Y.Z
 ```
+
+**Version Update Checklist:**
+
+- [ ] Update `version` in `Cargo.toml`
+- [ ] Update `CHANGELOG.md` (if applicable)
+- [ ] Commit changes with "🔖 Bump version to X.Y.Z"
+- [ ] Push to main branch
+- [ ] Create annotated tag with `-a` flag
+- [ ] Push tag to trigger release workflow
 
 GitHub Actions automatically builds releases for:
 
