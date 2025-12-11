@@ -1,3 +1,4 @@
+use crate::cache::CleanOptions;
 use crate::*;
 use clap::{Args, Parser, Subcommand};
 use colored::Colorize;
@@ -87,10 +88,25 @@ pub enum CacheCommands {
     List,
     /// Display total cache size
     Size,
-    /// Remove old cache (not yet implemented)
-    Clean,
+    /// Remove old cache entries
+    Clean(CleanArgs),
     /// Remove all cache
     Clear,
+}
+
+#[derive(Args)]
+pub struct CleanArgs {
+    /// Remove entries older than specified days
+    #[arg(long, value_name = "DAYS")]
+    pub older_than: Option<u32>,
+
+    /// Remove orphaned content cache files (content without metadata)
+    #[arg(long)]
+    pub orphaned: bool,
+
+    /// Preview what would be deleted without actually deleting
+    #[arg(long)]
+    pub dry_run: bool,
 }
 
 pub fn run_cli() -> Result<()> {
@@ -392,16 +408,114 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
                 format!("Cache directory: {}", config.contents_dir.display()).cyan()
             );
         }
-        CacheCommands::Clean => {
-            println!("{}", "Remove old cache".yellow());
+        CacheCommands::Clean(args) => {
+            println!("{}", "Clean cache entries".cyan().bold());
             println!();
-            println!(
-                "{}",
-                "This feature is not yet implemented. Planned for a future version.".yellow()
-            );
+
+            // Load metadata cache
+            if !config.cache_exists() {
+                return Err(GistCacheError::CacheNotFound);
+            }
+
+            let cache_content = fs::read_to_string(&config.cache_file)?;
+            let metadata_cache: GistCache = serde_json::from_str(&cache_content)?;
+
+            // Convert CleanArgs to CleanOptions
+            let options = CleanOptions {
+                older_than_days: args.older_than,
+                orphaned: args.orphaned,
+                dry_run: args.dry_run,
+            };
+
+            // Show what will be done
+            if args.dry_run {
+                println!(
+                    "{}",
+                    "DRY RUN MODE - No files will be deleted".yellow().bold()
+                );
+                println!();
+            }
+
+            if let Some(days) = args.older_than {
+                println!("  Removing entries older than {} days", days);
+            }
+            if args.orphaned {
+                println!("  Removing orphaned content cache files");
+            }
+            if !args.orphaned && args.older_than.is_none() {
+                println!(
+                    "{}",
+                    "No cleaning criteria specified. Use --older-than or --orphaned".yellow()
+                );
+                println!();
+                println!("Examples:");
+                println!(
+                    "  gist-cache-rs cache clean --older-than 30    # Remove entries older than 30 days"
+                );
+                println!(
+                    "  gist-cache-rs cache clean --orphaned         # Remove orphaned cache files"
+                );
+                println!(
+                    "  gist-cache-rs cache clean --dry-run --orphaned  # Preview what would be deleted"
+                );
+                return Ok(());
+            }
+
             println!();
-            println!("You can use the following command instead:");
-            println!("  gist-cache-rs cache clear  # Remove all cache");
+
+            // Execute clean
+            let result = content_cache.clean(&metadata_cache, &options)?;
+
+            // Display results
+            if result.deleted_gists.is_empty() {
+                println!("{}", "No cache entries to clean".green());
+            } else {
+                if args.dry_run {
+                    println!(
+                        "{}",
+                        format!("Would delete {} entries:", result.deleted_gists.len())
+                            .yellow()
+                            .bold()
+                    );
+                } else {
+                    println!(
+                        "{}",
+                        format!("Deleted {} entries:", result.deleted_gists.len())
+                            .green()
+                            .bold()
+                    );
+                }
+                println!();
+
+                for gist_id in &result.deleted_gists {
+                    if let Some(gist) = metadata_cache.gists.iter().find(|g| &g.id == gist_id) {
+                        let desc = gist.description.as_deref().unwrap_or("No description");
+                        println!("{}", format!("  ID: {}", gist.id).cyan());
+                        println!("    Description: {}", desc);
+                        println!(
+                            "    Updated: {}",
+                            gist.updated_at.format("%Y-%m-%d %H:%M:%S")
+                        );
+                    } else {
+                        println!("{}", format!("  ID: {} (orphaned)", gist_id).cyan());
+                    }
+                }
+
+                println!();
+                if args.dry_run {
+                    println!(
+                        "{}",
+                        format!("Would free up: {}", format_bytes(result.deleted_size)).yellow()
+                    );
+                } else {
+                    println!(
+                        "{}",
+                        format!("Freed up: {}", format_bytes(result.deleted_size))
+                            .green()
+                            .bold()
+                    );
+                }
+            }
         }
         CacheCommands::Clear => {
             println!("{}", "Remove all cache".yellow().bold());
@@ -674,7 +788,7 @@ mod tests {
     }
 
     #[test]
-    fn test_handle_cache_command_clean() {
+    fn test_handle_cache_command_clean_no_cache() {
         use std::fs;
         let temp_dir = TempDir::new().unwrap();
         let config = Config {
@@ -686,8 +800,101 @@ mod tests {
 
         fs::create_dir_all(&config.contents_dir).unwrap();
 
+        // Test with no metadata cache (should return error)
         let args = CacheArgs {
-            command: CacheCommands::Clean,
+            command: CacheCommands::Clean(CleanArgs {
+                older_than: Some(30),
+                orphaned: false,
+                dry_run: false,
+            }),
+        };
+
+        let result = handle_cache_command(config, args);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), GistCacheError::CacheNotFound));
+    }
+
+    #[test]
+    fn test_handle_cache_command_clean_no_criteria() {
+        use crate::cache::types::{CacheMetadata, GistCache};
+        use chrono::Utc;
+        use std::fs;
+
+        let temp_dir = TempDir::new().unwrap();
+        let config = Config {
+            cache_dir: temp_dir.path().to_path_buf(),
+            cache_file: temp_dir.path().join("cache.json"),
+            contents_dir: temp_dir.path().join("contents"),
+            download_dir: temp_dir.path().join("downloads"),
+        };
+
+        fs::create_dir_all(&config.contents_dir).unwrap();
+
+        // Create empty metadata cache
+        let cache = GistCache {
+            metadata: CacheMetadata {
+                last_updated: Utc::now(),
+                total_count: 0,
+                github_user: "testuser".to_string(),
+            },
+            gists: vec![],
+        };
+        fs::write(&config.cache_file, serde_json::to_string(&cache).unwrap()).unwrap();
+
+        // Test with no criteria specified (should return ok but show message)
+        let args = CacheArgs {
+            command: CacheCommands::Clean(CleanArgs {
+                older_than: None,
+                orphaned: false,
+                dry_run: false,
+            }),
+        };
+
+        let result = handle_cache_command(config, args);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_handle_cache_command_clean_with_orphaned() {
+        use crate::cache::ContentCache;
+        use crate::cache::types::{CacheMetadata, GistCache};
+        use chrono::Utc;
+        use std::fs;
+
+        let temp_dir = TempDir::new().unwrap();
+        let config = Config {
+            cache_dir: temp_dir.path().to_path_buf(),
+            cache_file: temp_dir.path().join("cache.json"),
+            contents_dir: temp_dir.path().join("contents"),
+            download_dir: temp_dir.path().join("downloads"),
+        };
+
+        fs::create_dir_all(&config.contents_dir).unwrap();
+
+        // Create empty metadata cache (no valid gists)
+        let cache = GistCache {
+            metadata: CacheMetadata {
+                last_updated: Utc::now(),
+                total_count: 0,
+                github_user: "testuser".to_string(),
+            },
+            gists: vec![],
+        };
+        fs::write(&config.cache_file, serde_json::to_string(&cache).unwrap()).unwrap();
+
+        // Create orphaned content
+        let content_cache = ContentCache::new(config.contents_dir.clone());
+        content_cache
+            .write("orphaned123", "test.sh", "echo test")
+            .unwrap();
+
+        // Test clean with orphaned flag
+        let args = CacheArgs {
+            command: CacheCommands::Clean(CleanArgs {
+                older_than: None,
+                orphaned: true,
+                dry_run: false,
+            }),
         };
 
         let result = handle_cache_command(config, args);

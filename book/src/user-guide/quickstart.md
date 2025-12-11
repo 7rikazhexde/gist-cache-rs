@@ -128,6 +128,11 @@ gist-cache-rs cache list
 # Check cache size
 gist-cache-rs cache size
 
+# Clean old cache entries
+gist-cache-rs cache clean --older-than 30        # Remove entries older than 30 days
+gist-cache-rs cache clean --orphaned             # Remove orphaned cache files
+gist-cache-rs cache clean --dry-run --orphaned   # Preview what would be deleted
+
 # Clear all caches
 gist-cache-rs cache clear
 ```
