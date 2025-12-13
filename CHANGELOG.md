@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2025-12-13
+
+### Added
+
+- **Progress Display** (Closes #28)
+  - Visual feedback during long-running operations
+  - Spinner: Displayed while fetching Gist information from GitHub API
+  - Progress bar: Shown when processing 10+ Gists with percentage and count
+  - Integration with `--verbose` flag (verbose: detailed logs, normal: progress indicators)
+  - Improved user experience with visual feedback for cache update operations
+
+### Changed
+
+- **Dependencies**
+  - Added `indicatif = "0.17"` for progress visualization
+
+- **Documentation**
+  - Updated README.md: Added progress display to features list and usage examples
+  - Updated book/src/user-guide/quickstart.md: Added progress display examples with normal/verbose mode outputs
+
+### Tests
+
+- Added 2 integration tests for progress display functionality
+- All 163 tests passing (138 unit + 25 integration)
+- No feature degradation
+
 ## [0.8.0] - 2025-12-13
 
 ### Added
@@ -358,7 +384,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Search and execute Gists
 - Metadata caching
 
-[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.2...v0.6.3
