@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2025-12-13
+
+### Added
+
+- **Shell Completion Support** (Closes #26)
+  - New `completions` subcommand to generate shell-specific completion scripts
+  - Support for 4 shells: Bash, Zsh, Fish, and PowerShell
+  - Tab completion for commands, subcommands, and options
+  - Comprehensive documentation with installation guides for all supported shells
+  - Backup and restore procedures for shell configuration files
+  - Real-world usage examples for WSL2/Linux/macOS and Windows
+  - Platform-specific setup instructions
+
+### Changed
+
+- **Cross-platform Compatibility**
+  - Improved interpreter validation using platform-specific commands (`where` on Windows, `which` on Unix)
+  - Enhanced Windows compatibility for custom interpreter detection
+
+- **Documentation**
+  - Added `book/src/user-guide/shell-completions.md` with comprehensive setup guide
+  - Updated README.md with shell completion quick start instructions
+  - Added configuration file examples and actual usage demonstrations
+
+### Removed
+
+- **Dependency Cleanup**
+  - Removed unused `reqwest` dependency (~500KB binary size reduction)
+  - Cleaned up associated error types
+
+### Tests
+
+- Added 5 unit tests for shell completion generation
+- Added 8 integration tests for CLI completions
+- All 161 tests passing (138 unit + 23 integration)
+- No feature degradation
+
+## [0.7.0] - 2025-12-11
+
+### Added
+
+- **Cache Clean Command** (Closes #24)
+  - New `cache clean` subcommand to remove old and orphaned cache entries
+  - `--older-than <DAYS>` flag to remove entries older than specified days
+  - `--orphaned` flag to remove orphaned content cache files
+  - `--dry-run` flag to preview deletions without actually removing files
+  - Detailed output showing files removed and space reclaimed
+
+### Changed
+
+- **Cache Management**
+  - Enhanced cache management with selective cleanup capabilities
+  - Improved cache maintenance for better storage efficiency
+
+### Tests
+
+- Added 10 comprehensive tests for cache clean functionality
+- All 154 tests passing
+- No feature degradation
+
+### Documentation
+
+- Updated README.md with cache clean examples
+- Updated book/src/user-guide/quickstart.md
+- Updated book/src/user-guide/examples.md with detailed cache clean examples
+- Updated book/src/developer-guide/architecture.md
+
 ## [0.6.3] - 2025-12-09
 
 ### Fixed
@@ -291,7 +358,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Search and execute Gists
 - Metadata caching
 
-[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.3...HEAD
+[Unreleased]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/7rikazhexde/gist-cache-rs/compare/v0.6.0...v0.6.1
