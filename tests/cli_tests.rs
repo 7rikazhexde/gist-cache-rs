@@ -279,3 +279,84 @@ fn test_run_without_query() {
     let result = cmd.arg("run").output();
     assert!(result.is_ok()); // コマンド自体は実行される
 }
+
+#[test]
+fn test_completions_help() {
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.arg("completions")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "Generate shell completion scripts",
+        ));
+}
+
+#[test]
+fn test_completions_bash() {
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.arg("completions")
+        .arg("bash")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("gist-cache-rs"));
+}
+
+#[test]
+fn test_completions_zsh() {
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.arg("completions")
+        .arg("zsh")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("gist-cache-rs"));
+}
+
+#[test]
+fn test_completions_fish() {
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.arg("completions")
+        .arg("fish")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("gist-cache-rs"));
+}
+
+#[test]
+fn test_completions_powershell() {
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.arg("completions")
+        .arg("powershell")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("gist-cache-rs"));
+}
+
+#[test]
+fn test_completions_invalid_shell() {
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.arg("completions")
+        .arg("invalid_shell")
+        .assert()
+        .failure();
+}
+
+#[test]
+fn test_completions_bash_contains_commands() {
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    let output = cmd.arg("completions").arg("bash").output().unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    // Verify that the completion script contains main commands
+    assert!(stdout.contains("update") || stdout.contains("run") || stdout.contains("cache"));
+}
+
+#[test]
+fn test_completions_zsh_contains_commands() {
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    let output = cmd.arg("completions").arg("zsh").output().unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    // Verify that the completion script contains main commands
+    assert!(stdout.contains("update") || stdout.contains("run") || stdout.contains("cache"));
+}

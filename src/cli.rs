@@ -1,8 +1,10 @@
 use crate::cache::CleanOptions;
 use crate::*;
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
+use clap_complete::{Shell as CompletionShell, generate};
 use colored::Colorize;
 use std::fs;
+use std::io;
 
 #[derive(Parser)]
 #[command(name = "gist-cache-rs")]
@@ -21,6 +23,28 @@ pub enum Commands {
     Run(RunArgs),
     /// Cache management
     Cache(CacheArgs),
+    /// Generate shell completion scripts
+    Completions(CompletionsArgs),
+}
+
+#[derive(Args)]
+pub struct CompletionsArgs {
+    /// Shell to generate completions for
+    #[arg(value_enum)]
+    pub shell: Shell,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, ValueEnum)]
+pub enum Shell {
+    /// Bash shell
+    Bash,
+    /// Zsh shell
+    Zsh,
+    /// Fish shell
+    Fish,
+    /// PowerShell
+    #[value(name = "powershell")]
+    PowerShell,
 }
 
 #[derive(Args)]
@@ -135,6 +159,9 @@ pub fn run_cli() -> Result<()> {
         }
         Commands::Cache(args) => {
             handle_cache_command(config, args)?;
+        }
+        Commands::Completions(args) => {
+            generate_completions(args.shell)?;
         }
     }
 
@@ -314,9 +341,19 @@ pub fn parse_interpreter(
         None => Ok(("bash".to_string(), None, true, false)),
         Some(custom) => {
             // Check if the custom interpreter exists
-            if let Ok(output) = std::process::Command::new("which").arg(custom).output()
-                && !output.status.success()
-            {
+            // Use 'where' on Windows, 'which' on Unix
+            #[cfg(windows)]
+            let check_cmd = "where";
+            #[cfg(not(windows))]
+            let check_cmd = "which";
+
+            let interpreter_exists = std::process::Command::new(check_cmd)
+                .arg(custom)
+                .output()
+                .map(|output| output.status.success())
+                .unwrap_or(false);
+
+            if !interpreter_exists {
                 eprintln!();
                 eprintln!("{}", "Supported interpreters:".green());
                 eprintln!(
@@ -573,6 +610,22 @@ pub fn format_bytes(bytes: u64) -> String {
     } else {
         format!("{} bytes", bytes)
     }
+}
+
+/// Generate shell completion scripts
+pub fn generate_completions(shell: Shell) -> Result<()> {
+    let mut cmd = Cli::command();
+    let bin_name = "gist-cache-rs";
+
+    let completion_shell = match shell {
+        Shell::Bash => CompletionShell::Bash,
+        Shell::Zsh => CompletionShell::Zsh,
+        Shell::Fish => CompletionShell::Fish,
+        Shell::PowerShell => CompletionShell::PowerShell,
+    };
+
+    generate(completion_shell, &mut cmd, bin_name, &mut io::stdout());
+    Ok(())
 }
 
 #[cfg(test)]
@@ -1174,5 +1227,46 @@ mod tests {
             result.unwrap_err(),
             GistCacheError::InvalidInterpreter(_)
         ));
+    }
+
+    #[test]
+    fn test_generate_completions_bash() {
+        // Test that bash completions can be generated without error
+        let result = generate_completions(Shell::Bash);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_generate_completions_zsh() {
+        // Test that zsh completions can be generated without error
+        let result = generate_completions(Shell::Zsh);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_generate_completions_fish() {
+        // Test that fish completions can be generated without error
+        let result = generate_completions(Shell::Fish);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_generate_completions_powershell() {
+        // Test that PowerShell completions can be generated without error
+        let result = generate_completions(Shell::PowerShell);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_shell_enum_values() {
+        // Test that Shell enum has all expected variants
+        let shells = [Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell];
+        assert_eq!(shells.len(), 4);
+
+        // Test that each variant can be created
+        assert_eq!(Shell::Bash, Shell::Bash);
+        assert_eq!(Shell::Zsh, Shell::Zsh);
+        assert_eq!(Shell::Fish, Shell::Fish);
+        assert_eq!(Shell::PowerShell, Shell::PowerShell);
     }
 }
