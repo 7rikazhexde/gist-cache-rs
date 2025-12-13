@@ -10,6 +10,7 @@
 - [Installation](user-guide/installation.md)
 - [Quick Start](user-guide/quickstart.md)
 - [Usage Examples](user-guide/examples.md)
+- [Shell Completions](user-guide/shell-completions.md)
 
 ---
 

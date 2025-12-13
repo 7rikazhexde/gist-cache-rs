@@ -78,6 +78,57 @@ gist-cache-rs run --download backup bash
 gist-cache-rs run --force backup bash
 ```
 
+## Shell Completions
+
+`gist-cache-rs` supports shell completions for Bash, Zsh, Fish, and PowerShell. This enables auto-completion of commands, subcommands, and options by pressing the Tab key.
+
+### Generate Completion Scripts
+
+```bash
+# Bash
+gist-cache-rs completions bash > ~/.local/share/bash-completion/completions/gist-cache-rs
+
+# Zsh
+gist-cache-rs completions zsh > ~/.zfunc/_gist-cache-rs
+
+# Fish
+gist-cache-rs completions fish > ~/.config/fish/completions/gist-cache-rs.fish
+
+# PowerShell
+gist-cache-rs completions powershell > ~\Documents\PowerShell\Scripts\gist-cache-rs.ps1
+```
+
+### Shell-Specific Setup
+
+**Bash:**
+
+```bash
+# Add to ~/.bashrc if needed
+source ~/.local/share/bash-completion/completions/gist-cache-rs
+```
+
+**Zsh:**
+
+```bash
+# Add to ~/.zshrc if ~/.zfunc is not in fpath
+fpath=(~/.zfunc $fpath)
+autoload -Uz compinit && compinit
+```
+
+**Fish:**
+
+```bash
+# Fish automatically loads completions from ~/.config/fish/completions/
+# No additional configuration needed
+```
+
+**PowerShell:**
+
+```powershell
+# Add to your PowerShell profile
+. ~\Documents\PowerShell\Scripts\gist-cache-rs.ps1
+```
+
 ## Updating the Tool
 
 To update `gist-cache-rs` to the latest version, use `cargo install`:

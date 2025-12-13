@@ -14,9 +14,6 @@ pub enum GistCacheError {
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
 
-    #[error("HTTP request error: {0}")]
-    Request(#[from] reqwest::Error),
-
     #[error("Gist not found: {0}")]
     GistNotFound(String),
 
@@ -126,21 +123,6 @@ mod tests {
         let json_error = serde_json::from_str::<serde_json::Value>("invalid json").unwrap_err();
         let error: GistCacheError = json_error.into();
         assert!(error.to_string().contains("Failed to parse cache file"));
-    }
-
-    #[test]
-    fn test_error_from_reqwest() {
-        // Create a reqwest error by building an invalid request
-        let invalid_url = "http://[::1]:99999"; // Invalid port
-        let client = reqwest::Client::new();
-        let result = client.get(invalid_url).build();
-
-        // If we can't create an error this way, just skip this test
-        // The From<reqwest::Error> trait is still covered by actual usage
-        if let Err(req_error) = result {
-            let error: GistCacheError = req_error.into();
-            assert!(error.to_string().contains("HTTP request error"));
-        }
     }
 
     #[test]
