@@ -19,6 +19,76 @@ gist-cache-rs completions <SHELL>
 
 Where `<SHELL>` is one of: `bash`, `zsh`, `fish`, or `powershell`.
 
+## Before Installation
+
+### Backup Your Configuration
+
+Before modifying shell configuration files, it's recommended to create backups:
+
+**Bash:**
+
+```bash
+# Backup .bashrc
+cp ~/.bashrc ~/.bashrc.backup
+```
+
+**Zsh:**
+
+```bash
+# Backup .zshrc
+cp ~/.zshrc ~/.zshrc.backup
+```
+
+**Fish:**
+
+```bash
+# Backup Fish config
+cp -r ~/.config/fish ~/.config/fish.backup
+```
+
+**PowerShell:**
+
+```powershell
+# Backup PowerShell profile (if exists)
+if (Test-Path $PROFILE) {
+    Copy-Item $PROFILE "$PROFILE.backup"
+}
+```
+
+### Restore from Backup
+
+If something goes wrong, you can restore your configuration:
+
+**Bash/Zsh:**
+
+```bash
+# Restore .bashrc or .zshrc
+cp ~/.bashrc.backup ~/.bashrc
+# or
+cp ~/.zshrc.backup ~/.zshrc
+
+# Reload configuration
+source ~/.bashrc  # or source ~/.zshrc
+```
+
+**Fish:**
+
+```bash
+# Restore Fish config
+rm -rf ~/.config/fish
+cp -r ~/.config/fish.backup ~/.config/fish
+```
+
+**PowerShell:**
+
+```powershell
+# Restore PowerShell profile
+Copy-Item "$PROFILE.backup" $PROFILE
+
+# Reload profile
+. $PROFILE
+```
+
 ## Installation Instructions
 
 ### Bash
@@ -361,6 +431,103 @@ PS> gist-cache-rs cache [Tab]
 ## Updating Completions
 
 When you update `gist-cache-rs` to a new version with new commands or options, regenerate the completion scripts using the same installation commands shown above. The new script will overwrite the old one.
+
+## Editing Shell Configuration
+
+If you need to modify or review your shell configuration:
+
+### Edit Configuration Files
+
+**Bash:**
+
+```bash
+# Edit .bashrc with your preferred editor
+nano ~/.bashrc
+# or
+vim ~/.bashrc
+# or
+code ~/.bashrc  # VS Code
+```
+
+**Zsh:**
+
+```bash
+# Edit .zshrc
+nano ~/.zshrc
+# or
+vim ~/.zshrc
+```
+
+**Fish:**
+
+```bash
+# Edit Fish config
+nano ~/.config/fish/config.fish
+# or use Fish's web-based configuration
+fish_config
+```
+
+**PowerShell:**
+
+```powershell
+# Edit PowerShell profile
+notepad $PROFILE
+# or
+code $PROFILE  # VS Code
+```
+
+### Verify Configuration Content
+
+Check what was added to your configuration files:
+
+**Bash:**
+
+```bash
+# View .bashrc content related to gist-cache-rs
+grep -A 2 "gist-cache-rs" ~/.bashrc
+```
+
+**Zsh:**
+
+```bash
+# View .zshrc content related to completion setup
+grep -A 3 "gist-cache-rs\|compinit" ~/.zshrc
+```
+
+**PowerShell:**
+
+```powershell
+# View profile content related to gist-cache-rs
+Get-Content $PROFILE | Select-String -Pattern "gist-cache-rs" -Context 0,2
+```
+
+### Apply Changes
+
+After editing, reload the configuration:
+
+**Bash:**
+
+```bash
+source ~/.bashrc
+```
+
+**Zsh:**
+
+```bash
+source ~/.zshrc
+```
+
+**Fish:**
+
+```bash
+source ~/.config/fish/config.fish
+```
+
+**PowerShell:**
+
+```powershell
+. $PROFILE
+```
 
 ## Uninstalling Completions
 
