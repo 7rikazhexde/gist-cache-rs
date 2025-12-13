@@ -120,29 +120,155 @@ gist-cache-rs completions powershell > ~/.config/powershell/scripts/gist-cache-r
 Add-Content $PROFILE "`n. ~/.config/powershell/scripts/gist-cache-rs.ps1"
 ```
 
+## Configuration Files
+
+After installation, the following files will be created:
+
+### Bash
+
+**Completion script location:**
+
+```bash
+~/.local/share/bash-completion/completions/gist-cache-rs
+```
+
+**Profile configuration (~/.bashrc):**
+
+```bash
+# gist-cache-rs shell completion (if manually added)
+source ~/.local/share/bash-completion/completions/gist-cache-rs
+```
+
+### Zsh
+
+**Completion script location:**
+
+```bash
+~/.zfunc/_gist-cache-rs
+```
+
+**Profile configuration (~/.zshrc):**
+
+```bash
+# Add custom completion directory to fpath
+fpath=(~/.zfunc $fpath)
+
+# Initialize completion system
+autoload -Uz compinit && compinit
+```
+
+### Fish
+
+**Completion script location:**
+
+```bash
+~/.config/fish/completions/gist-cache-rs.fish
+```
+
+**No profile configuration needed** - Fish automatically loads completions from this directory.
+
+### PowerShell
+
+**Completion script location (Windows):**
+
+```powershell
+~\Documents\PowerShell\Scripts\gist-cache-rs.ps1
+```
+
+**Profile configuration ($PROFILE):**
+
+```powershell
+# gist-cache-rs shell completion
+. ~\Documents\PowerShell\Scripts\gist-cache-rs.ps1
+```
+
+**PowerShell profile location:**
+
+- Windows: `~\Documents\PowerShell\Microsoft.PowerShell_profile.ps1`
+- Linux/macOS: `~/.config/powershell/Microsoft.PowerShell_profile.ps1`
+
 ## Verifying Installation
 
-After installation, restart your shell or reload the configuration file. Test the completion by typing:
+After installation, restart your shell or reload the configuration file to test the completion.
+
+### Bash/Zsh (WSL2/Linux/macOS)
+
+**Complete subcommands:**
 
 ```bash
-gist-cache-rs <TAB>
+$ gist-cache-rs [Tab]
+-h           -V           --help       --version
+update       run          cache        completions  help
 ```
 
-You should see available subcommands:
-
-- `update`
-- `run`
-- `cache`
-- `completions`
-- `help`
-
-Try completing subcommand options:
+**Complete options:**
 
 ```bash
-gist-cache-rs run --<TAB>
+$ gist-cache-rs run --[Tab]
+--interactive  --preview      --force        --download
+--id           --filename     --description  --help
 ```
 
-This should show available flags like `--preview`, `--interactive`, `--download`, etc.
+**Auto-complete partial input:**
+
+```bash
+gist-cache-rs ru[Tab]
+gist-cache-rs run    # ← Auto-completed
+```
+
+**View help after completion:**
+
+```bash
+$ gist-cache-rs run --help
+Search from cache and execute
+
+Usage: gist-cache-rs run [OPTIONS] [QUERY] [INTERPRETER] [SCRIPT_ARGS]...
+
+Arguments:
+  [QUERY]           Search keyword (ID, filename, or description)
+  [INTERPRETER]     Interpreter or execution command (bash, python3, uv, etc.)
+  [SCRIPT_ARGS]...  Additional arguments to pass to the script
+
+Options:
+  -i, --interactive  Interactive script execution mode
+  -p, --preview      Preview mode (display content only)
+  -f, --force        Update Gist cache before execution
+      --download     Save file to download folder
+      --id           Direct ID specification mode
+      --filename     Search by filename
+      --description  Search by description
+  -h, --help         Print help
+```
+
+### PowerShell (Windows)
+
+**Complete subcommands** (press Tab after typing):
+
+```powershell
+PS> gist-cache-rs [Tab]
+# Cycles through: update, run, cache, completions, help, -h, --help, -V, --version
+```
+
+**Complete options:**
+
+```powershell
+PS> gist-cache-rs run --[Tab]
+# Cycles through: --interactive, --preview, --force, --download, --id, --filename, --description, --help
+```
+
+**Auto-complete partial input:**
+
+```powershell
+PS> gist-cache-rs ru[Tab]
+PS> gist-cache-rs run    # ← Auto-completed
+```
+
+**Complete cache subcommands:**
+
+```powershell
+PS> gist-cache-rs cache [Tab]
+# Cycles through: list, size, clean, clear, help
+```
 
 ## Troubleshooting
 
