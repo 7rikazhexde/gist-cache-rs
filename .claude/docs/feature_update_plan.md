@@ -32,7 +32,7 @@
 - PR: [#25](https://github.com/7rikazhexde/gist-cache-rs/pull/25)
 - Tag: [v0.7.0](https://github.com/7rikazhexde/gist-cache-rs/releases/tag/v0.7.0)
 
-#### v0.8.0 (実装完了、リリース準備中)
+#### v0.8.0 (リリース済み)
 
 **1.3 シェル補完スクリプト** ✅
 
@@ -57,25 +57,46 @@
 
 **リリース情報**:
 
-- ブランチ: `feature/shell-completions`
-- コミット: `32084dd` (docs追加), `8734b02` (本体実装)
+- Issue: [#26](https://github.com/7rikazhexde/gist-cache-rs/issues/26)
+- PR: [#27](https://github.com/7rikazhexde/gist-cache-rs/pull/27)
+- Tag: [v0.8.0](https://github.com/7rikazhexde/gist-cache-rs/releases/tag/v0.8.0)
+
+#### v0.8.1 (実装完了、リリース準備中)
+
+**2.2 プログレス表示** ✅
+
+- スピナー表示: GitHub API からのGist情報取得時
+- プログレスバー: 10件以上のGist処理時に進捗を表示
+- `--verbose` フラグとの統合: verboseモード時は詳細ログ、通常モードはプログレス表示
+- 実装: `src/cache/update.rs` にindicatifを統合、87行追加
+- 依存関係: `indicatif = "0.17"` を追加
+- テスト: 2個の統合テスト追加
+- 全163テスト成功（138 unit + 25 integration）、機能デグレードなし
+- ドキュメント更新: README.md、book/src/user-guide/quickstart.md
+  - プログレス表示をFeaturesに追加
+  - 通常モードとverboseモードの出力例を追加
+
+**リリース情報**:
+
+- ブランチ: `feature/progress-display`
+- コミット: `b617dbe`
 - PR: 作成予定
 - Issue: 作成予定
 
 ### 次の優先タスク
 
-#### オプション1: 2.2 プログレス表示
-
-- 推定工数: 小（2-3日）
-- 依存関係: `indicatif` crate
-- 効果: ユーザー体験の向上、長時間操作の透明性向上
-- 技術的リスク: 低
-
-#### オプション2: 2.1 検索機能の強化
+#### オプション1: 2.1 検索機能の強化
 
 - 推定工数: 中（4-5日）
 - 依存関係: `regex` crate
 - 効果: 検索精度の大幅向上、大規模管理が可能
+- 技術的リスク: 低
+
+#### オプション2: 2.3 対話的選択の改善
+
+- 推定工数: 小（2-3日）
+- 依存関係: なし（既存の実装を改善）
+- 効果: ユーザー体験の向上
 - 技術的リスク: 低
 
 ---
@@ -589,7 +610,7 @@ gist-cache-rs cache list --tag devops
 
 ### 2.2 プログレス表示
 
-**ステータス**: サイレント操作は反応がないように感じられる
+**ステータス**: ✅ 実装完了 (v0.8.1)
 
 **現状 (Before)**:
 
@@ -663,16 +684,22 @@ gistをフェッチ中... ⠋
 gistをフェッチ中... ⠋ (3/150)
 ```
 
-**実装詳細**:
+**実装詳細** (v0.8.1で完了):
 
-- 依存関係追加: `indicatif` crate
+- 依存関係追加: `indicatif = "0.17"`
 - モジュール: `src/cache/update.rs`
-- `CacheUpdater::update_cache()`にプログレストラッキングを追加
-- `--verbose`フラグを尊重（詳細プログレス vs. シンプルスピナー）
+- スピナー: GitHub API からGist情報をフェッチ中に表示
+- プログレスバー: 10件以上のGist処理時に進捗を表示（`[████████████████░░░░] 42/42 (100%)`）
+- `--verbose`フラグとの統合: verboseモード時は詳細ログ、通常モードはプログレス表示
+- テスト: 2個の統合テスト追加（`test_update_with_progress_display`, `test_update_verbose_without_progress`）
+- 全163テスト成功（138 unit + 25 integration）、機能デグレードなし
 
-**推定工数**: 小（2-3日）
+**実装完了**: v0.8.1
 
-**依存関係**: `indicatif`を追加
+**リリース情報**:
+
+- ブランチ: `feature/progress-display`
+- コミット: `b617dbe`
 
 ---
 

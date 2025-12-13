@@ -37,14 +37,25 @@ For other installation methods, please refer to [INSTALL.md](INSTALL.md).
 ## Step 3: Initial Cache Creation
 
 ```bash
-# Create cache
+# Create cache (with progress display)
 gist-cache-rs update
 
 # With detailed output (recommended)
 gist-cache-rs update --verbose
 ```
 
-**Example Output:**
+**Example Output (Normal Mode with Progress Display):**
+
+```bash
+Updating Gist cache...
+⠙ Fetching Gist information from GitHub API...
+Fetched 42 Gists
+[████████████████████████████████] 42/42 (100%)
+Cache update completed
+Total Gists: 42
+```
+
+**Example Output (Verbose Mode):**
 
 ```bash
 Updating Gist cache...
@@ -56,6 +67,8 @@ New/Updated: 42 items
 Cache update completed
 Total Gists: 42
 ```
+
+**Note:** The normal mode displays a spinner while fetching Gists and a progress bar when processing multiple Gists (10+). Use `--verbose` for detailed logs instead of progress indicators.
 
 ## Step 4: Search and Execute Gist
 

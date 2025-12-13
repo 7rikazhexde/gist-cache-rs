@@ -5,6 +5,7 @@ use crate::error::Result;
 use crate::github::{GitHubApi, GitHubClient};
 use chrono::Utc;
 use colored::Colorize;
+use indicatif::{ProgressBar, ProgressStyle};
 use std::collections::HashMap;
 use std::fs;
 
@@ -101,15 +102,28 @@ impl<C: GitHubClient> CacheUpdater<C> {
         }
 
         // Fetch gists from GitHub
-        if self.verbose {
+        let spinner = if !self.verbose {
+            let sp = ProgressBar::new_spinner();
+            sp.set_style(
+                ProgressStyle::default_spinner()
+                    .template("{spinner:.cyan} {msg}")
+                    .unwrap(),
+            );
+            sp.set_message("Fetching Gist information from GitHub API...");
+            sp.enable_steady_tick(std::time::Duration::from_millis(100));
+            Some(sp)
+        } else {
             println!("{}", "Fetching Gist information from GitHub API...".cyan());
-        }
+            None
+        };
 
         let since = if force { None } else { last_updated };
         let fetched_gists = self.client.fetch_gists(since)?;
         let fetched_count = fetched_gists.len();
 
-        if self.verbose {
+        if let Some(sp) = spinner {
+            sp.finish_with_message(format!("Fetched {} Gists", fetched_count));
+        } else if self.verbose {
             println!("{}", format!("Fetched Gists: {}", fetched_count).green());
         }
 
@@ -119,6 +133,23 @@ impl<C: GitHubClient> CacheUpdater<C> {
             // Convert old metadata to Map
             let old_map: HashMap<String, &GistInfo> =
                 old.iter().map(|g| (g.id.clone(), g)).collect();
+
+            // Show progress bar if processing many gists and not in verbose mode
+            let progress = if !self.verbose && fetched_count > 10 {
+                let pb = ProgressBar::new(fetched_count as u64);
+                pb.set_style(
+                    ProgressStyle::default_bar()
+                        .template(
+                            "{msg}\n[{bar:40.cyan/blue}] {pos}/{len} ({percent}%) {elapsed_precise}",
+                        )
+                        .unwrap()
+                        .progress_chars("█▓░"),
+                );
+                pb.set_message("Processing Gist updates...");
+                Some(pb)
+            } else {
+                None
+            };
 
             // Detect Gists with changed updated_at from newly fetched ones
             for new_gist in &fetched_gists {
@@ -174,6 +205,14 @@ impl<C: GitHubClient> CacheUpdater<C> {
                         }
                     }
                 }
+
+                if let Some(ref pb) = progress {
+                    pb.inc(1);
+                }
+            }
+
+            if let Some(pb) = progress {
+                pb.finish_and_clear();
             }
         }
 
