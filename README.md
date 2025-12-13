@@ -17,6 +17,7 @@ A high-performance CLI tool written in Rust for efficiently caching, searching, 
 - 📦 **Modern Python**: uv support with PEP 723 metadata compatibility
 - 📥 **Easy Downloads**: Save Gist files to your download folder
 - 🗂️ **Cache Management**: Powerful cache inspection and maintenance
+- 📊 **Progress Display**: Visual feedback with progress bars and spinners
 
 **Supported Platforms**: Linux, macOS, Windows 10 or later
 
@@ -56,8 +57,11 @@ For more installation options, see the [Installation Guide](https://7rikazhexde.
 ### Basic Usage
 
 ```bash
-# Create initial cache
+# Create initial cache (with progress display)
 gist-cache-rs update
+
+# Update cache with verbose output
+gist-cache-rs update --verbose
 
 # Search and execute a Gist
 gist-cache-rs run backup bash

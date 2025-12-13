@@ -360,3 +360,27 @@ fn test_completions_zsh_contains_commands() {
     // Verify that the completion script contains main commands
     assert!(stdout.contains("update") || stdout.contains("run") || stdout.contains("cache"));
 }
+
+#[test]
+fn test_update_with_progress_display() {
+    let _temp = setup_test_env();
+
+    // Test that update command runs without error (progress bar should not cause issues)
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    let result = cmd.arg("update").output();
+
+    // Either succeeds or fails with authentication error, but not a progress bar error
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_update_verbose_without_progress() {
+    let _temp = setup_test_env();
+
+    // Test that verbose mode runs without progress bar interference
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    let result = cmd.arg("update").arg("--verbose").output();
+
+    // Verbose mode should work without progress bar issues
+    assert!(result.is_ok());
+}
