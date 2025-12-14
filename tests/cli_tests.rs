@@ -471,3 +471,78 @@ fn test_cache_list_json_format() {
     assert!(stdout.contains("test.sh"));
     assert!(stdout.contains("2024-01-01"));
 }
+
+#[test]
+fn test_config_set_get() {
+    let temp = setup_test_env();
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+
+    cmd.env("GIST_CACHE_DIR", temp.path())
+        .arg("config")
+        .arg("set")
+        .arg("defaults.interpreter")
+        .arg("python3")
+        .assert()
+        .success();
+
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.env("GIST_CACHE_DIR", temp.path())
+        .arg("config")
+        .arg("get")
+        .arg("defaults.interpreter")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("python3"));
+}
+
+#[test]
+fn test_config_show() {
+    let temp = setup_test_env();
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+
+    cmd.env("GIST_CACHE_DIR", temp.path())
+        .arg("config")
+        .arg("set")
+        .arg("defaults.interpreter")
+        .arg("bash")
+        .assert()
+        .success();
+
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.env("GIST_CACHE_DIR", temp.path())
+        .arg("config")
+        .arg("show")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("bash"));
+}
+
+#[test]
+fn test_config_reset() {
+    let temp = setup_test_env();
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+
+    cmd.env("GIST_CACHE_DIR", temp.path())
+        .arg("config")
+        .arg("set")
+        .arg("defaults.interpreter")
+        .arg("python3")
+        .assert()
+        .success();
+
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.env("GIST_CACHE_DIR", temp.path())
+        .arg("config")
+        .arg("reset")
+        .assert()
+        .success();
+
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.env("GIST_CACHE_DIR", temp.path())
+        .arg("config")
+        .arg("get")
+        .arg("defaults.interpreter")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("not set"));
+}

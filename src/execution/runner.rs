@@ -484,6 +484,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         }
     }
 

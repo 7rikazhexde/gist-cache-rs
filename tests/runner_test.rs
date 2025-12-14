@@ -21,6 +21,8 @@ fn create_test_config() -> (Config, TempDir) {
         cache_file: temp_dir.path().join("cache.json"),
         contents_dir: temp_dir.path().join("contents"),
         download_dir: temp_dir.path().join("downloads"),
+        config_file: temp_dir.path().join("config.toml"),
+        user_config: gist_cache_rs::config::UserConfig::default(),
     };
     fs::create_dir_all(&config.contents_dir).unwrap();
     fs::create_dir_all(&config.download_dir).unwrap();
