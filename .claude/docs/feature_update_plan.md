@@ -119,6 +119,11 @@
 - **修正**: PowerShell, Bash, Fish の手順を明確化し、シェルの再起動やプロファイルの再読み込みが必要であることを強調。
 - **実装**: `book/src/user-guide/shell-completions.md` を更新。
 
+- **CLI (config show Output)**
+  - Improved output for `gist-cache-rs config show` when no configuration settings are present.
+  - Now displays a helpful message guiding users on available options and how to set them.
+  - Added integration tests to verify this new behavior.
+
 ### 次の優先タスク
 
 #### オプション1: 2.1 検索機能の強化
