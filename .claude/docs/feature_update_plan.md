@@ -61,7 +61,7 @@
 - PR: [#27](https://github.com/7rikazhexde/gist-cache-rs/pull/27)
 - Tag: [v0.8.0](https://github.com/7rikazhexde/gist-cache-rs/releases/tag/v0.8.0)
 
-#### v0.8.1 (実装完了、リリース準備中)
+#### v0.8.1 (リリース済み)
 
 **2.2 プログレス表示** ✅
 
@@ -69,7 +69,7 @@
 - プログレスバー: 10件以上のGist処理時に進捗を表示
 - `--verbose` フラグとの統合: verboseモード時は詳細ログ、通常モードはプログレス表示
 - 実装: `src/cache/update.rs` にindicatifを統合、87行追加
-- 依存関係: `indicatif = "0.17"` を追加
+- 依存関係: `indicatif = "0.18"` を追加
 - テスト: 2個の統合テスト追加
 - 全163テスト成功（138 unit + 25 integration）、機能デグレードなし
 - ドキュメント更新: README.md、book/src/user-guide/quickstart.md
@@ -78,8 +78,28 @@
 
 **リリース情報**:
 
-- ブランチ: `feature/progress-display`
-- コミット: `b617dbe`
+- Issue: [#28](https://github.com/7rikazhexde/gist-cache-rs/issues/28)
+- PR: [#29](https://github.com/7rikazhexde/gist-cache-rs/pull/29)
+- Tag: [v0.8.1](https://github.com/7rikazhexde/gist-cache-rs/releases/tag/v0.8.1)
+
+#### v0.8.2 (実装完了、リリース準備中)
+
+**2.3 対話的選択の改善** ✅
+
+- dialoguer crateを使用した矢印キー選択
+- ColorfulThemeによる視覚的な改善
+- Escキーでのキャンセルサポート
+- 表示形式の改善: "description - files"
+- 実装: `src/search/query.rs` のselect_from_resultsを書き換え
+- 依存関係: `dialoguer = "0.12"` を追加
+- 全163テスト成功（138 unit + 25 integration）、機能デグレードなし
+- ドキュメント更新: README.md
+  - Interactive SelectionをFeaturesに追加
+
+**リリース情報**:
+
+- ブランチ: `feature/interactive-selection-improvement`
+- コミット: `c8b1a2c`
 - PR: 作成予定
 - Issue: 作成予定
 
@@ -92,11 +112,11 @@
 - 効果: 検索精度の大幅向上、大規模管理が可能
 - 技術的リスク: 低
 
-#### オプション2: 2.3 対話的選択の改善
+#### オプション2: 2.4 出力フォーマットオプション
 
-- 推定工数: 小（2-3日）
-- 依存関係: なし（既存の実装を改善）
-- 効果: ユーザー体験の向上
+- 推定工数: 中（3-4日）
+- 依存関係: なし
+- 効果: スクリプト連携、自動化が容易
 - 技術的リスク: 低
 
 ---
@@ -705,7 +725,7 @@ gistをフェッチ中... ⠋ (3/150)
 
 ### 2.3 対話的選択の改善
 
-**ステータス**: 現在の実装は機能的だが基本的
+**ステータス**: ✅ 実装完了 (v0.8.2)
 
 **現状 (Before)**:
 
@@ -762,16 +782,24 @@ $ gist-cache-rs run backup
 - キーボードでの効率的な操作
 - プロフェッショナルなCLI体験
 
-**実装詳細**:
+**実装詳細** (v0.8.2で完了):
 
-- 依存関係追加: `dialoguer` crate
+- 依存関係追加: `dialoguer = "0.12"`
 - モジュール: `src/search/query.rs`
 - 現在の選択プロンプトを`dialoguer::Select`に置き換え
-- プレビューペインを追加
+- ColorfulTheme を使用した視覚的改善
+- Escキーでのキャンセルサポート（interact_opt使用）
+- 表示形式の改善: "description - files"
+- 全163テスト成功（138 unit + 25 integration）、機能デグレードなし
 
-**推定工数**: 中（3-4日）
+**注記**: プレビューペインは将来の機能拡張として残されています
 
-**依存関係**: `dialoguer`を追加
+**実装完了**: v0.8.2
+
+**リリース情報**:
+
+- ブランチ: `feature/interactive-selection-improvement`
+- コミット: `c8b1a2c`
 
 ---
 
