@@ -751,54 +751,115 @@ pub fn handle_config_command(mut config: Config, args: ConfigArgs) -> Result<()>
     match args.command {
         ConfigCommands::Set(set_args) => {
             config.set_config_value(&set_args.key, &set_args.value)?;
+
             println!(
                 "{}",
                 format!("✓ Set {} = {}", set_args.key, set_args.value).green()
             );
         }
+
         ConfigCommands::Get(get_args) => match config.get_config_value(&get_args.key) {
             Some(value) => println!("{}", value),
+
             None => println!(
                 "{}",
                 format!("Config key '{}' not set", get_args.key).yellow()
             ),
         },
+
         ConfigCommands::Show => {
             println!("{}", "Configuration:".bold());
+
             println!();
 
+            let mut is_empty = true;
+
             // Show defaults
+
             if let Some(ref defaults) = config.user_config.defaults {
-                println!("{}", "[defaults]".cyan());
                 if let Some(ref interpreter) = defaults.interpreter {
+                    println!("{}", "[defaults]".cyan());
+
                     println!("  interpreter = {}", interpreter.yellow());
+
+                    is_empty = false;
                 }
             }
 
             // Show execution
+
             if let Some(ref execution) = config.user_config.execution {
-                println!("{}", "[execution]".cyan());
                 if let Some(confirm) = execution.confirm_before_run {
+                    println!("{}", "[execution]".cyan());
+
                     println!("  confirm_before_run = {}", confirm.to_string().yellow());
+
+                    is_empty = false;
                 }
             }
 
             // Show cache
+
             if let Some(ref cache_config) = config.user_config.cache {
-                println!("{}", "[cache]".cyan());
                 if let Some(days) = cache_config.retention_days {
+                    println!("{}", "[cache]".cyan());
+
                     println!("  retention_days = {}", days.to_string().yellow());
+
+                    is_empty = false;
                 }
             }
 
+            if is_empty {
+                println!("{}", "No configuration settings found.".yellow());
+
+                println!();
+
+                println!(
+                    "{}",
+                    "You can set options using the 'edit' or 'set' commands.".bold()
+                );
+
+                println!();
+
+                println!("{}", "Available options:".cyan());
+
+                println!("  [defaults]");
+
+                println!("    interpreter = <default_interpreter>   (e.g., \"python3\", \"bash\")");
+
+                println!();
+
+                println!("  [execution]");
+
+                println!("    confirm_before_run = <true|false>");
+
+                println!();
+
+                println!("  [cache]");
+
+                println!("    retention_days = <number_of_days>");
+
+                println!();
+
+                println!("{}", "Examples:".cyan());
+
+                println!("  gist-cache-rs config edit");
+
+                println!("  gist-cache-rs config set defaults.interpreter python3");
+            }
+
             println!();
+
             println!(
                 "{}",
                 format!("Config file: {}", config.config_file.display()).dimmed()
             );
         }
+
         ConfigCommands::Edit => {
             // Ensure config file exists
+
             if !config.config_file.exists() {
                 config.save_user_config()?;
             }
@@ -806,6 +867,7 @@ pub fn handle_config_command(mut config: Config, args: ConfigArgs) -> Result<()>
             let editor = std::env::var("EDITOR").unwrap_or_else(|_| {
                 #[cfg(windows)]
                 return "notepad".to_string();
+
                 #[cfg(not(windows))]
                 return "vi".to_string();
             });
@@ -817,8 +879,10 @@ pub fn handle_config_command(mut config: Config, args: ConfigArgs) -> Result<()>
 
             println!("{}", "✓ Configuration file edited".green());
         }
+
         ConfigCommands::Reset => {
             config.reset_config()?;
+
             println!("{}", "✓ Configuration reset to defaults".green());
         }
     }

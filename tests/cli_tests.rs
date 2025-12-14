@@ -546,3 +546,44 @@ fn test_config_reset() {
         .success()
         .stdout(predicate::str::contains("not set"));
 }
+
+#[test]
+fn test_config_show_empty() {
+    let temp = setup_test_env();
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+
+    cmd.env("GIST_CACHE_DIR", temp.path())
+        .arg("config")
+        .arg("show")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("No configuration settings found."))
+        .stdout(predicate::str::contains("Available options:"))
+        .stdout(predicate::str::contains("defaults.interpreter"));
+}
+
+#[test]
+fn test_config_show_with_content() {
+    let temp = setup_test_env();
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+
+    // Set a value first
+    cmd.env("GIST_CACHE_DIR", temp.path())
+        .arg("config")
+        .arg("set")
+        .arg("defaults.interpreter")
+        .arg("fish")
+        .assert()
+        .success();
+
+    // Now run show
+    let mut cmd_show = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd_show
+        .env("GIST_CACHE_DIR", temp.path())
+        .arg("config")
+        .arg("show")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("interpreter = fish"))
+        .stdout(predicate::str::contains("No configuration settings found.").not());
+}
