@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.3] - 2025-12-14
+
+### Added
+
+- **Configuration File Support** (Closes #34)
+  - User configuration system with both CLI and file-based interfaces
+  - CLI commands: `config set`, `config get`, `config show`, `config edit`, `config reset`
+  - Configuration file locations:
+    - Linux/macOS: `~/.config/gist-cache/config.toml`
+    - Windows: `%APPDATA%\gist-cache\config.toml`
+  - Configuration options:
+    - `defaults.interpreter`: Set default interpreter for script execution (bash, python3, ruby, node, etc.)
+    - `execution.confirm_before_run`: Enable/disable confirmation prompt before execution (for safety)
+    - `cache.retention_days`: Set cache retention period in days
+  - Support for `GIST_CACHE_DIR` environment variable for test isolation
+  - Comprehensive documentation with practical examples and use cases
+
+### Changed
+
+- **Dependencies**
+  - Added `toml = "0.9"` for TOML configuration file parsing
+
+- **Configuration Module**
+  - Extended `Config` struct with `config_file` and `user_config` fields
+  - Added `UserConfig`, `DefaultsConfig`, `ExecutionConfig`, `CacheConfig` structs
+  - Implemented config file operations: load, save, set, get, reset
+  - Enhanced `Config::new()` to check `GIST_CACHE_DIR` for both config and cache directories
+
+- **Documentation**
+  - Created comprehensive Configuration Guide (book/src/user-guide/configuration.md)
+  - Updated README.md with configuration feature and examples
+  - Updated Quick Start Guide with configuration section
+  - Updated Usage Examples with configuration examples
+  - Fixed all internal markdown links in user-guide documentation
+
+### Tests
+
+- Added 3 integration tests for config functionality (`test_config_set_get`, `test_config_show`, `test_config_reset`)
+- All 173 tests passing (136 unit + 30 integration + 7 execution)
+- No feature degradation
+
+### Benefits
+
+- **User Convenience**: Set default interpreter once, use everywhere
+- **Safety**: Optional execution confirmation for cautious users
+- **Maintenance**: Configurable cache retention for disk space management
+- **Flexibility**: Both CLI and file-based configuration for different workflows
+- **Cross-platform**: Platform-aware config file locations
+
 ## [0.8.2] - 2025-12-14
 
 ### Added
