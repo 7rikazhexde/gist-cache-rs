@@ -418,6 +418,7 @@ Remove-Item -Recurse -Force "$env:LOCALAPPDATA\gist-cache"
 
 ## Next Steps
 
-- [QUICKSTART.md](QUICKSTART.md) - Quick Start Guide
-- [EXAMPLES.md](EXAMPLES.md) - Practical Examples
-- [README.md](../README.md) - Project Overview
+- [Quick Start Guide](quickstart.md) - Get started in 5 minutes
+- [Configuration Guide](configuration.md) - Customize your settings
+- [Usage Examples](examples.md) - Practical examples and use cases
+- [Shell Completions](shell-completions.md) - Setup shell completions

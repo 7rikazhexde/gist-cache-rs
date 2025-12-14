@@ -20,6 +20,7 @@ A high-performance CLI tool written in Rust for efficiently caching, searching, 
 - 📊 **Progress Display**: Visual feedback with progress bars and spinners
 - 🎯 **Interactive Selection**: Intuitive arrow-key navigation for selecting Gists
 - 📋 **Output Format Options**: JSON output for scripting and automation
+- ⚙️ **Flexible Configuration**: CLI and file-based configuration for defaults and preferences
 
 **Supported Platforms**: Linux, macOS, Windows 10 or later
 
@@ -152,6 +153,35 @@ gist-cache-rs cache clean --dry-run --orphaned   # Preview what would be deleted
 # Clear all caches
 gist-cache-rs cache clear
 ```
+
+## Configuration
+
+Customize default behavior with the config command:
+
+```bash
+# Set default interpreter
+gist-cache-rs config set defaults.interpreter python3
+
+# Enable execution confirmation (for safety)
+gist-cache-rs config set execution.confirm_before_run true
+
+# Set cache retention period
+gist-cache-rs config set cache.retention_days 30
+
+# View current configuration
+gist-cache-rs config show
+
+# Get specific value
+gist-cache-rs config get defaults.interpreter
+
+# Edit config file directly
+gist-cache-rs config edit
+
+# Reset to defaults
+gist-cache-rs config reset
+```
+
+For detailed configuration options, see the [Configuration Guide](https://7rikazhexde.github.io/gist-cache-rs/user-guide/configuration.html).
 
 ## Development
 

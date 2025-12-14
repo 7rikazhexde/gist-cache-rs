@@ -15,7 +15,7 @@ gh --version
 gh auth status
 ```
 
-If not installed, please refer to [INSTALL.md](INSTALL.md).
+If not installed, please refer to the [Installation Guide](installation.md).
 
 ## Step 2: Installation
 
@@ -32,7 +32,7 @@ cargo install --path .
 gist-cache-rs --version
 ```
 
-For other installation methods, please refer to [INSTALL.md](INSTALL.md).
+For other installation methods, please refer to the [Installation Guide](installation.md).
 
 ## Step 3: Initial Cache Creation
 
@@ -102,7 +102,24 @@ gist-cache-rs run backup bash /src /dst
 gist-cache-rs run data_analysis.py python3 input.csv --output result.json
 ```
 
-## Step 5: Alias Setting (Optional)
+## Step 5: Configuration (Optional)
+
+Set up your preferences with the config command:
+
+```bash
+# Set default interpreter (saves time)
+gist-cache-rs config set defaults.interpreter python3
+
+# Enable execution confirmation for safety
+gist-cache-rs config set execution.confirm_before_run true
+
+# View your configuration
+gist-cache-rs config show
+```
+
+For more configuration options, see the [Configuration Guide](configuration.md).
+
+## Step 6: Alias Setting (Optional)
 
 To use it more conveniently, set up aliases:
 
@@ -118,6 +135,27 @@ gcrsr backup bash    # Execute Gist
 ```
 
 ## Frequently Used Commands
+
+### Configuration Management
+
+```bash
+# Set configuration values
+gist-cache-rs config set defaults.interpreter python3
+gist-cache-rs config set execution.confirm_before_run true
+gist-cache-rs config set cache.retention_days 30
+
+# Get configuration values
+gist-cache-rs config get defaults.interpreter
+
+# Show all configuration
+gist-cache-rs config show
+
+# Edit config file
+gist-cache-rs config edit
+
+# Reset to defaults
+gist-cache-rs config reset
+```
 
 ### Cache Management
 
@@ -201,7 +239,7 @@ gist-cache-rs run script uv arg1 arg2 ...
 
 ## Practical Examples
 
-Please check [EXAMPLES.md](EXAMPLES.md).
+Please check the [Usage Examples](examples.md).
 
 ## Troubleshooting
 
@@ -236,9 +274,9 @@ Please check [EXAMPLES.md](EXAMPLES.md).
 
 ## Related Information
 
-- [README.md](../README.md) - Detailed feature description
-- [INSTALL.md](INSTALL.md) - Installation details
-- [EXAMPLES.md](EXAMPLES.md) - Practical examples (actual usage examples)
+- [Installation Guide](installation.md) - Installation details and troubleshooting
+- [Configuration Guide](configuration.md) - Customize your settings
+- [Usage Examples](examples.md) - Practical examples and actual usage
 
 ## Help
 

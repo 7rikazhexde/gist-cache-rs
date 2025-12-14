@@ -24,6 +24,8 @@ pub enum Commands {
     Run(RunArgs),
     /// Cache management
     Cache(CacheArgs),
+    /// Configuration management
+    Config(ConfigArgs),
     /// Generate shell completion scripts
     Completions(CompletionsArgs),
 }
@@ -33,6 +35,34 @@ pub struct CompletionsArgs {
     /// Shell to generate completions for
     #[arg(value_enum)]
     pub shell: Shell,
+}
+
+#[derive(Args)]
+pub struct ConfigArgs {
+    #[command(subcommand)]
+    pub command: ConfigCommands,
+}
+
+#[derive(Subcommand)]
+pub enum ConfigCommands {
+    /// Set a configuration value
+    Set {
+        /// Configuration key (e.g., defaults.interpreter)
+        key: String,
+        /// Configuration value
+        value: String,
+    },
+    /// Get a configuration value
+    Get {
+        /// Configuration key
+        key: String,
+    },
+    /// Show all configuration values
+    Show,
+    /// Edit configuration file in $EDITOR
+    Edit,
+    /// Reset configuration to defaults
+    Reset,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, ValueEnum)]
@@ -183,6 +213,9 @@ pub fn run_cli() -> Result<()> {
         }
         Commands::Cache(args) => {
             handle_cache_command(config, args)?;
+        }
+        Commands::Config(args) => {
+            handle_config_command(config, args)?;
         }
         Commands::Completions(args) => {
             generate_completions(args.shell)?;
@@ -706,6 +739,81 @@ pub fn generate_completions(shell: Shell) -> Result<()> {
     Ok(())
 }
 
+pub fn handle_config_command(mut config: Config, args: ConfigArgs) -> Result<()> {
+    use colored::Colorize;
+
+    match args.command {
+        ConfigCommands::Set { key, value } => {
+            config.set_config_value(&key, &value)?;
+            println!("{}", format!("✓ Set {} = {}", key, value).green());
+        }
+        ConfigCommands::Get { key } => match config.get_config_value(&key) {
+            Some(value) => println!("{}", value),
+            None => println!("{}", format!("Config key '{}' not set", key).yellow()),
+        },
+        ConfigCommands::Show => {
+            println!("{}", "Configuration:".bold());
+            println!();
+
+            // Show defaults
+            if let Some(ref defaults) = config.user_config.defaults {
+                println!("{}", "[defaults]".cyan());
+                if let Some(ref interpreter) = defaults.interpreter {
+                    println!("  interpreter = {}", interpreter.yellow());
+                }
+            }
+
+            // Show execution
+            if let Some(ref execution) = config.user_config.execution {
+                println!("{}", "[execution]".cyan());
+                if let Some(confirm) = execution.confirm_before_run {
+                    println!("  confirm_before_run = {}", confirm.to_string().yellow());
+                }
+            }
+
+            // Show cache
+            if let Some(ref cache_config) = config.user_config.cache {
+                println!("{}", "[cache]".cyan());
+                if let Some(days) = cache_config.retention_days {
+                    println!("  retention_days = {}", days.to_string().yellow());
+                }
+            }
+
+            println!();
+            println!(
+                "{}",
+                format!("Config file: {}", config.config_file.display()).dimmed()
+            );
+        }
+        ConfigCommands::Edit => {
+            // Ensure config file exists
+            if !config.config_file.exists() {
+                config.save_user_config()?;
+            }
+
+            let editor = std::env::var("EDITOR").unwrap_or_else(|_| {
+                #[cfg(windows)]
+                return "notepad".to_string();
+                #[cfg(not(windows))]
+                return "vi".to_string();
+            });
+
+            std::process::Command::new(editor)
+                .arg(&config.config_file)
+                .status()
+                .map_err(GistCacheError::Io)?;
+
+            println!("{}", "✓ Configuration file edited".green());
+        }
+        ConfigCommands::Reset => {
+            config.reset_config()?;
+            println!("{}", "✓ Configuration reset to defaults".green());
+        }
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -849,6 +957,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         let args = RunArgs {
@@ -884,6 +994,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         fs::create_dir_all(&config.contents_dir).unwrap();
@@ -906,6 +1018,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         fs::create_dir_all(&config.contents_dir).unwrap();
@@ -929,6 +1043,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         fs::create_dir_all(&config.contents_dir).unwrap();
@@ -959,6 +1075,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         fs::create_dir_all(&config.contents_dir).unwrap();
@@ -1000,6 +1118,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         fs::create_dir_all(&config.contents_dir).unwrap();
@@ -1070,6 +1190,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         fs::create_dir_all(&config.contents_dir).unwrap();
@@ -1124,6 +1246,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         fs::create_dir_all(&config.contents_dir).unwrap();
@@ -1155,6 +1279,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         fs::create_dir_all(&config.contents_dir).unwrap();
@@ -1211,6 +1337,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         fs::create_dir_all(&config.contents_dir).unwrap();
@@ -1267,6 +1395,8 @@ mod tests {
             cache_file: temp_dir.path().join("cache.json"),
             contents_dir: temp_dir.path().join("contents"),
             download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: crate::config::UserConfig::default(),
         };
 
         fs::create_dir_all(&config.contents_dir).unwrap();
