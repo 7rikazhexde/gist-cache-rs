@@ -17,6 +17,9 @@ gist-cache-rs provides a streamlined workflow for managing and executing your Gi
 - 📦 **Modern Python** - uv support with PEP 723 metadata compatibility
 - 📥 **Easy Downloads** - Save Gist files directly to your download folder
 - 🗂️ **Cache Management** - Powerful commands for cache inspection and maintenance
+- 📊 **Progress Display** - Visual feedback with progress bars and spinners
+- 🎯 **Interactive Selection** - Intuitive arrow-key navigation for selecting Gists
+- 📋 **Output Format Options** - JSON output for scripting and automation
 
 ## Platform Support
 
