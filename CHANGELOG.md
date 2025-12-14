@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2025-12-14
+
+### Added
+
+- **JSON Output Format for Cache List** (Closes #32)
+  - New `--format` flag for `cache list` command with options: `text` (default) and `json`
+  - Machine-readable JSON output for scripting and automation use cases
+  - JSON output includes: id, description, files array, and updated_at timestamp
+  - Example usage with jq for filtering and data extraction
+  - Perfect for integration with other tools and workflow automation
+
+### Changed
+
+- **CLI**
+  - Added `OutputFormat` enum (`Text`, `Json`) for output format selection
+  - Modified `CacheCommands::List` to accept `ListArgs` with format parameter
+  - Implemented `GistListItem` struct for JSON serialization
+  - Maintained backward compatibility (text format is default)
+
+- **Configuration**
+  - Consolidated markdownlint configuration to `.markdownlint.jsonc`
+  - Removed redundant `.markdownlintrc` file
+  - Added MD040 rule configuration (fenced code blocks language specification)
+
+- **Documentation**
+  - Updated README.md: Added JSON output format feature and usage examples with jq
+  - Updated book/src/user-guide/examples.md: Comprehensive JSON usage examples including filtering, extraction, and counting
+
+### Tests
+
+- Added 2 integration tests for JSON format (`test_cache_list_json_format_empty`, `test_cache_list_json_format`)
+- All 170 tests passing (133 unit + 27 integration + 10 execution)
+- No feature degradation
+
 ## [0.8.1] - 2025-12-13
 
 ### Added
