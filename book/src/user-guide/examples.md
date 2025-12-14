@@ -330,6 +330,58 @@ ID: e3a6336c9f3476342626551372f14d6e
 Total: 2 Gists cached
 ```
 
+### List Cache in JSON Format
+
+```bash
+# Output in JSON format for scripting
+$ gist-cache-rs cache list --format json
+[
+  {
+    "id": "7bcb324e9291fa350334df8efb7f0deb",
+    "description": "hello_args.sh - Argument display script #bash #test",
+    "files": [
+      "hello_args.sh"
+    ],
+    "updated_at": "2025-10-26T12:30:45+09:00"
+  },
+  {
+    "id": "e3a6336c9f3476342626551372f14d6e",
+    "description": "data_analysis.py - Pandas/NumPy usage example #python #pep723",
+    "files": [
+      "data_analysis.py"
+    ],
+    "updated_at": "2025-10-25T18:22:10+09:00"
+  }
+]
+
+# Filter with jq (requires jq installed)
+$ gist-cache-rs cache list --format json | jq '.[] | select(.description | contains("python"))'
+{
+  "id": "e3a6336c9f3476342626551372f14d6e",
+  "description": "data_analysis.py - Pandas/NumPy usage example #python #pep723",
+  "files": [
+    "data_analysis.py"
+  ],
+  "updated_at": "2025-10-25T18:22:10+09:00"
+}
+
+# Extract only IDs
+$ gist-cache-rs cache list --format json | jq -r '.[].id'
+7bcb324e9291fa350334df8efb7f0deb
+e3a6336c9f3476342626551372f14d6e
+
+# Count Gists by tag
+$ gist-cache-rs cache list --format json | jq '[.[] | select(.description | contains("#bash"))] | length'
+1
+```
+
+**Key Points:**
+
+- 📋 Use `--format json` to output machine-readable JSON
+- 🔧 Perfect for scripting and automation tasks
+- 🎯 Combine with `jq` for powerful filtering and data extraction
+- 📊 JSON output includes: id, description, files array, and updated_at timestamp
+
 ### Check Cache Size
 
 ```bash

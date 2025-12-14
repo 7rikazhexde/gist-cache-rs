@@ -19,6 +19,7 @@ A high-performance CLI tool written in Rust for efficiently caching, searching, 
 - 🗂️ **Cache Management**: Powerful cache inspection and maintenance
 - 📊 **Progress Display**: Visual feedback with progress bars and spinners
 - 🎯 **Interactive Selection**: Intuitive arrow-key navigation for selecting Gists
+- 📋 **Output Format Options**: JSON output for scripting and automation
 
 **Supported Platforms**: Linux, macOS, Windows 10 or later
 
@@ -131,8 +132,14 @@ cargo install --path .
 ## Cache Management
 
 ```bash
-# List cached Gists
+# List cached Gists (human-readable format)
 gist-cache-rs cache list
+
+# List cached Gists in JSON format (for scripting)
+gist-cache-rs cache list --format json
+
+# Filter with jq (requires jq installed)
+gist-cache-rs cache list --format json | jq '.[] | select(.description | contains("backup"))'
 
 # Check cache size
 gist-cache-rs cache size
