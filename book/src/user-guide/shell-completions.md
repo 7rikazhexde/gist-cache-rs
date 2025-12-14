@@ -95,20 +95,26 @@ Copy-Item "$PROFILE.backup" $PROFILE
 
 **Linux / macOS:**
 
-```bash
-# Generate and install completion script
-gist-cache-rs completions bash > ~/.local/share/bash-completion/completions/gist-cache-rs
+1. **Generate Completion Script:**
+    Create the directory for completions and generate the script.
 
-# If the directory doesn't exist, create it first
-mkdir -p ~/.local/share/bash-completion/completions
-gist-cache-rs completions bash > ~/.local/share/bash-completion/completions/gist-cache-rs
-```
+    ```bash
+    # Create the directory if it doesn't exist
+    mkdir -p ~/.local/share/bash-completion/completions
 
-If completions don't load automatically, add this to your `~/.bashrc`:
+    # Generate and install the completion script
+    gist-cache-rs completions bash > ~/.local/share/bash-completion/completions/gist-cache-rs
+    ```
 
-```bash
-source ~/.local/share/bash-completion/completions/gist-cache-rs
-```
+2. **Activate Completions:**
+    The `bash-completion` package should automatically load the script. If completions do not work after **starting a new shell session**, you may need to source it manually in your `~/.bashrc`.
+
+    ```bash
+    # Add this line to ~/.bashrc if completions are not loading
+    echo 'source ~/.local/share/bash-completion/completions/gist-cache-rs' >> ~/.bashrc
+    ```
+
+    To apply the change immediately, run `source ~/.bashrc`.
 
 **Windows (Git Bash):**
 
@@ -155,27 +161,59 @@ source ~/.zshrc
 
 **Linux / macOS:**
 
+Fish automatically loads completion scripts from its completions directory.
+
 ```bash
-# Fish automatically loads completions from this directory
+# Generate and place the completion script
 gist-cache-rs completions fish > ~/.config/fish/completions/gist-cache-rs.fish
 ```
 
-No additional configuration needed. Fish will automatically load the completion script.
+The changes will take effect when you start a new Fish session. No additional configuration is needed.
 
 ### PowerShell
 
 **Windows:**
 
-```powershell
-# Create scripts directory if it doesn't exist
-New-Item -ItemType Directory -Force -Path ~\Documents\PowerShell\Scripts
+1. **Generate Completion Script:**
+    First, ensure the target directory exists and then generate the script.
 
-# Generate completion script
-gist-cache-rs completions powershell > ~\Documents\PowerShell\Scripts\gist-cache-rs.ps1
+    ```powershell
+    # Create a directory for PowerShell scripts if it doesn't exist
+    $scriptDir = ~\Documents\PowerShell\Scripts
+    if (-not (Test-Path $scriptDir)) {
+        New-Item -ItemType Directory -Force -Path $scriptDir
+    }
 
-# Add to PowerShell profile
-Add-Content $PROFILE "`n. ~\Documents\PowerShell\Scripts\gist-cache-rs.ps1"
-```
+    # Generate the completion script
+    gist-cache-rs completions powershell > $scriptDir\gist-cache-rs.ps1
+    ```
+
+2. **Update PowerShell Profile:**
+    Next, add the script to your PowerShell profile to have it load automatically.
+
+    ```powershell
+    # Create the profile if it doesn't exist
+    if (-not (Test-Path $PROFILE)) {
+        New-Item -Path $PROFILE -ItemType File -Force
+    }
+
+    # Add the script loading command to your profile
+    Add-Content $PROFILE "`n. $scriptDir\gist-cache-rs.ps1"
+    ```
+
+3. **Activate Completions:**
+    The changes will take effect when you start a new PowerShell session. To apply them immediately in your current session, run:
+
+    ```powershell
+    . $PROFILE
+    ```
+
+    **Note on Execution Policy:** If you encounter an error, your script execution policy might be too restrictive. You can check it with `Get-ExecutionPolicy`. If it's `Restricted`, you may need to change it. For example:
+
+    ```powershell
+    # This allows locally created scripts to run
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+    ```
 
 **Linux / macOS (PowerShell Core):**
 

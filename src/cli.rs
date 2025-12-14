@@ -43,20 +43,26 @@ pub struct ConfigArgs {
     pub command: ConfigCommands,
 }
 
+#[derive(Args)]
+pub struct SetConfigArgs {
+    /// Configuration key (e.g., defaults.interpreter)
+    pub key: String,
+    /// Configuration value
+    pub value: String,
+}
+
+#[derive(Args)]
+pub struct GetConfigArgs {
+    /// Configuration key
+    pub key: String,
+}
+
 #[derive(Subcommand)]
 pub enum ConfigCommands {
     /// Set a configuration value
-    Set {
-        /// Configuration key (e.g., defaults.interpreter)
-        key: String,
-        /// Configuration value
-        value: String,
-    },
+    Set(SetConfigArgs),
     /// Get a configuration value
-    Get {
-        /// Configuration key
-        key: String,
-    },
+    Get(GetConfigArgs),
     /// Show all configuration values
     Show,
     /// Edit configuration file in $EDITOR
@@ -743,13 +749,19 @@ pub fn handle_config_command(mut config: Config, args: ConfigArgs) -> Result<()>
     use colored::Colorize;
 
     match args.command {
-        ConfigCommands::Set { key, value } => {
-            config.set_config_value(&key, &value)?;
-            println!("{}", format!("✓ Set {} = {}", key, value).green());
+        ConfigCommands::Set(set_args) => {
+            config.set_config_value(&set_args.key, &set_args.value)?;
+            println!(
+                "{}",
+                format!("✓ Set {} = {}", set_args.key, set_args.value).green()
+            );
         }
-        ConfigCommands::Get { key } => match config.get_config_value(&key) {
+        ConfigCommands::Get(get_args) => match config.get_config_value(&get_args.key) {
             Some(value) => println!("{}", value),
-            None => println!("{}", format!("Config key '{}' not set", key).yellow()),
+            None => println!(
+                "{}",
+                format!("Config key '{}' not set", get_args.key).yellow()
+            ),
         },
         ConfigCommands::Show => {
             println!("{}", "Configuration:".bold());
