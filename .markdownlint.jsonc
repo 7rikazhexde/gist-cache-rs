@@ -23,6 +23,8 @@
   "MD033": false,
   // MD034: Bare URL used - disable (allow bare URLs)
   "MD034": false,
+  // MD040: Fenced code blocks should have a language specified - disable
+  "MD040": false,
   // MD041: First line in file should be a top level heading - disable
   "MD041": false,
   // MD060: Table column style - enforce aligned style
