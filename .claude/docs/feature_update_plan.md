@@ -103,6 +103,22 @@
 - PR: 作成予定
 - Issue: 作成予定
 
+#### v0.8.4 (実装完了)
+
+**feat(cli): `config`サブコマンドのタブ補完** ✅
+
+- **問題**: `gist-cache-rs config` コマンドでサブコマンド (set, get, showなど) のタブ補完が機能していなかった。
+- **修正**: `clap`の定義をリファクタリングし、`config`サブコマンドの補完が正しく生成されるように修正。
+- **実装**: `src/cli.rs` を修正。
+- **Issue**: [#36](https://github.com/7rikazhexde/gist-cache-rs/issues/36)
+- **PR**: [#37](https://github.com/7rikazhexde/gist-cache-rs/pull/37)
+
+**docs: シェル補完ドキュメントの改善** ✅
+
+- **問題**: シェル補完の設定手順、特に設定を有効化するステップが分かりにくかった。
+- **修正**: PowerShell, Bash, Fish の手順を明確化し、シェルの再起動やプロファイルの再読み込みが必要であることを強調。
+- **実装**: `book/src/user-guide/shell-completions.md` を更新。
+
 ### 次の優先タスク
 
 #### オプション1: 2.1 検索機能の強化
