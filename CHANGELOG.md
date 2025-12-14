@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.4] - 2025-12-14
+
+### Changed
+
+- **CLI (Tab Completion)**
+  - Refactored `clap::Subcommand` enum for `ConfigCommands` to use dedicated `Args` structs instead of inline field definitions.
+  - Enabled tab completion for `gist-cache-rs config` subcommands (set, get, show, edit, reset). (Closes #36)
+
+- **Documentation**
+  - Improved `book/src/user-guide/shell-completions.md` to clarify setup and activation steps for PowerShell, Bash, and Fish.
+
 ## [0.8.3] - 2025-12-14
 
 ### Added
