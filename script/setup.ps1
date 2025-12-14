@@ -135,6 +135,62 @@ function Install-GistCache {
         }
     }
 
+    # Setup Shell Completion
+    Write-ColorOutput "`n=== Shell Completion Setup ===" "Cyan"
+    $response = Read-Host "Set up shell completion for PowerShell? (Y/n)"
+
+    if ($response -eq "" -or $response -eq "Y" -or $response -eq "y") {
+        Write-ColorOutput "`nConfiguring PowerShell completion..." "Cyan"
+
+        # Define paths
+        $CompletionScriptDir = Join-Path -Path $HOME -ChildPath "Documents\PowerShell\Scripts"
+        $CompletionScriptPath = Join-Path -Path $CompletionScriptDir -ChildPath "gist-cache-rs.ps1"
+
+        # Check if profile exists and if completion is already configured
+        $isConfigured = $false
+        if (Test-Path $PROFILE) {
+            $profileContent = Get-Content $PROFILE -ErrorAction SilentlyContinue
+            if ($profileContent -match "gist-cache-rs.ps1") {
+                $isConfigured = $true
+            }
+        }
+
+        # Logic based on whether it's configured or not
+        if ($isConfigured) {
+            Write-ColorOutput "✓ Completion script seems to be already configured. Updating..." "Green"
+
+            # Just update the script file
+            & "$CargoHome\$BinaryName.exe" completions powershell > $CompletionScriptPath
+
+            Write-ColorOutput "✓ Completion script updated." "Green"
+            Write-ColorOutput "  It will be active in new terminal sessions." "Yellow"
+
+        } else {
+            Write-ColorOutput "Setting up new completion configuration..." "White"
+
+            # 1. Create directory if it doesn't exist
+            if (-not (Test-Path -Path $CompletionScriptDir)) {
+                New-Item -ItemType Directory -Force -Path $CompletionScriptDir
+                Write-ColorOutput "  Created directory: $CompletionScriptDir" "Gray"
+            }
+
+            # 2. Generate completion script
+            & "$CargoHome\$BinaryName.exe" completions powershell > $CompletionScriptPath
+            Write-ColorOutput "  Generated script: $CompletionScriptPath" "Gray"
+
+            # 3. Add to PowerShell profile
+            if (-not (Test-Path $PROFILE)) {
+                New-Item -Path $PROFILE -ItemType File -Force
+                Write-ColorOutput "  Created profile: $PROFILE" "Gray"
+            }
+            Add-Content $PROFILE "`n. `"$CompletionScriptPath`""
+            Write-ColorOutput "  Added script to profile: $PROFILE" "Gray"
+
+            Write-ColorOutput "`n✓ Shell completion setup is complete." "Green"
+            Write-ColorOutput "  Please restart your terminal or run '. `$PROFILE' to activate." "Yellow"
+        }
+    }
+
     # Display usage
     Write-ColorOutput "`n=== Usage ===" "Cyan"
     Write-ColorOutput "Cache update:" "White"

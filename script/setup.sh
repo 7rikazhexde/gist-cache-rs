@@ -936,6 +936,110 @@ else
 fi
 
 # ============================================================================
+# Step 8: Shell Completion Setup (Optional)
+# ============================================================================
+print_header "Step 8: Shell Completion Setup (Optional)"
+
+if ! command -v gist-cache-rs &> /dev/null; then
+    print_warning "Skipping completion setup because gist-cache-rs command is unavailable"
+else
+    if [ "$IS_INTERACTIVE" = false ]; then
+        print_info "Skipping interactive completion setup."
+        print_info "To enable, run 'gist-cache-rs completions <your-shell>' and follow instructions."
+    elif confirm "Configure shell completion?" "y"; then
+
+        DETECTED_SHELL=""
+        if [[ "$SHELL" == *"/zsh"* ]]; then
+            DETECTED_SHELL="zsh"
+        elif [[ "$SHELL" == *"/bash"* ]]; then
+            DETECTED_SHELL="bash"
+        elif [[ "$SHELL" == *"/fish"* ]]; then
+            DETECTED_SHELL="fish"
+        fi
+
+        if [ -z "$DETECTED_SHELL" ]; then
+            print_warning "Could not detect your shell. Skipping completion setup."
+        else
+            print_info "Detected shell: $DETECTED_SHELL"
+            echo ""
+
+            # Bash
+            if [ "$DETECTED_SHELL" == "bash" ]; then
+                RC_FILE="$HOME/.bashrc"
+                COMPLETION_DIR="$HOME/.local/share/bash-completion/completions"
+                COMPLETION_PATH="$COMPLETION_DIR/gist-cache-rs"
+
+                print_info "Configuring for Bash..."
+
+                # Check if already configured
+                if [ -f "$COMPLETION_PATH" ]; then
+                    print_success "Bash completion seems to be already configured. Updating script..."
+                    gist-cache-rs completions bash > "$COMPLETION_PATH"
+                    print_success "Completion script updated at $COMPLETION_PATH"
+                else
+                    if confirm "Proceed with Bash completion setup?" "y"; then
+                        mkdir -p "$COMPLETION_DIR"
+                        gist-cache-rs completions bash > "$COMPLETION_PATH"
+                        print_success "Completion script created at $COMPLETION_PATH"
+
+                        echo ""
+                        print_info "Checking if manual .bashrc configuration is needed..."
+                        print_warning "If completion doesn't work after restarting your shell, you may need to add the following line to your $RC_FILE:"
+                        echo -e "  ${CYAN}source $COMPLETION_PATH${NC}"
+                    fi
+                fi
+            fi
+
+            # Zsh
+            if [ "$DETECTED_SHELL" == "zsh" ]; then
+                RC_FILE="$HOME/.zshrc"
+                COMPLETION_DIR="$HOME/.zfunc"
+                COMPLETION_PATH="$COMPLETION_DIR/_gist-cache-rs"
+
+                print_info "Configuring for Zsh..."
+
+                if [ -f "$COMPLETION_PATH" ]; then
+                     print_success "Zsh completion seems to be already configured. Updating script..."
+                     gist-cache-rs completions zsh > "$COMPLETION_PATH"
+                     print_success "Completion script updated at $COMPLETION_PATH"
+                else
+                    if confirm "Proceed with Zsh completion setup?" "y"; then
+                        mkdir -p "$COMPLETION_DIR"
+                        gist-cache-rs completions zsh > "$COMPLETION_PATH"
+                        print_success "Completion script created at $COMPLETION_PATH"
+
+                        if ! grep -q "fpath=($COMPLETION_DIR" "$RC_FILE" 2>/dev/null; then
+                            echo -e "\n# For gist-cache-rs completion\nfpath=($COMPLETION_DIR \$fpath)" >> "$RC_FILE"
+                            print_info "Added '$COMPLETION_DIR' to fpath in $RC_FILE"
+                        fi
+                        if ! grep -q "compinit" "$RC_FILE" 2>/dev/null; then
+                           echo -e "\n# Initialize completion system\nautoload -Uz compinit && compinit" >> "$RC_FILE"
+                           print_info "Added 'compinit' to $RC_FILE"
+                        fi
+                    fi
+                fi
+            fi
+
+            # Fish
+            if [ "$DETECTED_SHELL" == "fish" ]; then
+                COMPLETION_PATH="$HOME/.config/fish/completions/gist-cache-rs.fish"
+                print_info "Configuring for Fish..."
+
+                if confirm "Proceed with Fish completion setup?" "y"; then
+                    mkdir -p "$(dirname "$COMPLETION_PATH")"
+                    gist-cache-rs completions fish > "$COMPLETION_PATH"
+                    print_success "Completion script created/updated at $COMPLETION_PATH"
+                fi
+            fi
+
+            echo ""
+            print_info "Setup for $DETECTED_SHELL completion is complete."
+            print_warning "Please restart your shell or reload your configuration (e.g., 'source ~/.bashrc') to activate."
+        fi
+    fi
+fi
+
+# ============================================================================
 # Complete
 # ============================================================================
 print_header "Setup Complete"
