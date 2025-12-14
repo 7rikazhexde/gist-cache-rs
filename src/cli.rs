@@ -3,6 +3,7 @@ use crate::*;
 use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use clap_complete::{Shell as CompletionShell, generate};
 use colored::Colorize;
+use serde::Serialize;
 use std::fs;
 use std::io;
 
@@ -45,6 +46,14 @@ pub enum Shell {
     /// PowerShell
     #[value(name = "powershell")]
     PowerShell,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, ValueEnum)]
+pub enum OutputFormat {
+    /// Human-readable text format (default)
+    Text,
+    /// JSON format for scripting
+    Json,
 }
 
 #[derive(Args)]
@@ -109,13 +118,28 @@ pub struct CacheArgs {
 #[derive(Subcommand)]
 pub enum CacheCommands {
     /// Display list of cached Gists
-    List,
+    List(ListArgs),
     /// Display total cache size
     Size,
     /// Remove old cache entries
     Clean(CleanArgs),
     /// Remove all cache
     Clear,
+}
+
+#[derive(Args)]
+pub struct ListArgs {
+    /// Output format
+    #[arg(long, value_enum, default_value = "text")]
+    pub format: OutputFormat,
+}
+
+#[derive(Serialize)]
+struct GistListItem {
+    id: String,
+    description: Option<String>,
+    files: Vec<String>,
+    updated_at: String,
 }
 
 #[derive(Args)]
@@ -375,14 +399,15 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
     let content_cache = ContentCache::new(config.contents_dir.clone());
 
     match args.command {
-        CacheCommands::List => {
-            println!("{}", "List of cached Gists:".cyan().bold());
-            println!();
-
+        CacheCommands::List(list_args) => {
             let gist_ids = content_cache.list_cached_gists()?;
 
             if gist_ids.is_empty() {
-                println!("{}", "No cached Gists".yellow());
+                if list_args.format == OutputFormat::Json {
+                    println!("[]");
+                } else {
+                    println!("{}", "No cached Gists".yellow());
+                }
                 return Ok(());
             }
 
@@ -391,41 +416,94 @@ pub fn handle_cache_command(config: Config, args: CacheArgs) -> Result<()> {
                 let cache_content = fs::read_to_string(&config.cache_file)?;
                 let cache: GistCache = serde_json::from_str(&cache_content)?;
 
-                for gist_id in &gist_ids {
-                    if let Some(gist) = cache.gists.iter().find(|g| &g.id == gist_id) {
-                        let desc = gist.description.as_deref().unwrap_or("No description");
+                match list_args.format {
+                    OutputFormat::Json => {
+                        let items: Vec<GistListItem> = gist_ids
+                            .iter()
+                            .filter_map(|gist_id| {
+                                cache.gists.iter().find(|g| &g.id == gist_id).map(|gist| {
+                                    GistListItem {
+                                        id: gist.id.clone(),
+                                        description: gist.description.clone(),
+                                        files: gist
+                                            .files
+                                            .iter()
+                                            .map(|f| f.filename.clone())
+                                            .collect(),
+                                        updated_at: gist.updated_at.to_rfc3339(),
+                                    }
+                                })
+                            })
+                            .collect();
 
-                        let files: Vec<_> =
-                            gist.files.iter().map(|f| f.filename.as_str()).collect();
+                        let json = serde_json::to_string_pretty(&items)?;
+                        println!("{}", json);
+                    }
+                    OutputFormat::Text => {
+                        println!("{}", "List of cached Gists:".cyan().bold());
+                        println!();
 
-                        println!("{}", format!("ID: {}", gist.id).green());
-                        println!("  Description: {}", desc);
-                        println!("  Files: {}", files.join(", "));
-                        println!("  Updated: {}", gist.updated_at.format("%Y-%m-%d %H:%M:%S"));
-                        println!();
-                    } else {
-                        println!("{}", format!("ID: {}", gist_id).green());
-                        println!("  (Metadata not found)");
-                        println!();
+                        for gist_id in &gist_ids {
+                            if let Some(gist) = cache.gists.iter().find(|g| &g.id == gist_id) {
+                                let desc = gist.description.as_deref().unwrap_or("No description");
+
+                                let files: Vec<_> =
+                                    gist.files.iter().map(|f| f.filename.as_str()).collect();
+
+                                println!("{}", format!("ID: {}", gist.id).green());
+                                println!("  Description: {}", desc);
+                                println!("  Files: {}", files.join(", "));
+                                println!(
+                                    "  Updated: {}",
+                                    gist.updated_at.format("%Y-%m-%d %H:%M:%S")
+                                );
+                                println!();
+                            } else {
+                                println!("{}", format!("ID: {}", gist_id).green());
+                                println!("  (Metadata not found)");
+                                println!();
+                            }
+                        }
+
+                        println!(
+                            "{}",
+                            format!("Total: {} Gists cached", gist_ids.len())
+                                .cyan()
+                                .bold()
+                        );
                     }
                 }
-
-                println!(
-                    "{}",
-                    format!("Total: {} Gists cached", gist_ids.len())
-                        .cyan()
-                        .bold()
-                );
             } else {
                 // Display only IDs when metadata is not available
-                for gist_id in &gist_ids {
-                    println!("  {}", gist_id.green());
+                match list_args.format {
+                    OutputFormat::Json => {
+                        let items: Vec<GistListItem> = gist_ids
+                            .iter()
+                            .map(|gist_id| GistListItem {
+                                id: gist_id.clone(),
+                                description: None,
+                                files: vec![],
+                                updated_at: String::new(),
+                            })
+                            .collect();
+
+                        let json = serde_json::to_string_pretty(&items)?;
+                        println!("{}", json);
+                    }
+                    OutputFormat::Text => {
+                        println!("{}", "List of cached Gists:".cyan().bold());
+                        println!();
+
+                        for gist_id in &gist_ids {
+                            println!("  {}", gist_id.green());
+                        }
+                        println!();
+                        println!(
+                            "{}",
+                            format!("Total: {} items", gist_ids.len()).cyan().bold()
+                        );
+                    }
                 }
-                println!();
-                println!(
-                    "{}",
-                    format!("Total: {} items", gist_ids.len()).cyan().bold()
-                );
             }
         }
         CacheCommands::Size => {
@@ -833,7 +911,9 @@ mod tests {
         fs::create_dir_all(&config.contents_dir).unwrap();
 
         let args = CacheArgs {
-            command: CacheCommands::List,
+            command: CacheCommands::List(ListArgs {
+                format: OutputFormat::Text,
+            }),
         };
 
         let result = handle_cache_command(config, args);
@@ -1025,7 +1105,9 @@ mod tests {
             .unwrap();
 
         let args = CacheArgs {
-            command: CacheCommands::List,
+            command: CacheCommands::List(ListArgs {
+                format: OutputFormat::Text,
+            }),
         };
 
         let result = handle_cache_command(config, args);
@@ -1053,7 +1135,9 @@ mod tests {
             .unwrap();
 
         let args = CacheArgs {
-            command: CacheCommands::List,
+            command: CacheCommands::List(ListArgs {
+                format: OutputFormat::Text,
+            }),
         };
 
         let result = handle_cache_command(config, args);

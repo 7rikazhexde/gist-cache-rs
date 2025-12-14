@@ -384,3 +384,90 @@ fn test_update_verbose_without_progress() {
     // Verbose mode should work without progress bar issues
     assert!(result.is_ok());
 }
+
+#[test]
+fn test_cache_list_json_format_empty() {
+    let temp = setup_test_env();
+    fs::create_dir_all(temp.path().join("contents")).unwrap();
+
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    cmd.arg("cache")
+        .arg("list")
+        .arg("--format")
+        .arg("json")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("[]"));
+}
+
+#[test]
+fn test_cache_list_json_format() {
+    let temp = setup_test_env();
+
+    // GIST_CACHE_DIR points to temp.path(), actual cache dir is temp.path()/gist-cache
+    let cache_dir = temp.path().join("gist-cache");
+    fs::create_dir_all(&cache_dir).unwrap();
+
+    // Create test cache
+    let cache_file = cache_dir.join("cache.json");
+    fs::write(
+        &cache_file,
+        r#"{
+        "metadata": {
+            "last_updated": "2024-01-01T12:00:00Z",
+            "total_count": 1,
+            "github_user": "testuser"
+        },
+        "gists": [
+            {
+                "id": "abc123",
+                "description": "Test Gist",
+                "files": [
+                    {
+                        "filename": "test.sh",
+                        "language": null,
+                        "size": 100
+                    }
+                ],
+                "updated_at": "2024-01-01T12:00:00Z",
+                "public": true,
+                "html_url": "https://gist.github.com/abc123"
+            }
+        ]
+    }"#,
+    )
+    .unwrap();
+
+    // Create content cache
+    let contents_dir = cache_dir.join("contents").join("abc123");
+    fs::create_dir_all(&contents_dir).unwrap();
+    fs::write(contents_dir.join("test.sh"), "#!/bin/bash\necho hello").unwrap();
+
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    let output = cmd
+        .env("GIST_CACHE_DIR", temp.path())
+        .arg("cache")
+        .arg("list")
+        .arg("--format")
+        .arg("json")
+        .output()
+        .unwrap();
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    // Debug: print actual output
+    eprintln!("STDOUT: {}", stdout);
+    eprintln!("STDERR: {}", stderr);
+    eprintln!("Status: {:?}", output.status);
+
+    // Verify JSON output contains expected fields
+    assert!(
+        stdout.contains("abc123"),
+        "stdout does not contain 'abc123'. Actual: {}",
+        stdout
+    );
+    assert!(stdout.contains("Test Gist"));
+    assert!(stdout.contains("test.sh"));
+    assert!(stdout.contains("2024-01-01"));
+}
