@@ -18,6 +18,7 @@ A high-performance CLI tool written in Rust for efficiently caching, searching, 
 - 📥 **Easy Downloads**: Save Gist files to your download folder
 - 🗂️ **Cache Management**: Powerful cache inspection and maintenance
 - 📊 **Progress Display**: Visual feedback with progress bars and spinners
+- 🎯 **Interactive Selection**: Intuitive arrow-key navigation for selecting Gists
 
 **Supported Platforms**: Linux, macOS, Windows 10 or later
 

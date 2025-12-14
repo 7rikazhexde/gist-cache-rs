@@ -99,7 +99,7 @@ impl SearchQuery {
 }
 
 pub fn select_from_results<'a>(results: &[&'a GistInfo]) -> Result<&'a GistInfo> {
-    use std::io::{self, Write};
+    use dialoguer::{Select, theme::ColorfulTheme};
 
     if results.is_empty() {
         return Err(GistCacheError::NoSearchResults("".to_string()));
@@ -109,32 +109,31 @@ pub fn select_from_results<'a>(results: &[&'a GistInfo]) -> Result<&'a GistInfo>
         return Ok(results[0]);
     }
 
-    println!("\nMultiple Gists found:\n");
-
     let default_desc = "No description".to_string();
 
-    for (i, gist) in results.iter().enumerate() {
-        let desc = gist.description.as_ref().unwrap_or(&default_desc);
-        let files: Vec<_> = gist.files.iter().map(|f| f.filename.as_str()).collect();
-        println!(" {}. {} | {}", i + 1, desc, files.join(", "));
+    // Create display items: "description - files"
+    let items: Vec<String> = results
+        .iter()
+        .map(|gist| {
+            let desc = gist.description.as_ref().unwrap_or(&default_desc);
+            let files: Vec<_> = gist.files.iter().map(|f| f.filename.as_str()).collect();
+            format!("{} - {}", desc, files.join(", "))
+        })
+        .collect();
+
+    println!("\nMultiple Gists found:\n");
+
+    let selection = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Select a Gist")
+        .items(&items)
+        .default(0)
+        .interact_opt()
+        .map_err(|e| GistCacheError::Io(std::io::Error::other(e)))?;
+
+    match selection {
+        Some(index) => Ok(results[index]),
+        None => Err(GistCacheError::InvalidSelection),
     }
-
-    print!("\nSelect a number (1-{}): ", results.len());
-    io::stdout().flush()?;
-
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
-
-    let selection: usize = input
-        .trim()
-        .parse()
-        .map_err(|_| GistCacheError::InvalidSelection)?;
-
-    if selection < 1 || selection > results.len() {
-        return Err(GistCacheError::InvalidSelection);
-    }
-
-    Ok(results[selection - 1])
 }
 
 #[cfg(test)]
