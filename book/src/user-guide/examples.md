@@ -603,6 +603,67 @@ Executing: utility.sh (bash)
 
 ---
 
+## Configuration Examples
+
+### Example: Set Default Interpreter
+
+Save time by setting a default interpreter for your most-used language:
+
+```bash
+# Set python3 as default
+$ gist-cache-rs config set defaults.interpreter python3
+✓ Set defaults.interpreter = python3
+
+# Now you can omit the interpreter argument
+$ gist-cache-rs run data-analysis
+# Executes with python3 automatically
+
+# View your configuration
+$ gist-cache-rs config show
+Configuration:
+  defaults.interpreter: python3
+```
+
+### Example: Enable Safety Confirmation
+
+Add a confirmation prompt before executing scripts:
+
+```bash
+# Enable confirmation
+$ gist-cache-rs config set execution.confirm_before_run true
+✓ Set execution.confirm_before_run = true
+
+# Now you'll be prompted before execution
+$ gist-cache-rs run backup bash
+Execute backup.sh with bash? [y/N]: y
+Executing: backup.sh (bash)
+# ... script output
+```
+
+### Example: Manage Configuration
+
+```bash
+# Set cache retention period
+$ gist-cache-rs config set cache.retention_days 30
+✓ Set cache.retention_days = 30
+
+# Get specific value
+$ gist-cache-rs config get cache.retention_days
+30
+
+# Edit config file directly
+$ gist-cache-rs config edit
+# Opens config file in your default editor
+
+# Reset all configuration
+$ gist-cache-rs config reset
+✓ Configuration reset to defaults
+```
+
+For more details, see the [Configuration Guide](configuration.md).
+
+---
+
 ## Tips & Tricks
 
 ### 1. Quickly Execute Recently Updated Gists
@@ -678,6 +739,6 @@ $ gist-cache-rs run script-name python3
 
 ## Related Documentation
 
-- [README.md](../README.md) - Project overview and basic features
-- [INSTALL.md](INSTALL.md) - Installation guide
-- [QUICKSTART.md](QUICKSTART.md) - 5-minute guide to get started
+- [Installation Guide](installation.md) - Installation details and troubleshooting
+- [Quick Start Guide](quickstart.md) - Get started in 5 minutes
+- [Configuration Guide](configuration.md) - Customize your settings
