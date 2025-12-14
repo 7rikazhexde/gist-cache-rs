@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.5] - 2025-12-14
+
+### Added
+
+- **Install Script Enhancements (Shell Completion)**
+  - Added functionality to `script/setup.ps1` and `script/setup.sh` to optionally configure shell completions.
+  - Detects user's shell (PowerShell, Bash, Zsh, Fish), checks for existing config, and performs setup or update.
+
+### Changed
+
+- **CLI (Config Show Output)**
+  - Improved output for `gist-cache-rs config show` when no configuration settings are present.
+  - Displays a helpful message guiding users on available options and how to set them.
+  - Added integration tests for this new behavior.
+
+- **Documentation**
+  - Updated `.claude/docs/feature_update_plan.md` to reflect the latest progress in the implementation roadmap.
+  - Updated `.claude/docs/feature_update_plan.md` to reflect the `config show` improvement.
+
 ## [0.8.4] - 2025-12-14
 
 ### Changed
