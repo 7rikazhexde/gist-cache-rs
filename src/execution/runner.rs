@@ -278,6 +278,11 @@ impl ScriptRunner {
             command
         } else if self.is_shell {
             Command::new(&temp_file)
+        } else if self.interpreter == "uv" {
+            let mut command = Command::new(&self.interpreter);
+            command.arg("run");
+            command.arg(&temp_file);
+            command
         } else {
             let mut command = Command::new(&self.interpreter);
 

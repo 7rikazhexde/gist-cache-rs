@@ -323,9 +323,28 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
         search::select_from_results(&results)?
     };
 
+    let mut script_args = args.script_args;
+    let mut interpreter_arg = args.interpreter;
+
+    // If an interpreter argument is provided, check if it's a valid interpreter.
+    // If not, assume it's the first script argument.
+    if let Some(ref interp_candidate) = interpreter_arg {
+        if !is_valid_interpreter(interp_candidate) {
+            script_args.insert(0, interp_candidate.clone());
+            interpreter_arg = None;
+        }
+    }
+
+    // Get default interpreter from config
+    let default_interpreter = config
+        .user_config
+        .defaults
+        .as_ref()
+        .and_then(|d| d.interpreter.clone());
+
     // Parse interpreter and execution mode
     let (interpreter, run_command, is_shell, force_file_based) =
-        parse_interpreter(args.interpreter.as_deref())?;
+        parse_interpreter(interpreter_arg.as_deref(), default_interpreter.as_deref())?;
 
     // Create and run script runner
     let options = RunOptions {
@@ -340,7 +359,7 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
         run_command,
         is_shell,
         options,
-        args.script_args,
+        script_args,
         config,
     );
 
@@ -349,15 +368,40 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
     Ok(())
 }
 
+/// Check if a string is a valid, known interpreter or a command available in the PATH.
+fn is_valid_interpreter(interpreter: &str) -> bool {
+    match interpreter {
+        "bash" | "sh" | "zsh" | "python" | "python3" | "ruby" | "node" | "perl" | "php"
+        | "pwsh" | "powershell" | "ts-node" | "deno" | "bun" | "uv" | "poetry" => true,
+        custom => {
+            #[cfg(windows)]
+            let check_cmd = "where";
+            #[cfg(not(windows))]
+            let check_cmd = "which";
+
+            std::process::Command::new(check_cmd)
+                .arg(custom)
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false)
+        }
+    }
+}
+
 pub fn parse_interpreter(
     interpreter: Option<&str>,
+    default_interpreter: Option<&str>,
 ) -> Result<(String, Option<String>, bool, bool)> {
-    match interpreter {
+    let final_interpreter = interpreter.or(default_interpreter);
+
+    match final_interpreter {
         Some("bash") | Some("sh") | Some("zsh") => {
-            Ok((interpreter.unwrap().to_string(), None, true, false))
+            Ok((final_interpreter.unwrap().to_string(), None, true, false))
         }
         Some("python") | Some("python3") | Some("ruby") | Some("node") | Some("perl") => {
-            Ok((interpreter.unwrap().to_string(), None, false, false))
+            Ok((final_interpreter.unwrap().to_string(), None, false, false))
         }
         Some("php") => {
             // PHP: Force file-based execution for reliable argument handling and stdin stability
@@ -365,7 +409,7 @@ pub fn parse_interpreter(
         }
         Some("pwsh") | Some("powershell") => {
             // PowerShell: Force file-based execution for script execution policy compatibility
-            Ok((interpreter.unwrap().to_string(), None, false, true))
+            Ok((final_interpreter.unwrap().to_string(), None, false, true))
         }
         Some("ts-node") => {
             // ts-node: TypeScript execution via Node.js (file-based for module resolution)
@@ -897,7 +941,7 @@ mod tests {
 
     #[test]
     fn test_parse_interpreter_bash() {
-        let result = parse_interpreter(Some("bash")).unwrap();
+        let result = parse_interpreter(Some("bash"), None).unwrap();
         assert_eq!(result.0, "bash");
         assert_eq!(result.1, None);
         assert!(result.2); // is_shell
@@ -906,49 +950,49 @@ mod tests {
 
     #[test]
     fn test_parse_interpreter_sh() {
-        let result = parse_interpreter(Some("sh")).unwrap();
+        let result = parse_interpreter(Some("sh"), None).unwrap();
         assert_eq!(result.0, "sh");
         assert!(result.2); // is_shell
     }
 
     #[test]
     fn test_parse_interpreter_zsh() {
-        let result = parse_interpreter(Some("zsh")).unwrap();
+        let result = parse_interpreter(Some("zsh"), None).unwrap();
         assert_eq!(result.0, "zsh");
         assert!(result.2); // is_shell
     }
 
     #[test]
     fn test_parse_interpreter_python() {
-        let result = parse_interpreter(Some("python3")).unwrap();
+        let result = parse_interpreter(Some("python3"), None).unwrap();
         assert_eq!(result.0, "python3");
         assert!(!result.2); // not shell
     }
 
     #[test]
     fn test_parse_interpreter_ruby() {
-        let result = parse_interpreter(Some("ruby")).unwrap();
+        let result = parse_interpreter(Some("ruby"), None).unwrap();
         assert_eq!(result.0, "ruby");
         assert!(!result.2); // not shell
     }
 
     #[test]
     fn test_parse_interpreter_node() {
-        let result = parse_interpreter(Some("node")).unwrap();
+        let result = parse_interpreter(Some("node"), None).unwrap();
         assert_eq!(result.0, "node");
         assert!(!result.2); // not shell
     }
 
     #[test]
     fn test_parse_interpreter_perl() {
-        let result = parse_interpreter(Some("perl")).unwrap();
+        let result = parse_interpreter(Some("perl"), None).unwrap();
         assert_eq!(result.0, "perl");
         assert!(!result.2); // not shell
     }
 
     #[test]
     fn test_parse_interpreter_uv() {
-        let result = parse_interpreter(Some("uv")).unwrap();
+        let result = parse_interpreter(Some("uv"), None).unwrap();
         assert_eq!(result.0, "python3");
         assert_eq!(result.1, Some("uv run".to_string()));
         assert!(result.3); // force_file_based
@@ -957,7 +1001,7 @@ mod tests {
     #[test]
     fn test_parse_interpreter_poetry() {
         // poetry は python3 にフォールバックする
-        let result = parse_interpreter(Some("poetry")).unwrap();
+        let result = parse_interpreter(Some("poetry"), None).unwrap();
         assert_eq!(result.0, "python3");
         assert_eq!(result.1, None);
         assert!(!result.3); // not force_file_based
@@ -965,7 +1009,7 @@ mod tests {
 
     #[test]
     fn test_parse_interpreter_none() {
-        let result = parse_interpreter(None).unwrap();
+        let result = parse_interpreter(None, None).unwrap();
         assert_eq!(result.0, "bash");
         assert!(result.2); // is_shell
     }
@@ -984,35 +1028,35 @@ mod tests {
 
     #[test]
     fn test_parse_interpreter_php() {
-        let result = parse_interpreter(Some("php")).unwrap();
+        let result = parse_interpreter(Some("php"), None).unwrap();
         assert_eq!(result.0, "php");
         assert!(result.3); // force_file_based
     }
 
     #[test]
     fn test_parse_interpreter_pwsh() {
-        let result = parse_interpreter(Some("pwsh")).unwrap();
+        let result = parse_interpreter(Some("pwsh"), None).unwrap();
         assert_eq!(result.0, "pwsh");
         assert!(result.3); // force_file_based
     }
 
     #[test]
     fn test_parse_interpreter_powershell() {
-        let result = parse_interpreter(Some("powershell")).unwrap();
+        let result = parse_interpreter(Some("powershell"), None).unwrap();
         assert_eq!(result.0, "powershell");
         assert!(result.3); // force_file_based
     }
 
     #[test]
     fn test_parse_interpreter_ts_node() {
-        let result = parse_interpreter(Some("ts-node")).unwrap();
+        let result = parse_interpreter(Some("ts-node"), None).unwrap();
         assert_eq!(result.0, "ts-node");
         assert!(result.3); // force_file_based
     }
 
     #[test]
     fn test_parse_interpreter_deno() {
-        let result = parse_interpreter(Some("deno")).unwrap();
+        let result = parse_interpreter(Some("deno"), None).unwrap();
         assert_eq!(result.0, "deno");
         assert_eq!(result.1, Some("deno run".to_string()));
         assert!(result.3); // force_file_based
@@ -1020,7 +1064,7 @@ mod tests {
 
     #[test]
     fn test_parse_interpreter_bun() {
-        let result = parse_interpreter(Some("bun")).unwrap();
+        let result = parse_interpreter(Some("bun"), None).unwrap();
         assert_eq!(result.0, "bun");
         assert!(result.3); // force_file_based
     }
@@ -1232,7 +1276,7 @@ mod tests {
 
     #[test]
     fn test_parse_interpreter_python_alias() {
-        let result = parse_interpreter(Some("python")).unwrap();
+        let result = parse_interpreter(Some("python"), None).unwrap();
         assert_eq!(result.0, "python");
         assert!(!result.2); // not shell
     }
@@ -1511,7 +1555,7 @@ mod tests {
     #[test]
     fn test_parse_interpreter_custom_invalid() {
         // Test with nonexistent interpreter
-        let result = parse_interpreter(Some("nonexistent_xyz_123"));
+        let result = parse_interpreter(Some("nonexistent_xyz_123"), None);
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err(),
