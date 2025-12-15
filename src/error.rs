@@ -49,6 +49,9 @@ pub enum GistCacheError {
 
     #[error("Cache directory error: {0}")]
     CacheDirectoryError(String),
+
+    #[error("Invalid regex pattern: {0}")]
+    InvalidPattern(String),
 }
 
 pub type Result<T> = std::result::Result<T, GistCacheError>;

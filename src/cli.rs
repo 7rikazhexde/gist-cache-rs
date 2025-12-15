@@ -136,6 +136,18 @@ pub struct RunArgs {
     #[arg(long)]
     pub description: bool,
 
+    /// Search using regular expression pattern
+    #[arg(long, value_name = "PATTERN")]
+    pub regex: Option<String>,
+
+    /// Filter by programming language
+    #[arg(long, value_name = "LANGUAGE")]
+    pub language: Option<String>,
+
+    /// Filter by file extension
+    #[arg(long, value_name = "EXT")]
+    pub extension: Option<String>,
+
     /// Interpreter or execution command (bash, python3, uv, etc.)
     #[arg(value_name = "INTERPRETER")]
     pub interpreter: Option<String>,
@@ -304,8 +316,16 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
         SearchMode::Auto
     };
 
+    // Build search options from CLI arguments
+    let search_options = search::SearchOptions {
+        regex: args.regex.clone(),
+        language: args.language.clone(),
+        extension: args.extension.clone(),
+    };
+
     // Search for gists
-    let query = SearchQuery::new(query_string.clone(), search_mode.clone());
+    let query =
+        SearchQuery::new_with_options(query_string.clone(), search_mode.clone(), search_options);
     let results = query.search(&cache.gists)?;
 
     if results.is_empty() {
@@ -1046,6 +1066,9 @@ mod tests {
             id: false,
             filename: false,
             description: false,
+            regex: None,
+            language: None,
+            extension: None,
             interpreter: None,
             script_args: vec![],
         };
@@ -1393,6 +1416,9 @@ mod tests {
             id: false,
             filename: true,
             description: false,
+            regex: None,
+            language: None,
+            extension: None,
             interpreter: None,
             script_args: vec![],
         };
@@ -1451,6 +1477,9 @@ mod tests {
             id: false,
             filename: false,
             description: true,
+            regex: None,
+            language: None,
+            extension: None,
             interpreter: None,
             script_args: vec![],
         };
@@ -1496,6 +1525,9 @@ mod tests {
             id: false,
             filename: false,
             description: false,
+            regex: None,
+            language: None,
+            extension: None,
             interpreter: None,
             script_args: vec![],
         };
