@@ -34,11 +34,13 @@ jobs:
           if git diff --quiet .pre-commit-config.yaml; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            # Capture the diff for PR body
-            echo "diff<<EOF" >> "$GITHUB_OUTPUT"
-            git diff .pre-commit-config.yaml >> "$GITHUB_OUTPUT"
-            echo "EOF" >> "$GITHUB_OUTPUT"
+            {
+              echo "changed=true"
+              # Capture the diff for PR body
+              echo "diff<<EOF"
+              git diff .pre-commit-config.yaml
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set up Rust
