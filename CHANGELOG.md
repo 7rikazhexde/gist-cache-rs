@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Search Enhancement (Advanced Filters)**
+  - Added `--regex` flag for regular expression pattern matching in search results
+  - Added `--language` flag for filtering by programming language (e.g., `--language rust`)
+  - Added `--extension` flag for filtering by file extension (e.g., `--extension rs` or `--extension .py`)
+  - All filters can be combined for precise search queries
+  - Case-insensitive matching for language and extension filters
+  - Comprehensive test coverage with 15 new unit tests
+
 ## [0.8.5] - 2025-12-14
 
 ### Added
