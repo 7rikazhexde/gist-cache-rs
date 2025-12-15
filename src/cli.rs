@@ -215,8 +215,10 @@ pub fn run_cli() -> Result<()> {
             updater.update(args.force)?;
         }
         Commands::Run(args) => {
-            // Display help if no query is provided
-            if args.query.is_none() {
+            // Display help if no query is provided AND no filters are specified
+            let has_filters =
+                args.regex.is_some() || args.language.is_some() || args.extension.is_some();
+            if args.query.is_none() && !has_filters {
                 print_run_help();
                 return Ok(());
             }
