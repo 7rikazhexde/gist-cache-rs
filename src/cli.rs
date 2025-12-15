@@ -286,6 +286,12 @@ pub fn print_run_help() {
     println!("  gist-cache-rs run --download backup           # Save to download folder");
     println!("  gist-cache-rs run -p --download backup        # Preview then download");
     println!();
+    println!("Filter-only search (no query required):");
+    println!("  gist-cache-rs run --regex \"^hello.*\\.py$\"    # Regex pattern match");
+    println!("  gist-cache-rs run --language python          # Filter by language");
+    println!("  gist-cache-rs run --extension .sh            # Filter by extension");
+    println!("  gist-cache-rs run --regex \"test\" --language rust  # Combined filters");
+    println!();
     println!("{}", "Verify argument specification:".red().bold());
     println!("  ✅ uv example: gist-cache-rs run --description numpy uv input.csv");
     println!();
@@ -298,8 +304,19 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
         return Err(GistCacheError::CacheNotFound);
     }
 
-    // Ensure query is always Some
-    let query_string = args.query.unwrap();
+    // If no query is provided but filters are specified, use empty query to search all gists
+    let has_filters = args.regex.is_some() || args.language.is_some() || args.extension.is_some();
+    let query_string = match args.query {
+        Some(q) => q,
+        None => {
+            if has_filters {
+                String::new() // Empty query to search all gists when filters are used
+            } else {
+                print_run_help();
+                return Ok(());
+            }
+        }
+    };
 
     // Load cache
     let cache_content = fs::read_to_string(&config.cache_file)?;

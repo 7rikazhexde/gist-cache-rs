@@ -835,4 +835,95 @@ mod tests {
         let results = query.search(&gists).unwrap();
         assert_eq!(results.len(), 0);
     }
+
+    #[test]
+    fn test_empty_query_returns_all_gists() {
+        let gists = vec![
+            create_test_gist("abc123", Some("Test 1"), vec!["file1.rs"]),
+            create_test_gist("def456", Some("Test 2"), vec!["file2.py"]),
+            create_test_gist("ghi789", Some("Test 3"), vec!["file3.js"]),
+        ];
+
+        let options = SearchOptions::default();
+
+        // Empty query should return all gists
+        let query = SearchQuery::new_with_options("".to_string(), SearchMode::Both, options);
+        let results = query.search(&gists).unwrap();
+        assert_eq!(results.len(), 3);
+    }
+
+    #[test]
+    fn test_empty_query_with_regex_filter() {
+        let gists = vec![
+            create_test_gist("abc123", Some("Description"), vec!["hello.py"]),
+            create_test_gist("def456", Some("Description"), vec!["world.js"]),
+            create_test_gist("ghi789", Some("Description"), vec!["test.rs"]),
+        ];
+
+        let options = SearchOptions {
+            regex: Some(r"^hello.*\.py$".to_string()),
+            language: None,
+            extension: None,
+        };
+
+        // Empty query with regex filter should filter all gists
+        let query = SearchQuery::new_with_options("".to_string(), SearchMode::Both, options);
+        let results = query.search(&gists).unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].id, "abc123");
+    }
+
+    #[test]
+    fn test_empty_query_with_language_filter() {
+        let gists = vec![
+            create_test_gist_with_language(
+                "abc123",
+                Some("Description"),
+                vec![("file.py", Some("Python"))],
+            ),
+            create_test_gist_with_language(
+                "def456",
+                Some("Description"),
+                vec![("file.rs", Some("Rust"))],
+            ),
+            create_test_gist_with_language(
+                "ghi789",
+                Some("Description"),
+                vec![("file.js", Some("JavaScript"))],
+            ),
+        ];
+
+        let options = SearchOptions {
+            regex: None,
+            language: Some("Python".to_string()),
+            extension: None,
+        };
+
+        // Empty query with language filter
+        let query = SearchQuery::new_with_options("".to_string(), SearchMode::Both, options);
+        let results = query.search(&gists).unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].id, "abc123");
+    }
+
+    #[test]
+    fn test_empty_query_with_extension_filter() {
+        let gists = vec![
+            create_test_gist("abc123", Some("Description"), vec!["file.py"]),
+            create_test_gist("def456", Some("Description"), vec!["file.rs"]),
+            create_test_gist("ghi789", Some("Description"), vec!["file.js"]),
+        ];
+
+        let options = SearchOptions {
+            regex: None,
+            language: None,
+            extension: Some("rs".to_string()),
+        };
+
+        // Empty query with extension filter
+        let query = SearchQuery::new_with_options("".to_string(), SearchMode::Both, options);
+        let results = query.search(&gists).unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].id, "def456");
+    }
 }
