@@ -15,9 +15,11 @@ The configuration file uses TOML format and is created automatically when you fi
 
 ### defaults.interpreter
 
-Set the default interpreter for script execution.
+Set the default interpreter for script execution. You can configure interpreters in two ways:
 
-**Example values**: `bash`, `python3`, `ruby`, `node`, `uv`, etc.
+#### Simple Configuration (Legacy)
+
+Set a single default interpreter for all scripts:
 
 ```bash
 # Set default interpreter
@@ -25,6 +27,69 @@ gist-cache-rs config set defaults.interpreter python3
 
 # Now you can omit the interpreter argument
 gist-cache-rs run my-script  # Uses python3 by default
+```
+
+#### Advanced Configuration (Per-Extension)
+
+**New in v0.8.6**: Configure different interpreters for different file types:
+
+```bash
+# Set interpreter for Python files
+gist-cache-rs config set defaults.interpreter.py python3
+
+# Set interpreter for Ruby files
+gist-cache-rs config set defaults.interpreter.rb ruby
+
+# Set interpreter for TypeScript files
+gist-cache-rs config set defaults.interpreter.ts deno
+
+# Set interpreter for JavaScript files
+gist-cache-rs config set defaults.interpreter.js node
+
+# Set wildcard fallback for all other file types
+gist-cache-rs config set defaults.interpreter."*" bash
+```
+
+**Supported interpreters**: `bash`, `sh`, `zsh`, `python3`, `ruby`, `node`, `perl`, `php`, `pwsh`, `ts-node`, `deno`, `bun`, `uv`, etc.
+
+#### Interpreter Resolution Priority
+
+When executing a script, the interpreter is determined using the following priority order (highest to lowest):
+
+1. **Command-line argument** - Explicitly specified interpreter
+2. **Shebang detection** - From `#!/usr/bin/env python3` or `#!/usr/bin/python3`
+3. **User configuration** - Extension-based settings (`defaults.interpreter.<ext>`)
+4. **Heuristics** - Filename patterns (e.g., `Makefile` → `make`)
+5. **Content analysis** - Language detection from file content (using tokei)
+6. **Global defaults** - Wildcard (`defaults.interpreter."*"`) or `bash` fallback
+
+**Example Configuration File:**
+
+```toml
+[defaults.interpreter]
+py = "python3"
+rb = "ruby"
+ts = "deno"
+js = "node"
+sh = "bash"
+Makefile = "make"
+"*" = "bash"  # Wildcard fallback
+```
+
+**Example Usage:**
+
+```bash
+# Python script with .py extension - automatically uses python3
+gist-cache-rs run data-analysis  # Detects .py, uses python3
+
+# Override with command-line argument
+gist-cache-rs run data-analysis bash  # Forces bash
+
+# Script with shebang - uses detected interpreter
+gist-cache-rs run setup-script  # Reads #!/usr/bin/env python3
+
+# Unknown file type - uses wildcard fallback
+gist-cache-rs run unknown-script  # Uses bash (from "*")
 ```
 
 ### execution.confirm_before_run
@@ -134,7 +199,9 @@ This removes the configuration file and resets all settings to defaults.
 
 ## Configuration File Format
 
-The configuration file uses TOML format. Here's an example:
+The configuration file uses TOML format. Here are examples:
+
+### Simple Configuration
 
 ```toml
 [defaults]
@@ -142,6 +209,25 @@ interpreter = "python3"
 
 [execution]
 confirm_before_run = true
+
+[cache]
+retention_days = 30
+```
+
+### Advanced Configuration (v0.8.6+)
+
+```toml
+[defaults.interpreter]
+py = "python3"
+rb = "ruby"
+ts = "deno"
+js = "node"
+sh = "bash"
+Makefile = "make"
+"*" = "bash"  # Wildcard fallback for unknown file types
+
+[execution]
+confirm_before_run = false
 
 [cache]
 retention_days = 30
@@ -162,6 +248,29 @@ gist-cache-rs config set defaults.interpreter python3
 # Now you can run Python scripts without specifying the interpreter
 gist-cache-rs run data-analysis
 # Instead of: gist-cache-rs run data-analysis python3
+```
+
+### Example 1b: Configure Per-Extension Interpreters (v0.8.6+)
+
+For mixed-language projects, configure different interpreters for different file types:
+
+```bash
+# Configure interpreters for different languages
+gist-cache-rs config set defaults.interpreter.py python3
+gist-cache-rs config set defaults.interpreter.rb ruby
+gist-cache-rs config set defaults.interpreter.ts deno
+gist-cache-rs config set defaults.interpreter.js node
+gist-cache-rs config set defaults.interpreter."*" bash
+
+# View your configuration
+gist-cache-rs config show
+
+# Now scripts automatically use the right interpreter
+gist-cache-rs run data-script      # .py file → uses python3
+gist-cache-rs run deploy-script    # .rb file → uses ruby
+gist-cache-rs run build-script     # .ts file → uses deno
+gist-cache-rs run test-runner      # .js file → uses node
+gist-cache-rs run backup-script    # .sh file → uses bash (wildcard)
 ```
 
 ### Example 2: Enable Safety Confirmation
@@ -220,10 +329,13 @@ This is particularly useful for:
 ## Tips
 
 1. **Start with safe defaults**: Enable `confirm_before_run` when you're new to the tool
-2. **Set your preferred interpreter**: Save time by configuring your most-used interpreter
-3. **Regular cleanup**: Set an appropriate `retention_days` value to keep your cache clean
-4. **Check before reset**: Use `config show` before `config reset` to review your settings
-5. **Edit directly for complex changes**: Use `config edit` to modify multiple settings at once
+2. **Use per-extension configuration**: Set up interpreters for each file type you commonly use
+3. **Set a wildcard fallback**: Configure `defaults.interpreter."*"` to handle unknown file types
+4. **Leverage shebang detection**: Scripts with shebangs automatically use the correct interpreter
+5. **Regular cleanup**: Set an appropriate `retention_days` value to keep your cache clean
+6. **Check before reset**: Use `config show` before `config reset` to review your settings
+7. **Edit directly for complex changes**: Use `config edit` to modify multiple settings at once
+8. **Override when needed**: Command-line arguments always take precedence over configuration
 
 ## Related Commands
 

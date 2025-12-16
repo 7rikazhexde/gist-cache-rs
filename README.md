@@ -13,6 +13,7 @@ A high-performance CLI tool written in Rust for efficiently caching, searching, 
 - 💾 **2-Layer Caching**: Intelligent caching for 20x faster execution
 - 🔍 **Flexible Search**: Search by ID, filename, or description
 - ▶️ **Multi-Language Support**: bash, python, ruby, node, php, perl, pwsh, TypeScript, and more
+- 🎛️ **Smart Interpreter Detection**: Automatic interpreter selection from shebangs, extensions, and file content
 - 💬 **Interactive Mode**: Full support for interactive scripts
 - 📦 **Modern Python**: uv support with PEP 723 metadata compatibility
 - 📥 **Easy Downloads**: Save Gist files to your download folder
@@ -159,8 +160,14 @@ gist-cache-rs cache clear
 Customize default behavior with the config command:
 
 ```bash
-# Set default interpreter
+# Set default interpreter (simple)
 gist-cache-rs config set defaults.interpreter python3
+
+# Set per-extension interpreters (v0.8.6+)
+gist-cache-rs config set defaults.interpreter.py python3
+gist-cache-rs config set defaults.interpreter.rb ruby
+gist-cache-rs config set defaults.interpreter.ts deno
+gist-cache-rs config set defaults.interpreter."*" bash  # Wildcard fallback
 
 # Enable execution confirmation (for safety)
 gist-cache-rs config set execution.confirm_before_run true
@@ -172,7 +179,7 @@ gist-cache-rs config set cache.retention_days 30
 gist-cache-rs config show
 
 # Get specific value
-gist-cache-rs config get defaults.interpreter
+gist-cache-rs config get defaults.interpreter.py
 
 # Edit config file directly
 gist-cache-rs config edit
@@ -180,6 +187,17 @@ gist-cache-rs config edit
 # Reset to defaults
 gist-cache-rs config reset
 ```
+
+### Interpreter Detection Priority (v0.8.6+)
+
+When executing scripts, the interpreter is automatically detected using:
+
+1. **Command-line argument** (highest priority)
+2. **Shebang** (`#!/usr/bin/env python3`)
+3. **User configuration** (extension-based)
+4. **Filename heuristics** (e.g., `Makefile` → `make`)
+5. **Content analysis** (language detection)
+6. **Wildcard fallback** or `bash` (lowest priority)
 
 For detailed configuration options, see the [Configuration Guide](https://7rikazhexde.github.io/gist-cache-rs/user-guide/configuration.html).
 

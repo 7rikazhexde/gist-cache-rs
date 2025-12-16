@@ -13,6 +13,7 @@ gist-cache-rs provides a streamlined workflow for managing and executing your Gi
 - 💾 **2-Layer Caching** - Intelligent caching of both metadata and content for 20x faster execution
 - 🔍 **Flexible Search** - Multiple search modes: by ID, filename, or description
 - ▶️ **Multi-Language Support** - Execute scripts in bash, python, ruby, node, php, perl, pwsh, TypeScript and more
+- 🎛️ **Smart Interpreter Detection** - Automatic interpreter selection from shebangs, file extensions, and content analysis (v0.8.6+)
 - 💬 **Interactive Mode** - Full support for interactive scripts
 - 📦 **Modern Python** - uv support with PEP 723 metadata compatibility
 - 📥 **Easy Downloads** - Save Gist files directly to your download folder
