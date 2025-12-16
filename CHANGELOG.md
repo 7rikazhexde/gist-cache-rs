@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.6] - 2025-12-16
+
 ### Added
 
-- **Advanced Interpreter Configuration** (Closes #47)
+- **Advanced Interpreter Configuration** (Closes #46, #47)
   - Per-extension default interpreter configuration
   - New nested configuration format: `defaults.interpreter.<extension>`
   - Support for wildcard fallback with `defaults.interpreter."*"`
