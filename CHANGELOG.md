@@ -7,6 +7,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Advanced Interpreter Configuration** (Closes #47)
+  - Per-extension default interpreter configuration
+  - New nested configuration format: `defaults.interpreter.<extension>`
+  - Support for wildcard fallback with `defaults.interpreter."*"`
+  - CLI commands support dot-separated keys (e.g., `config set defaults.interpreter.py python3`)
+  - Backwards compatible with legacy single interpreter format
+
+- **Priority-based Interpreter Resolution**
+  - Intelligent interpreter detection with clear priority order:
+    1. Command-line argument (highest priority)
+    2. Shebang detection from file content (e.g., `#!/usr/bin/env python3`)
+    3. User configuration (extension-based)
+    4. Heuristics (filename + extension patterns)
+    5. Content-based language detection (using tokei)
+    6. Global defaults (wildcard or final fallback to bash)
+  - Automatic shebang detection for scripts with `#!/usr/bin/env` or direct path format
+  - Extension-based interpreter selection (e.g., `.py` → `python3`, `.ts` → `ts-node`)
+  - Filename-based detection for special files (e.g., `Makefile` → `make`)
+  - Content analysis for language detection when other methods fail
+
+### Changed
+
+- **Configuration Structure**
+  - Enhanced `DefaultsConfig` to support both single and multiple interpreter settings
+  - New `InterpreterSetting` enum for flexible interpreter configuration
+  - Updated `config show` command to display nested interpreter settings
+  - Improved config persistence with support for complex nested structures
+
+### Example Configuration
+
+```toml
+[defaults]
+  [defaults.interpreter]
+  py = "python3"
+  rb = "ruby"
+  sh = "bash"
+  ts = "deno"
+  js = "node"
+  Makefile = "make"
+  "*" = "bash"  # Wildcard fallback for unknown types
+
+[execution]
+confirm_before_run = false
+
+[cache]
+retention_days = 30
+```
+
+### Usage Examples
+
+```bash
+# Set extension-specific interpreters
+gist-cache-rs config set defaults.interpreter.py python3
+gist-cache-rs config set defaults.interpreter.ts deno
+gist-cache-rs config set defaults.interpreter.rb ruby
+
+# Set wildcard fallback
+gist-cache-rs config set defaults.interpreter."*" bash
+
+# Get specific extension config
+gist-cache-rs config get defaults.interpreter.py
+
+# View all configuration
+gist-cache-rs config show
+```
+
+### Benefits
+
+- **Flexibility**: Different interpreters for different file types
+- **Intelligence**: Automatic detection from shebangs and file content
+- **Compatibility**: Maintains support for legacy single interpreter config
+- **User Control**: Clear priority system with command-line override
+- **Safety**: Falls back gracefully through multiple detection methods
+
 ## [0.8.5] - 2025-12-14
 
 ### Added

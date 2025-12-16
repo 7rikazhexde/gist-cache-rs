@@ -1,11 +1,28 @@
 use crate::error::{GistCacheError, Result};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::PathBuf;
+
+/// Interpreter setting that can be either a single string (legacy) or a map of extensions
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum InterpreterSetting {
+    /// Legacy format: single interpreter string (e.g., "bash", "python3")
+    Single(String),
+    /// New format: map of file extensions to interpreters (e.g., {"py": "python3", "*": "bash"})
+    Multiple(HashMap<String, String>),
+}
+
+impl Default for InterpreterSetting {
+    fn default() -> Self {
+        InterpreterSetting::Multiple(HashMap::new())
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DefaultsConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub interpreter: Option<String>,
+    pub interpreter: Option<InterpreterSetting>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -118,65 +135,122 @@ impl Config {
     }
 
     pub fn set_config_value(&mut self, key: &str, value: &str) -> Result<()> {
-        match key {
-            "defaults.interpreter" => {
-                if self.user_config.defaults.is_none() {
-                    self.user_config.defaults = Some(DefaultsConfig { interpreter: None });
-                }
-                self.user_config.defaults.as_mut().unwrap().interpreter = Some(value.to_string());
+        // Handle nested interpreter config (e.g., "defaults.interpreter.py")
+        if let Some(extension) = key.strip_prefix("defaults.interpreter.") {
+            if self.user_config.defaults.is_none() {
+                self.user_config.defaults = Some(DefaultsConfig::default());
             }
-            "execution.confirm_before_run" => {
-                let bool_value = value.parse::<bool>().map_err(|_| {
-                    GistCacheError::Config(format!("Invalid boolean value: {}", value))
-                })?;
-                if self.user_config.execution.is_none() {
-                    self.user_config.execution = Some(ExecutionConfig {
-                        confirm_before_run: None,
-                    });
+            let defaults = self.user_config.defaults.as_mut().unwrap();
+
+            // Get or create the interpreter map
+            let interpreter_map = match &mut defaults.interpreter {
+                Some(InterpreterSetting::Multiple(map)) => map,
+                Some(InterpreterSetting::Single(_)) => {
+                    // Convert single to multiple
+                    defaults.interpreter = Some(InterpreterSetting::Multiple(HashMap::new()));
+                    if let Some(InterpreterSetting::Multiple(map)) = &mut defaults.interpreter {
+                        map
+                    } else {
+                        unreachable!()
+                    }
                 }
-                self.user_config
-                    .execution
-                    .as_mut()
-                    .unwrap()
-                    .confirm_before_run = Some(bool_value);
-            }
-            "cache.retention_days" => {
-                let days = value.parse::<u32>().map_err(|_| {
-                    GistCacheError::Config(format!("Invalid number value: {}", value))
-                })?;
-                if self.user_config.cache.is_none() {
-                    self.user_config.cache = Some(CacheConfig {
-                        retention_days: None,
-                    });
+                None => {
+                    defaults.interpreter = Some(InterpreterSetting::Multiple(HashMap::new()));
+                    if let Some(InterpreterSetting::Multiple(map)) = &mut defaults.interpreter {
+                        map
+                    } else {
+                        unreachable!()
+                    }
                 }
-                self.user_config.cache.as_mut().unwrap().retention_days = Some(days);
-            }
-            _ => {
-                return Err(GistCacheError::Config(format!(
-                    "Unknown config key: {}",
-                    key
-                )));
+            };
+
+            interpreter_map.insert(extension.to_string(), value.to_string());
+        } else {
+            match key {
+                "defaults.interpreter" => {
+                    if self.user_config.defaults.is_none() {
+                        self.user_config.defaults = Some(DefaultsConfig::default());
+                    }
+                    // Legacy format: set as single interpreter or wildcard
+                    self.user_config.defaults.as_mut().unwrap().interpreter =
+                        Some(InterpreterSetting::Single(value.to_string()));
+                }
+                "execution.confirm_before_run" => {
+                    let bool_value = value.parse::<bool>().map_err(|_| {
+                        GistCacheError::Config(format!("Invalid boolean value: {}", value))
+                    })?;
+                    if self.user_config.execution.is_none() {
+                        self.user_config.execution = Some(ExecutionConfig {
+                            confirm_before_run: None,
+                        });
+                    }
+                    self.user_config
+                        .execution
+                        .as_mut()
+                        .unwrap()
+                        .confirm_before_run = Some(bool_value);
+                }
+                "cache.retention_days" => {
+                    let days = value.parse::<u32>().map_err(|_| {
+                        GistCacheError::Config(format!("Invalid number value: {}", value))
+                    })?;
+                    if self.user_config.cache.is_none() {
+                        self.user_config.cache = Some(CacheConfig {
+                            retention_days: None,
+                        });
+                    }
+                    self.user_config.cache.as_mut().unwrap().retention_days = Some(days);
+                }
+                _ => {
+                    return Err(GistCacheError::Config(format!(
+                        "Unknown config key: {}",
+                        key
+                    )));
+                }
             }
         }
         self.save_user_config()
     }
 
     pub fn get_config_value(&self, key: &str) -> Option<String> {
-        match key {
-            "defaults.interpreter" => self.user_config.defaults.as_ref()?.interpreter.clone(),
-            "execution.confirm_before_run" => self
-                .user_config
-                .execution
-                .as_ref()?
-                .confirm_before_run
-                .map(|v| v.to_string()),
-            "cache.retention_days" => self
-                .user_config
-                .cache
-                .as_ref()?
-                .retention_days
-                .map(|v| v.to_string()),
-            _ => None,
+        // Handle nested interpreter config (e.g., "defaults.interpreter.py")
+        if let Some(extension) = key.strip_prefix("defaults.interpreter.") {
+            let defaults = self.user_config.defaults.as_ref()?;
+            match &defaults.interpreter {
+                Some(InterpreterSetting::Multiple(map)) => map.get(extension).cloned(),
+                Some(InterpreterSetting::Single(s)) if extension == "*" => Some(s.clone()),
+                _ => None,
+            }
+        } else {
+            match key {
+                "defaults.interpreter" => {
+                    let defaults = self.user_config.defaults.as_ref()?;
+                    match &defaults.interpreter {
+                        Some(InterpreterSetting::Single(s)) => Some(s.clone()),
+                        Some(InterpreterSetting::Multiple(map)) => {
+                            // Return wildcard if exists, or JSON representation
+                            map.get("*").cloned().or_else(|| {
+                                // Return a summary of the map
+                                Some(format!("{} extensions configured", map.len()))
+                            })
+                        }
+                        None => None,
+                    }
+                }
+                "execution.confirm_before_run" => self
+                    .user_config
+                    .execution
+                    .as_ref()?
+                    .confirm_before_run
+                    .map(|v| v.to_string()),
+                "cache.retention_days" => self
+                    .user_config
+                    .cache
+                    .as_ref()?
+                    .retention_days
+                    .map(|v| v.to_string()),
+                _ => None,
+            }
         }
     }
 
@@ -316,5 +390,130 @@ mod tests {
 
         // Clean up
         let _ = fs::remove_dir_all(&test_cache_dir);
+    }
+
+    #[test]
+    fn test_set_nested_interpreter_config() {
+        let temp_dir = std::env::temp_dir().join("test_nested_interpreter");
+        let _ = fs::remove_dir_all(&temp_dir);
+        fs::create_dir_all(&temp_dir).unwrap();
+
+        let mut config = Config {
+            cache_dir: temp_dir.clone(),
+            cache_file: temp_dir.join("cache.json"),
+            contents_dir: temp_dir.join("contents"),
+            download_dir: temp_dir.join("downloads"),
+            config_file: temp_dir.join("config.toml"),
+            user_config: UserConfig::default(),
+        };
+
+        // Set extension-specific interpreters
+        config
+            .set_config_value("defaults.interpreter.py", "python3")
+            .unwrap();
+        config
+            .set_config_value("defaults.interpreter.rb", "ruby")
+            .unwrap();
+        config
+            .set_config_value("defaults.interpreter.*", "bash")
+            .unwrap();
+
+        // Verify the values
+        assert_eq!(
+            config.get_config_value("defaults.interpreter.py"),
+            Some("python3".to_string())
+        );
+        assert_eq!(
+            config.get_config_value("defaults.interpreter.rb"),
+            Some("ruby".to_string())
+        );
+        assert_eq!(
+            config.get_config_value("defaults.interpreter.*"),
+            Some("bash".to_string())
+        );
+
+        // Clean up
+        let _ = fs::remove_dir_all(&temp_dir);
+    }
+
+    #[test]
+    fn test_legacy_single_interpreter_config() {
+        let temp_dir = std::env::temp_dir().join("test_legacy_interpreter");
+        let _ = fs::remove_dir_all(&temp_dir);
+        fs::create_dir_all(&temp_dir).unwrap();
+
+        let mut config = Config {
+            cache_dir: temp_dir.clone(),
+            cache_file: temp_dir.join("cache.json"),
+            contents_dir: temp_dir.join("contents"),
+            download_dir: temp_dir.join("downloads"),
+            config_file: temp_dir.join("config.toml"),
+            user_config: UserConfig::default(),
+        };
+
+        // Set legacy single interpreter
+        config
+            .set_config_value("defaults.interpreter", "python3")
+            .unwrap();
+
+        // Verify it's stored as Single variant
+        if let Some(defaults) = &config.user_config.defaults {
+            if let Some(InterpreterSetting::Single(s)) = &defaults.interpreter {
+                assert_eq!(s, "python3");
+            } else {
+                panic!("Expected Single variant");
+            }
+        } else {
+            panic!("Expected defaults to be set");
+        }
+
+        // Clean up
+        let _ = fs::remove_dir_all(&temp_dir);
+    }
+
+    #[test]
+    fn test_config_persistence() {
+        let temp_dir = std::env::temp_dir().join("test_config_persistence");
+        let _ = fs::remove_dir_all(&temp_dir);
+        fs::create_dir_all(&temp_dir).unwrap();
+
+        let config_file = temp_dir.join("config.toml");
+
+        // Create and save config
+        {
+            let mut config = Config {
+                cache_dir: temp_dir.clone(),
+                cache_file: temp_dir.join("cache.json"),
+                contents_dir: temp_dir.join("contents"),
+                download_dir: temp_dir.join("downloads"),
+                config_file: config_file.clone(),
+                user_config: UserConfig::default(),
+            };
+
+            config
+                .set_config_value("defaults.interpreter.py", "python3")
+                .unwrap();
+            config
+                .set_config_value("defaults.interpreter.ts", "deno")
+                .unwrap();
+        }
+
+        // Load and verify
+        {
+            let loaded_config = Config::load_user_config(&config_file).unwrap();
+            if let Some(defaults) = &loaded_config.defaults {
+                if let Some(InterpreterSetting::Multiple(map)) = &defaults.interpreter {
+                    assert_eq!(map.get("py"), Some(&"python3".to_string()));
+                    assert_eq!(map.get("ts"), Some(&"deno".to_string()));
+                } else {
+                    panic!("Expected Multiple variant");
+                }
+            } else {
+                panic!("Expected defaults to be set");
+            }
+        }
+
+        // Clean up
+        let _ = fs::remove_dir_all(&temp_dir);
     }
 }
