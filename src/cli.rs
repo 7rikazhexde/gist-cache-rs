@@ -335,16 +335,18 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
         }
     }
 
-    // Get default interpreter from config
-    let default_interpreter = config
-        .user_config
-        .defaults
-        .as_ref()
-        .and_then(|d| d.interpreter.clone());
+    // Select the main file to determine the interpreter
+    let main_file = select_main_file_for_gist(gist)?;
 
-    // Parse interpreter and execution mode
-    let (interpreter, run_command, is_shell, force_file_based) =
-        parse_interpreter(interpreter_arg.as_deref(), default_interpreter.as_deref())?;
+    // Resolve interpreter using new priority-based system
+    // For now, we resolve without content (shebang detection will be skipped)
+    // TODO: Optionally fetch content for shebang detection if interpreter is not specified
+    let (interpreter, run_command, is_shell, force_file_based) = resolve_interpreter(
+        interpreter_arg.as_deref(),
+        &main_file.filename,
+        None,
+        &config,
+    )?;
 
     // Create and run script runner
     let options = RunOptions {
@@ -366,6 +368,217 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
     runner.run()?;
 
     Ok(())
+}
+
+/// Select the main file from a gist (for multi-file gists)
+fn select_main_file_for_gist(gist: &cache::types::GistInfo) -> Result<&cache::types::GistFile> {
+    if gist.files.len() == 1 {
+        return Ok(&gist.files[0]);
+    }
+
+    // If multiple files, prefer common script file extensions
+    let script_extensions = ["py", "rb", "js", "sh", "pl", "php", "ts"];
+    for file in &gist.files {
+        if let Some(ext) = get_file_extension(&file.filename) {
+            if script_extensions.contains(&ext.as_str()) {
+                return Ok(file);
+            }
+        }
+    }
+
+    // If no script file found, return the first file
+    Ok(&gist.files[0])
+}
+
+/// Detect interpreter from shebang line (e.g., "#!/usr/bin/env python3")
+fn detect_shebang(content: &str) -> Option<String> {
+    let first_line = content.lines().next()?;
+    if !first_line.starts_with("#!") {
+        return None;
+    }
+
+    let shebang = first_line.trim_start_matches("#!").trim();
+
+    // Handle "#!/usr/bin/env interpreter" format
+    if shebang.contains("env") {
+        let parts: Vec<&str> = shebang.split_whitespace().collect();
+        // Find the part that ends with "env" (like "/usr/bin/env")
+        if let Some(env_pos) = parts.iter().position(|&s| s.ends_with("env")) {
+            if env_pos + 1 < parts.len() {
+                return Some(parts[env_pos + 1].to_string());
+            }
+        }
+    }
+
+    // Handle direct path format like "#!/usr/bin/python3"
+    shebang
+        .split('/')
+        .next_back()
+        .and_then(|s| s.split_whitespace().next())
+        .map(|s| s.to_string())
+}
+
+/// Extract file extension from filename
+fn get_file_extension(filename: &str) -> Option<String> {
+    filename.rsplit('.').next().and_then(|ext| {
+        if ext != filename {
+            Some(ext.to_string())
+        } else {
+            None
+        }
+    })
+}
+
+/// Get interpreter from user configuration based on file extension or filename
+fn detect_interpreter_from_config(config: &Config, filename: &str) -> Option<String> {
+    let defaults = config.user_config.defaults.as_ref()?;
+    let interpreter_setting = defaults.interpreter.as_ref()?;
+
+    match interpreter_setting {
+        crate::config::InterpreterSetting::Single(_) => None,
+        crate::config::InterpreterSetting::Multiple(map) => {
+            // First, try full filename match (e.g., "Makefile")
+            if let Some(interp) = map.get(filename) {
+                return Some(interp.clone());
+            }
+
+            // Then, try extension match (e.g., "py" for "script.py")
+            if let Some(ext) = get_file_extension(filename) {
+                if let Some(interp) = map.get(&ext) {
+                    return Some(interp.clone());
+                }
+            }
+
+            None
+        }
+    }
+}
+
+/// Detect interpreter from filename heuristics (common patterns)
+fn detect_interpreter_from_filename(filename: &str) -> Option<String> {
+    match filename {
+        "Makefile" | "makefile" => Some("make".to_string()),
+        _ => {
+            // Try extension-based heuristics
+            get_file_extension(filename).and_then(|ext| match ext.as_str() {
+                "py" => Some("python3".to_string()),
+                "rb" => Some("ruby".to_string()),
+                "js" => Some("node".to_string()),
+                "sh" => Some("bash".to_string()),
+                "pl" => Some("perl".to_string()),
+                "php" => Some("php".to_string()),
+                "ts" => Some("ts-node".to_string()),
+                _ => None,
+            })
+        }
+    }
+}
+
+/// Detect language from file content using tokei
+fn detect_language_from_content(content: &str, filename: &str) -> Option<String> {
+    use tokei::LanguageType;
+
+    // tokei works with file paths, so we'll use its language detection based on extension first
+    if let Some(lang_type) = LanguageType::from_file_extension(filename) {
+        return Some(format!("{:?}", lang_type));
+    }
+
+    // If no extension match, try to infer from shebang or content patterns
+    if content.contains("def ") && content.contains("import ") {
+        return Some("Python".to_string());
+    }
+    if content.contains("function ") || content.contains("const ") || content.contains("let ") {
+        return Some("JavaScript".to_string());
+    }
+    if content.contains("class ") && content.contains("def ") {
+        return Some("Ruby".to_string());
+    }
+
+    None
+}
+
+/// Map detected language to interpreter
+fn language_to_interpreter(language: &str) -> Option<String> {
+    match language {
+        "Python" => Some("python3".to_string()),
+        "Ruby" => Some("ruby".to_string()),
+        "JavaScript" | "TypeScript" => Some("node".to_string()),
+        "Sh" | "Bash" => Some("bash".to_string()),
+        "Perl" => Some("perl".to_string()),
+        "Php" => Some("php".to_string()),
+        _ => None,
+    }
+}
+
+/// Resolve interpreter with priority-based system
+/// Priority:
+/// 1. Command-line argument (highest)
+/// 2. Shebang detection
+/// 3. User configuration (extension-based)
+/// 4. Heuristics (filename + content analysis)
+/// 5. Global defaults (lowest)
+///
+/// Returns: (interpreter, run_command, is_shell, force_file_based)
+fn resolve_interpreter(
+    interpreter_arg: Option<&str>,
+    filename: &str,
+    content: Option<&str>,
+    config: &Config,
+) -> Result<(String, Option<String>, bool, bool)> {
+    // 1. Command-line argument (highest priority)
+    if let Some(interp) = interpreter_arg {
+        return parse_interpreter(Some(interp), None);
+    }
+
+    // 2. Shebang detection
+    if let Some(content_str) = content {
+        if let Some(shebang_interp) = detect_shebang(content_str) {
+            // Validate the detected interpreter
+            if is_valid_interpreter(&shebang_interp) {
+                return parse_interpreter(Some(&shebang_interp), None);
+            }
+        }
+    }
+
+    // 3. User configuration (extension-based)
+    if let Some(config_interp) = detect_interpreter_from_config(config, filename) {
+        return parse_interpreter(Some(&config_interp), None);
+    }
+
+    // 4. Heuristics
+    // 4a. Filename heuristics
+    if let Some(heuristic_interp) = detect_interpreter_from_filename(filename) {
+        return parse_interpreter(Some(&heuristic_interp), None);
+    }
+
+    // 4b. Content-based detection
+    if let Some(content_str) = content {
+        if let Some(lang) = detect_language_from_content(content_str, filename) {
+            if let Some(interp) = language_to_interpreter(&lang) {
+                return parse_interpreter(Some(&interp), None);
+            }
+        }
+    }
+
+    // 5. Global defaults
+    // 5a. Check for wildcard in config
+    if let Some(defaults) = config.user_config.defaults.as_ref() {
+        if let Some(interpreter_setting) = &defaults.interpreter {
+            match interpreter_setting {
+                crate::config::InterpreterSetting::Single(s) => {
+                    return parse_interpreter(Some(s), None);
+                }
+                crate::config::InterpreterSetting::Multiple(map) => {
+                    if let Some(wildcard) = map.get("*") {
+                        return parse_interpreter(Some(wildcard), None);
+                    }
+                }
+            }
+        }
+    }
+
+    // 5b. Final fallback: bash
+    Ok(("bash".to_string(), None, true, false))
 }
 
 /// Check if a string is a valid, known interpreter or a command available in the PATH.
@@ -824,7 +1037,17 @@ pub fn handle_config_command(mut config: Config, args: ConfigArgs) -> Result<()>
                 if let Some(ref interpreter) = defaults.interpreter {
                     println!("{}", "[defaults]".cyan());
 
-                    println!("  interpreter = {}", interpreter.yellow());
+                    match interpreter {
+                        crate::config::InterpreterSetting::Single(s) => {
+                            println!("  interpreter = {}", s.yellow());
+                        }
+                        crate::config::InterpreterSetting::Multiple(map) => {
+                            println!("  {}", "[interpreter]".cyan());
+                            for (ext, interp) in map.iter() {
+                                println!("    {} = {}", ext, interp.yellow());
+                            }
+                        }
+                    }
 
                     is_empty = false;
                 }
@@ -1602,5 +1825,115 @@ mod tests {
         assert_eq!(Shell::Zsh, Shell::Zsh);
         assert_eq!(Shell::Fish, Shell::Fish);
         assert_eq!(Shell::PowerShell, Shell::PowerShell);
+    }
+
+    #[test]
+    fn test_detect_shebang_env_format() {
+        let content = "#!/usr/bin/env python3\nprint('hello')";
+        assert_eq!(detect_shebang(content), Some("python3".to_string()));
+    }
+
+    #[test]
+    fn test_detect_shebang_direct_path() {
+        let content = "#!/usr/bin/python3\nprint('hello')";
+        assert_eq!(detect_shebang(content), Some("python3".to_string()));
+    }
+
+    #[test]
+    fn test_detect_shebang_no_shebang() {
+        let content = "print('hello')";
+        assert_eq!(detect_shebang(content), None);
+    }
+
+    #[test]
+    fn test_get_file_extension() {
+        assert_eq!(get_file_extension("script.py"), Some("py".to_string()));
+        assert_eq!(get_file_extension("test.rb"), Some("rb".to_string()));
+        assert_eq!(get_file_extension("Makefile"), None);
+        assert_eq!(get_file_extension("test.tar.gz"), Some("gz".to_string()));
+    }
+
+    #[test]
+    fn test_detect_interpreter_from_filename() {
+        assert_eq!(
+            detect_interpreter_from_filename("script.py"),
+            Some("python3".to_string())
+        );
+        assert_eq!(
+            detect_interpreter_from_filename("test.rb"),
+            Some("ruby".to_string())
+        );
+        assert_eq!(
+            detect_interpreter_from_filename("app.js"),
+            Some("node".to_string())
+        );
+        assert_eq!(
+            detect_interpreter_from_filename("script.sh"),
+            Some("bash".to_string())
+        );
+        assert_eq!(
+            detect_interpreter_from_filename("Makefile"),
+            Some("make".to_string())
+        );
+    }
+
+    #[test]
+    fn test_detect_interpreter_from_config() {
+        use crate::config::{DefaultsConfig, InterpreterSetting, UserConfig};
+        use std::collections::HashMap;
+
+        let temp_dir = TempDir::new().unwrap();
+        let mut config = Config {
+            cache_dir: temp_dir.path().to_path_buf(),
+            cache_file: temp_dir.path().join("cache.json"),
+            contents_dir: temp_dir.path().join("contents"),
+            download_dir: temp_dir.path().join("downloads"),
+            config_file: temp_dir.path().join("config.toml"),
+            user_config: UserConfig::default(),
+        };
+
+        // Set up interpreter map
+        let mut map = HashMap::new();
+        map.insert("py".to_string(), "python3".to_string());
+        map.insert("rb".to_string(), "ruby".to_string());
+        map.insert("Makefile".to_string(), "make".to_string());
+
+        config.user_config.defaults = Some(DefaultsConfig {
+            interpreter: Some(InterpreterSetting::Multiple(map)),
+        });
+
+        // Test extension match
+        assert_eq!(
+            detect_interpreter_from_config(&config, "script.py"),
+            Some("python3".to_string())
+        );
+        assert_eq!(
+            detect_interpreter_from_config(&config, "test.rb"),
+            Some("ruby".to_string())
+        );
+
+        // Test full filename match
+        assert_eq!(
+            detect_interpreter_from_config(&config, "Makefile"),
+            Some("make".to_string())
+        );
+
+        // Test no match
+        assert_eq!(detect_interpreter_from_config(&config, "unknown.xyz"), None);
+    }
+
+    #[test]
+    fn test_language_to_interpreter() {
+        assert_eq!(
+            language_to_interpreter("Python"),
+            Some("python3".to_string())
+        );
+        assert_eq!(language_to_interpreter("Ruby"), Some("ruby".to_string()));
+        assert_eq!(
+            language_to_interpreter("JavaScript"),
+            Some("node".to_string())
+        );
+        assert_eq!(language_to_interpreter("Bash"), Some("bash".to_string()));
+        assert_eq!(language_to_interpreter("Unknown"), None);
     }
 }
