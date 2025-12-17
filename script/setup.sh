@@ -35,12 +35,18 @@ fi
 # GIST_CACHE_AUTO_ALIAS: true/false (default: false) - Auto-configure aliases in non-interactive mode
 # GIST_CACHE_ALIAS_UPDATE: alias name for update (default: gcrsu)
 # GIST_CACHE_ALIAS_RUN: alias name for run (default: gcrsr)
+# GIST_CACHE_SKIP_CONFIG: true/false (default: false) - Skip config file setup
+# GIST_CACHE_AUTO_CONFIG: true/false (default: false) - Auto-configure config in non-interactive mode
+# GIST_CACHE_DEFAULT_INTERPRETER: default interpreter (e.g., bash, python3)
 INSTALL_METHOD="${GIST_CACHE_INSTALL_METHOD:-1}"
 SKIP_CACHE_UPDATE="${GIST_CACHE_SKIP_CACHE:-false}"
 SKIP_ALIAS="${GIST_CACHE_SKIP_ALIAS:-false}"
 AUTO_ALIAS="${GIST_CACHE_AUTO_ALIAS:-false}"
 ALIAS_UPDATE="${GIST_CACHE_ALIAS_UPDATE:-gcrsu}"
 ALIAS_RUN="${GIST_CACHE_ALIAS_RUN:-gcrsr}"
+SKIP_CONFIG="${GIST_CACHE_SKIP_CONFIG:-false}"
+AUTO_CONFIG="${GIST_CACHE_AUTO_CONFIG:-false}"
+DEFAULT_INTERPRETER="${GIST_CACHE_DEFAULT_INTERPRETER:-}"
 
 # Functions
 print_usage() {
@@ -66,17 +72,20 @@ Installation examples:
   curl -sSL https://raw.githubusercontent.com/7rikazhexde/gist-cache-rs/main/script/setup.sh | bash -s uninstall
 
 Environment variables:
-  GIST_CACHE_INSTALL_METHOD  Installation method (1-5, default: 1)
+  GIST_CACHE_INSTALL_METHOD       Installation method (1-5, default: 1)
     1: cargo install (recommended)
     2: System directory (/usr/local/bin)
     3: User directory (~/bin)
     4: Symbolic link
     5: Skip
-  GIST_CACHE_SKIP_CACHE      Skip cache update (true/false, default: false)
-  GIST_CACHE_SKIP_ALIAS      Skip alias configuration (true/false, default: false)
-  GIST_CACHE_AUTO_ALIAS      Auto-configure aliases in non-interactive mode (true/false, default: false)
-  GIST_CACHE_ALIAS_UPDATE    Alias name for update command (default: gcrsu)
-  GIST_CACHE_ALIAS_RUN       Alias name for run command (default: gcrsr)
+  GIST_CACHE_SKIP_CACHE           Skip cache update (true/false, default: false)
+  GIST_CACHE_SKIP_ALIAS           Skip alias configuration (true/false, default: false)
+  GIST_CACHE_AUTO_ALIAS           Auto-configure aliases in non-interactive mode (true/false, default: false)
+  GIST_CACHE_ALIAS_UPDATE         Alias name for update command (default: gcrsu)
+  GIST_CACHE_ALIAS_RUN            Alias name for run command (default: gcrsr)
+  GIST_CACHE_SKIP_CONFIG          Skip config file setup (true/false, default: false)
+  GIST_CACHE_AUTO_CONFIG          Auto-configure config in non-interactive mode (true/false, default: false)
+  GIST_CACHE_DEFAULT_INTERPRETER  Default interpreter (e.g., bash, python3)
 
 EOF
 }
@@ -244,6 +253,32 @@ EOF
             fi
         else
             print_info "Cache directory retained"
+        fi
+    fi
+
+    # Ask about config directory
+    echo ""
+    CONFIG_DIR="$HOME/.config/gist-cache"
+    if [ -d "$CONFIG_DIR" ]; then
+        print_info "Configuration directory detected: $CONFIG_DIR"
+
+        SHOULD_DELETE_CONFIG=false
+        if [ "$IS_INTERACTIVE" = false ]; then
+            # Delete in non-interactive mode
+            print_info "Non-interactive mode: Deleting configuration directory"
+            SHOULD_DELETE_CONFIG=true
+        elif confirm "Delete configuration directory?" "n"; then
+            SHOULD_DELETE_CONFIG=true
+        fi
+
+        if [ "$SHOULD_DELETE_CONFIG" = true ]; then
+            if rm -rf "$CONFIG_DIR"; then
+                print_success "Configuration directory deleted"
+            else
+                print_error "Failed to delete configuration directory"
+            fi
+        else
+            print_info "Configuration directory retained"
         fi
     fi
 
@@ -732,6 +767,275 @@ else
         fi
     else
         print_info "Please run 'gist-cache-rs update' later"
+    fi
+fi
+
+# ============================================================================
+# Step 6.5: Configuration File Setup (Optional)
+# ============================================================================
+print_header "Step 6.5: Configuration File Setup (Optional)"
+
+if [ "$SKIP_CONFIG" = "true" ]; then
+    print_info "Skipping config file setup due to environment variable"
+elif ! command -v gist-cache-rs &> /dev/null; then
+    print_warning "Skipping config setup because command is unavailable"
+else
+    CONFIG_DIR="$HOME/.config/gist-cache"
+    CONFIG_FILE="$CONFIG_DIR/config.toml"
+
+    # Check if config file already exists
+    if [ -f "$CONFIG_FILE" ]; then
+        print_success "Configuration file already exists: $CONFIG_FILE"
+
+        if [ "$IS_INTERACTIVE" = true ]; then
+            if confirm "View current configuration?" "y"; then
+                echo ""
+                gist-cache-rs config show
+                echo ""
+            fi
+
+            # Ask if user wants to update existing config
+            if confirm "Update configuration?" "n"; then
+                SHOULD_SETUP_CONFIG=true
+            else
+                print_info "Configuration retained without changes"
+                SHOULD_SETUP_CONFIG=false
+            fi
+        else
+            # Non-interactive mode: skip updating existing config
+            print_info "Configuration file exists. Skipping update in non-interactive mode"
+            SHOULD_SETUP_CONFIG=false
+        fi
+    else
+        SHOULD_SETUP_CONFIG=false
+
+        if [ "$IS_INTERACTIVE" = false ]; then
+            # Non-interactive mode
+            if [ "$AUTO_CONFIG" = "true" ]; then
+                print_info "Non-interactive mode: Performing automatic config setup"
+                SHOULD_SETUP_CONFIG=true
+            else
+                print_info "Non-interactive mode: Skipping config setup"
+                print_info "To configure later, run: gist-cache-rs config set <key> <value>"
+            fi
+        elif confirm "Set up default configuration?" "y"; then
+            SHOULD_SETUP_CONFIG=true
+        fi
+
+        if [ "$SHOULD_SETUP_CONFIG" = true ]; then
+            echo ""
+            print_info "Configuring default settings..."
+            echo ""
+
+            # Create config directory if it doesn't exist
+            mkdir -p "$CONFIG_DIR"
+
+            # Configure interpreters for each extension
+            CONFIG_APPLIED=false
+
+            if [ "$IS_INTERACTIVE" = true ]; then
+                echo "Configure interpreters for each file extension:"
+                echo -e "${CYAN}(Press Enter to skip any extension)${NC}"
+                echo ""
+
+                # Python (.py)
+                echo -e "${BOLD}Python files (.py):${NC}"
+                echo "  1) uv (recommended for modern Python)"
+                echo "  2) python3"
+                echo "  3) Skip"
+                read -r -p "$(echo -e "${YELLOW}Selection [1-3]: ${NC}")" PY_CHOICE
+                case $PY_CHOICE in
+                    1)
+                        if gist-cache-rs config set defaults.interpreter.py uv 2>/dev/null; then
+                            print_success "Python (.py) → uv"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                    2)
+                        if gist-cache-rs config set defaults.interpreter.py python3 2>/dev/null; then
+                            print_success "Python (.py) → python3"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                esac
+                echo ""
+
+                # Ruby (.rb)
+                if confirm "Configure Ruby interpreter for .rb files?" "n"; then
+                    if gist-cache-rs config set defaults.interpreter.rb ruby 2>/dev/null; then
+                        print_success "Ruby (.rb) → ruby"
+                        CONFIG_APPLIED=true
+                    fi
+                fi
+                echo ""
+
+                # JavaScript (.js)
+                if confirm "Configure Node.js interpreter for .js files?" "n"; then
+                    if gist-cache-rs config set defaults.interpreter.js node 2>/dev/null; then
+                        print_success "JavaScript (.js) → node"
+                        CONFIG_APPLIED=true
+                    fi
+                fi
+                echo ""
+
+                # TypeScript (.ts)
+                echo -e "${BOLD}TypeScript files (.ts):${NC}"
+                echo "  1) ts-node"
+                echo "  2) deno"
+                echo "  3) bun"
+                echo "  4) Skip"
+                read -r -p "$(echo -e "${YELLOW}Selection [1-4]: ${NC}")" TS_CHOICE
+                case $TS_CHOICE in
+                    1)
+                        if gist-cache-rs config set defaults.interpreter.ts ts-node 2>/dev/null; then
+                            print_success "TypeScript (.ts) → ts-node"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                    2)
+                        if gist-cache-rs config set defaults.interpreter.ts deno 2>/dev/null; then
+                            print_success "TypeScript (.ts) → deno"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                    3)
+                        if gist-cache-rs config set defaults.interpreter.ts bun 2>/dev/null; then
+                            print_success "TypeScript (.ts) → bun"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                esac
+                echo ""
+
+                # Shell scripts (.sh)
+                echo -e "${BOLD}Shell scripts (.sh):${NC}"
+                echo "  1) bash (recommended)"
+                echo "  2) sh"
+                echo "  3) zsh"
+                echo "  4) Skip"
+                read -r -p "$(echo -e "${YELLOW}Selection [1-4]: ${NC}")" SH_CHOICE
+                case $SH_CHOICE in
+                    1)
+                        if gist-cache-rs config set defaults.interpreter.sh bash 2>/dev/null; then
+                            print_success "Shell (.sh) → bash"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                    2)
+                        if gist-cache-rs config set defaults.interpreter.sh sh 2>/dev/null; then
+                            print_success "Shell (.sh) → sh"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                    3)
+                        if gist-cache-rs config set defaults.interpreter.sh sh 2>/dev/null; then
+                            print_success "Shell (.sh) → zsh"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                esac
+                echo ""
+
+                # PHP (.php)
+                if confirm "Configure PHP interpreter for .php files?" "n"; then
+                    if gist-cache-rs config set defaults.interpreter.php php 2>/dev/null; then
+                        print_success "PHP (.php) → php"
+                        CONFIG_APPLIED=true
+                    fi
+                fi
+                echo ""
+
+                # Perl (.pl)
+                if confirm "Configure Perl interpreter for .pl files?" "n"; then
+                    if gist-cache-rs config set defaults.interpreter.pl perl 2>/dev/null; then
+                        print_success "Perl (.pl) → perl"
+                        CONFIG_APPLIED=true
+                    fi
+                fi
+                echo ""
+
+                # PowerShell (.ps1)
+                if confirm "Configure PowerShell interpreter for .ps1 files?" "n"; then
+                    if gist-cache-rs config set defaults.interpreter.ps1 pwsh 2>/dev/null; then
+                        print_success "PowerShell (.ps1) → pwsh"
+                        CONFIG_APPLIED=true
+                    fi
+                fi
+                echo ""
+
+                # Wildcard fallback (*)
+                echo -e "${BOLD}Fallback interpreter (for unrecognized extensions):${NC}"
+                echo "  1) bash (recommended)"
+                echo "  2) python3"
+                echo "  3) sh"
+                echo "  4) Skip"
+                read -r -p "$(echo -e "${YELLOW}Selection [1-4]: ${NC}")" FALLBACK_CHOICE
+                case $FALLBACK_CHOICE in
+                    1)
+                        if gist-cache-rs config set defaults.interpreter."*" bash 2>/dev/null; then
+                            print_success "Fallback (*) → bash"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                    2)
+                        if gist-cache-rs config set defaults.interpreter."*" python3 2>/dev/null; then
+                            print_success "Fallback (*) → python3"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                    3)
+                        if gist-cache-rs config set defaults.interpreter."*" sh 2>/dev/null; then
+                            print_success "Fallback (*) → sh"
+                            CONFIG_APPLIED=true
+                        fi
+                        ;;
+                esac
+                echo ""
+
+            elif [ -n "$DEFAULT_INTERPRETER" ]; then
+                # Non-interactive mode: use environment variable for wildcard only
+                if gist-cache-rs config set defaults.interpreter."*" "$DEFAULT_INTERPRETER" 2>/dev/null; then
+                    print_success "Fallback (*) → $DEFAULT_INTERPRETER"
+                    CONFIG_APPLIED=true
+                fi
+            fi
+
+            # Additional configuration options (interactive only)
+            if [ "$IS_INTERACTIVE" = true ]; then
+                if confirm "Configure execution confirmation (safety feature)?" "n"; then
+                    if gist-cache-rs config set execution.confirm_before_run true 2>/dev/null; then
+                        print_success "Execution confirmation enabled"
+                        CONFIG_APPLIED=true
+                    fi
+                fi
+            fi
+
+            if [ "$CONFIG_APPLIED" = false ]; then
+                print_warning "No configuration was applied"
+            fi
+
+            echo ""
+            print_success "Configuration setup complete"
+
+            if [ -f "$CONFIG_FILE" ]; then
+                print_info "Configuration file: $CONFIG_FILE"
+
+                if [ "$IS_INTERACTIVE" = true ]; then
+                    if confirm "View configuration?" "y"; then
+                        echo ""
+                        gist-cache-rs config show
+                    fi
+                fi
+            fi
+
+            echo ""
+            print_info "To modify configuration later, use:"
+            echo -e "  ${CYAN}gist-cache-rs config set <key> <value>${NC}"
+            echo -e "  ${CYAN}gist-cache-rs config show${NC}"
+        else
+            print_info "Configuration setup skipped"
+            print_info "To configure later, use: gist-cache-rs config set <key> <value>"
+        fi
     fi
 fi
 
