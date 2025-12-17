@@ -784,6 +784,8 @@ else
     CONFIG_FILE="$CONFIG_DIR/config.toml"
 
     # Check if config file already exists
+    SHOULD_SETUP_CONFIG=false
+
     if [ -f "$CONFIG_FILE" ]; then
         print_success "Configuration file already exists: $CONFIG_FILE"
 
@@ -799,16 +801,12 @@ else
                 SHOULD_SETUP_CONFIG=true
             else
                 print_info "Configuration retained without changes"
-                SHOULD_SETUP_CONFIG=false
             fi
         else
             # Non-interactive mode: skip updating existing config
             print_info "Configuration file exists. Skipping update in non-interactive mode"
-            SHOULD_SETUP_CONFIG=false
         fi
     else
-        SHOULD_SETUP_CONFIG=false
-
         if [ "$IS_INTERACTIVE" = false ]; then
             # Non-interactive mode
             if [ "$AUTO_CONFIG" = "true" ]; then
@@ -821,221 +819,219 @@ else
         elif confirm "Set up default configuration?" "y"; then
             SHOULD_SETUP_CONFIG=true
         fi
+    fi
 
-        if [ "$SHOULD_SETUP_CONFIG" = true ]; then
+    # Execute configuration setup if requested
+    if [ "$SHOULD_SETUP_CONFIG" = true ]; then
+        echo ""
+        print_info "Configuring default settings..."
+        echo ""
+
+        # Create config directory if it doesn't exist
+        mkdir -p "$CONFIG_DIR"
+
+        # Configure interpreters for each extension
+        CONFIG_APPLIED=false
+
+        if [ "$IS_INTERACTIVE" = true ]; then
+            echo "Configure interpreters for each file extension:"
+            echo -e "${CYAN}(Press Enter to skip any extension)${NC}"
             echo ""
-            print_info "Configuring default settings..."
+
+            # Python (.py)
+            echo -e "${BOLD}Python files (.py):${NC}"
+            echo "  1) uv (recommended for modern Python)"
+            echo "  2) python3"
+            echo "  3) Skip"
+            read -r -p "$(echo -e "${YELLOW}Selection [1-3]: ${NC}")" PY_CHOICE
+            case $PY_CHOICE in
+                1)
+                    if gist-cache-rs config set defaults.interpreter.py uv 2>/dev/null; then
+                        print_success "Python (.py) → uv"
+                        CONFIG_APPLIED=true
+                    fi
+                    ;;
+                2)
+                    if gist-cache-rs config set defaults.interpreter.py python3 2>/dev/null; then
+                        print_success "Python (.py) → python3"
+                        CONFIG_APPLIED=true
+                    fi
+                    ;;
+            esac
             echo ""
 
-            # Create config directory if it doesn't exist
-            mkdir -p "$CONFIG_DIR"
-
-            # Configure interpreters for each extension
-            CONFIG_APPLIED=false
-
-            if [ "$IS_INTERACTIVE" = true ]; then
-                echo "Configure interpreters for each file extension:"
-                echo -e "${CYAN}(Press Enter to skip any extension)${NC}"
-                echo ""
-
-                # Python (.py)
-                echo -e "${BOLD}Python files (.py):${NC}"
-                echo "  1) uv (recommended for modern Python)"
-                echo "  2) python3"
-                echo "  3) Skip"
-                read -r -p "$(echo -e "${YELLOW}Selection [1-3]: ${NC}")" PY_CHOICE
-                case $PY_CHOICE in
-                    1)
-                        if gist-cache-rs config set defaults.interpreter.py uv 2>/dev/null; then
-                            print_success "Python (.py) → uv"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                    2)
-                        if gist-cache-rs config set defaults.interpreter.py python3 2>/dev/null; then
-                            print_success "Python (.py) → python3"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                esac
-                echo ""
-
-                # Ruby (.rb)
-                if confirm "Configure Ruby interpreter for .rb files?" "n"; then
-                    if gist-cache-rs config set defaults.interpreter.rb ruby 2>/dev/null; then
-                        print_success "Ruby (.rb) → ruby"
-                        CONFIG_APPLIED=true
-                    fi
-                fi
-                echo ""
-
-                # JavaScript (.js)
-                if confirm "Configure Node.js interpreter for .js files?" "n"; then
-                    if gist-cache-rs config set defaults.interpreter.js node 2>/dev/null; then
-                        print_success "JavaScript (.js) → node"
-                        CONFIG_APPLIED=true
-                    fi
-                fi
-                echo ""
-
-                # TypeScript (.ts)
-                echo -e "${BOLD}TypeScript files (.ts):${NC}"
-                echo "  1) ts-node"
-                echo "  2) deno"
-                echo "  3) bun"
-                echo "  4) Skip"
-                read -r -p "$(echo -e "${YELLOW}Selection [1-4]: ${NC}")" TS_CHOICE
-                case $TS_CHOICE in
-                    1)
-                        if gist-cache-rs config set defaults.interpreter.ts ts-node 2>/dev/null; then
-                            print_success "TypeScript (.ts) → ts-node"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                    2)
-                        if gist-cache-rs config set defaults.interpreter.ts deno 2>/dev/null; then
-                            print_success "TypeScript (.ts) → deno"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                    3)
-                        if gist-cache-rs config set defaults.interpreter.ts bun 2>/dev/null; then
-                            print_success "TypeScript (.ts) → bun"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                esac
-                echo ""
-
-                # Shell scripts (.sh)
-                echo -e "${BOLD}Shell scripts (.sh):${NC}"
-                echo "  1) bash (recommended)"
-                echo "  2) sh"
-                echo "  3) zsh"
-                echo "  4) Skip"
-                read -r -p "$(echo -e "${YELLOW}Selection [1-4]: ${NC}")" SH_CHOICE
-                case $SH_CHOICE in
-                    1)
-                        if gist-cache-rs config set defaults.interpreter.sh bash 2>/dev/null; then
-                            print_success "Shell (.sh) → bash"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                    2)
-                        if gist-cache-rs config set defaults.interpreter.sh sh 2>/dev/null; then
-                            print_success "Shell (.sh) → sh"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                    3)
-                        if gist-cache-rs config set defaults.interpreter.sh sh 2>/dev/null; then
-                            print_success "Shell (.sh) → zsh"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                esac
-                echo ""
-
-                # PHP (.php)
-                if confirm "Configure PHP interpreter for .php files?" "n"; then
-                    if gist-cache-rs config set defaults.interpreter.php php 2>/dev/null; then
-                        print_success "PHP (.php) → php"
-                        CONFIG_APPLIED=true
-                    fi
-                fi
-                echo ""
-
-                # Perl (.pl)
-                if confirm "Configure Perl interpreter for .pl files?" "n"; then
-                    if gist-cache-rs config set defaults.interpreter.pl perl 2>/dev/null; then
-                        print_success "Perl (.pl) → perl"
-                        CONFIG_APPLIED=true
-                    fi
-                fi
-                echo ""
-
-                # PowerShell (.ps1)
-                if confirm "Configure PowerShell interpreter for .ps1 files?" "n"; then
-                    if gist-cache-rs config set defaults.interpreter.ps1 pwsh 2>/dev/null; then
-                        print_success "PowerShell (.ps1) → pwsh"
-                        CONFIG_APPLIED=true
-                    fi
-                fi
-                echo ""
-
-                # Wildcard fallback (*)
-                echo -e "${BOLD}Fallback interpreter (for unrecognized extensions):${NC}"
-                echo "  1) bash (recommended)"
-                echo "  2) python3"
-                echo "  3) sh"
-                echo "  4) Skip"
-                read -r -p "$(echo -e "${YELLOW}Selection [1-4]: ${NC}")" FALLBACK_CHOICE
-                case $FALLBACK_CHOICE in
-                    1)
-                        if gist-cache-rs config set defaults.interpreter."*" bash 2>/dev/null; then
-                            print_success "Fallback (*) → bash"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                    2)
-                        if gist-cache-rs config set defaults.interpreter."*" python3 2>/dev/null; then
-                            print_success "Fallback (*) → python3"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                    3)
-                        if gist-cache-rs config set defaults.interpreter."*" sh 2>/dev/null; then
-                            print_success "Fallback (*) → sh"
-                            CONFIG_APPLIED=true
-                        fi
-                        ;;
-                esac
-                echo ""
-
-            elif [ -n "$DEFAULT_INTERPRETER" ]; then
-                # Non-interactive mode: use environment variable for wildcard only
-                if gist-cache-rs config set defaults.interpreter."*" "$DEFAULT_INTERPRETER" 2>/dev/null; then
-                    print_success "Fallback (*) → $DEFAULT_INTERPRETER"
+            # Ruby (.rb)
+            if confirm "Configure Ruby interpreter for .rb files?" "n"; then
+                if gist-cache-rs config set defaults.interpreter.rb ruby 2>/dev/null; then
+                    print_success "Ruby (.rb) → ruby"
                     CONFIG_APPLIED=true
                 fi
             fi
+            echo ""
 
-            # Additional configuration options (interactive only)
-            if [ "$IS_INTERACTIVE" = true ]; then
-                if confirm "Configure execution confirmation (safety feature)?" "n"; then
-                    if gist-cache-rs config set execution.confirm_before_run true 2>/dev/null; then
-                        print_success "Execution confirmation enabled"
+            # JavaScript (.js)
+            if confirm "Configure Node.js interpreter for .js files?" "n"; then
+                if gist-cache-rs config set defaults.interpreter.js node 2>/dev/null; then
+                    print_success "JavaScript (.js) → node"
+                    CONFIG_APPLIED=true
+                fi
+            fi
+            echo ""
+
+            # TypeScript (.ts)
+            echo -e "${BOLD}TypeScript files (.ts):${NC}"
+            echo "  1) ts-node"
+            echo "  2) deno"
+            echo "  3) bun"
+            echo "  4) Skip"
+            read -r -p "$(echo -e "${YELLOW}Selection [1-4]: ${NC}")" TS_CHOICE
+            case $TS_CHOICE in
+                1)
+                    if gist-cache-rs config set defaults.interpreter.ts ts-node 2>/dev/null; then
+                        print_success "TypeScript (.ts) → ts-node"
                         CONFIG_APPLIED=true
                     fi
-                fi
-            fi
-
-            if [ "$CONFIG_APPLIED" = false ]; then
-                print_warning "No configuration was applied"
-            fi
-
-            echo ""
-            print_success "Configuration setup complete"
-
-            if [ -f "$CONFIG_FILE" ]; then
-                print_info "Configuration file: $CONFIG_FILE"
-
-                if [ "$IS_INTERACTIVE" = true ]; then
-                    if confirm "View configuration?" "y"; then
-                        echo ""
-                        gist-cache-rs config show
+                    ;;
+                2)
+                    if gist-cache-rs config set defaults.interpreter.ts deno 2>/dev/null; then
+                        print_success "TypeScript (.ts) → deno"
+                        CONFIG_APPLIED=true
                     fi
+                    ;;
+                3)
+                    if gist-cache-rs config set defaults.interpreter.ts bun 2>/dev/null; then
+                        print_success "TypeScript (.ts) → bun"
+                        CONFIG_APPLIED=true
+                    fi
+                    ;;
+            esac
+            echo ""
+
+            # Shell scripts (.sh)
+            echo -e "${BOLD}Shell scripts (.sh):${NC}"
+            echo "  1) bash (recommended)"
+            echo "  2) sh"
+            echo "  3) zsh"
+            echo "  4) Skip"
+            read -r -p "$(echo -e "${YELLOW}Selection [1-4]: ${NC}")" SH_CHOICE
+            case $SH_CHOICE in
+                1)
+                    if gist-cache-rs config set defaults.interpreter.sh bash 2>/dev/null; then
+                        print_success "Shell (.sh) → bash"
+                        CONFIG_APPLIED=true
+                    fi
+                    ;;
+                2)
+                    if gist-cache-rs config set defaults.interpreter.sh sh 2>/dev/null; then
+                        print_success "Shell (.sh) → sh"
+                        CONFIG_APPLIED=true
+                    fi
+                    ;;
+                3)
+                    if gist-cache-rs config set defaults.interpreter.sh sh 2>/dev/null; then
+                        print_success "Shell (.sh) → zsh"
+                        CONFIG_APPLIED=true
+                    fi
+                    ;;
+            esac
+            echo ""
+
+            # PHP (.php)
+            if confirm "Configure PHP interpreter for .php files?" "n"; then
+                if gist-cache-rs config set defaults.interpreter.php php 2>/dev/null; then
+                    print_success "PHP (.php) → php"
+                    CONFIG_APPLIED=true
                 fi
             fi
-
             echo ""
-            print_info "To modify configuration later, use:"
-            echo -e "  ${CYAN}gist-cache-rs config set <key> <value>${NC}"
-            echo -e "  ${CYAN}gist-cache-rs config show${NC}"
-        else
-            print_info "Configuration setup skipped"
-            print_info "To configure later, use: gist-cache-rs config set <key> <value>"
+
+            # Perl (.pl)
+            if confirm "Configure Perl interpreter for .pl files?" "n"; then
+                if gist-cache-rs config set defaults.interpreter.pl perl 2>/dev/null; then
+                    print_success "Perl (.pl) → perl"
+                    CONFIG_APPLIED=true
+                fi
+            fi
+            echo ""
+
+            # PowerShell (.ps1)
+            if confirm "Configure PowerShell interpreter for .ps1 files?" "n"; then
+                if gist-cache-rs config set defaults.interpreter.ps1 pwsh 2>/dev/null; then
+                    print_success "PowerShell (.ps1) → pwsh"
+                    CONFIG_APPLIED=true
+                fi
+            fi
+            echo ""
+
+            # Wildcard fallback (*)
+            echo -e "${BOLD}Fallback interpreter (for unrecognized extensions):${NC}"
+            echo "  1) bash (recommended)"
+            echo "  2) python3"
+            echo "  3) sh"
+            echo "  4) Skip"
+            read -r -p "$(echo -e "${YELLOW}Selection [1-4]: ${NC}")" FALLBACK_CHOICE
+            case $FALLBACK_CHOICE in
+                1)
+                    if gist-cache-rs config set defaults.interpreter."*" bash 2>/dev/null; then
+                        print_success "Fallback (*) → bash"
+                        CONFIG_APPLIED=true
+                    fi
+                    ;;
+                2)
+                    if gist-cache-rs config set defaults.interpreter."*" python3 2>/dev/null; then
+                        print_success "Fallback (*) → python3"
+                        CONFIG_APPLIED=true
+                    fi
+                    ;;
+                3)
+                    if gist-cache-rs config set defaults.interpreter."*" sh 2>/dev/null; then
+                        print_success "Fallback (*) → sh"
+                        CONFIG_APPLIED=true
+                    fi
+                    ;;
+            esac
+            echo ""
+
+        elif [ -n "$DEFAULT_INTERPRETER" ]; then
+            # Non-interactive mode: use environment variable for wildcard only
+            if gist-cache-rs config set defaults.interpreter."*" "$DEFAULT_INTERPRETER" 2>/dev/null; then
+                print_success "Fallback (*) → $DEFAULT_INTERPRETER"
+                CONFIG_APPLIED=true
+            fi
         fi
+
+        # Additional configuration options (interactive only)
+        if [ "$IS_INTERACTIVE" = true ]; then
+            if confirm "Configure execution confirmation (safety feature)?" "n"; then
+                if gist-cache-rs config set execution.confirm_before_run true 2>/dev/null; then
+                    print_success "Execution confirmation enabled"
+                    CONFIG_APPLIED=true
+                fi
+            fi
+        fi
+
+        if [ "$CONFIG_APPLIED" = false ]; then
+            print_warning "No configuration was applied"
+        fi
+
+        echo ""
+        print_success "Configuration setup complete"
+
+        if [ -f "$CONFIG_FILE" ]; then
+            print_info "Configuration file: $CONFIG_FILE"
+
+            if [ "$IS_INTERACTIVE" = true ]; then
+                if confirm "View configuration?" "y"; then
+                    echo ""
+                    gist-cache-rs config show
+                fi
+            fi
+        fi
+
+        echo ""
+        print_info "To modify configuration later, use:"
+        echo -e "  ${CYAN}gist-cache-rs config set <key> <value>${NC}"
+        echo -e "  ${CYAN}gist-cache-rs config show${NC}"
     fi
 fi
 
