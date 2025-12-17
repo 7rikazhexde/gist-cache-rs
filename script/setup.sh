@@ -797,7 +797,7 @@ else
             fi
 
             # Ask if user wants to update existing config
-            if confirm "Update configuration?" "n"; then
+            if confirm "Update configuration?" "y"; then
                 SHOULD_SETUP_CONFIG=true
             else
                 print_info "Configuration retained without changes"

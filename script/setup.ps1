@@ -208,12 +208,12 @@ function Install-GistCache {
         }
 
         # Ask if user wants to update existing config
-        $response = Read-Host "Update configuration? (y/N)"
-        if ($response -eq "y" -or $response -eq "Y") {
-            $shouldSetupConfig = $true
-        } else {
+        $response = Read-Host "Update configuration? (Y/n)"
+        if ($response -eq "n" -or $response -eq "N") {
             Write-ColorOutput "Configuration retained without changes" "Yellow"
             $shouldSetupConfig = $false
+        } else {
+            $shouldSetupConfig = $true
         }
     } else {
         $response = Read-Host "Set up default configuration? (Y/n)"
