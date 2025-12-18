@@ -322,16 +322,16 @@ $ gist-cache-rs run --id [your_gist_id] uv input.csv
 
 ```bash
 $ gist-cache-rs cache list
-List of Cached Gists:
+List of cached Gists:
 
 ID: 7bcb324e9291fa350334df8efb7f0deb
   Description: hello_args.sh - Argument display script #bash #test
-  File: hello_args.sh
+  Files: hello_args.sh
   Updated: 2025-10-26 12:30:45
 
 ID: e3a6336c9f3476342626551372f14d6e
   Description: data_analysis.py - Pandas/NumPy usage example #python #pep723
-  File: data_analysis.py
+  Files: data_analysis.py
   Updated: 2025-10-25 18:22:10
 
 Total: 2 Gists cached
@@ -675,7 +675,15 @@ $ gist-cache-rs run data-analysis
 # View your configuration
 $ gist-cache-rs config show
 Configuration:
-  defaults.interpreter: python3
+
+[defaults]
+  [interpreter]
+    py = python3
+[execution]
+
+[cache]
+
+Config file: /home/user/.config/gist-cache/config.toml
 ```
 
 ### Example: Enable Safety Confirmation

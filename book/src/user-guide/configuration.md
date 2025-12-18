@@ -225,9 +225,17 @@ gist-cache-rs config show
 
 ```
 Configuration:
-  defaults.interpreter: python3
-  execution.confirm_before_run: true
-  cache.retention_days: 30
+
+[defaults]
+  [interpreter]
+    py = python3
+    * = bash
+[execution]
+  confirm_before_run = true
+[cache]
+  retention_days = 30
+
+Config file: /home/user/.config/gist-cache/config.toml
 ```
 
 ### Edit Configuration File
