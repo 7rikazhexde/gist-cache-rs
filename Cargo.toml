@@ -34,7 +34,7 @@ name = "gist-cache-rs"
 readme = "README.md"
 repository = "https://github.com/7rikazhexde/gist-cache-rs"
 rust-version = "1.85"
-version = "0.8.6"
+version = "0.8.7"
 
 [profile.release]
 codegen-units = 1

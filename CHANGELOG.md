@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.7] - 2025-12-18
+
+### Added
+
+- **Interactive Configuration Command** (Closes #50)
+  - New `config setting` command for interactive configuration with cursor-based UI
+  - Visual interpreter selection for each file extension using arrow keys
+  - Interactive prompts for execution settings (confirm_before_run)
+  - Interactive input for cache settings (retention_days) with validation (1-365)
+  - Current configuration values shown as defaults
+  - Extension-specific interpreter validation:
+    - `.py` → uv, python3
+    - `.rb` → ruby
+    - `.js` → node
+    - `.ts` → ts-node, deno, bun
+    - `.sh` → bash, sh, zsh, fish
+    - `.php` → php
+    - `.pl` → perl
+    - `.ps1` → pwsh
+    - `*` (fallback) → all supported interpreters
+  - Automatic shell completion support for new command
+
+- **Configuration File Setup in Installation Scripts** (Closes #48)
+  - Interactive configuration setup during installation (setup.sh, setup.ps1)
+  - Per-extension interpreter selection during setup
+  - Support for both interactive and non-interactive modes
+  - Environment variables for automation: `GIST_CACHE_SKIP_CONFIG`, `GIST_CACHE_AUTO_CONFIG`
+  - Configuration file update/retention options
+  - Automatic config directory cleanup during uninstallation
+
+### Changed
+
+- **Documentation Updates**
+  - Updated all user guide documentation with interactive config examples
+  - Changed UI interaction examples from number selection to cursor selection
+  - Added detailed configuration setup instructions to installation guide
+  - Updated command output examples to match actual execution
+  - Updated README.md and CLAUDE.md with config setting command
+  - Added config directory deletion to uninstallation instructions
+
+### Fixed
+
+- Corrected command output formats in documentation (verified against actual execution)
+- Fixed `config show` output format examples (flat → TOML section format)
+- Fixed `cache list` output examples ("File:" → "Files:")
+
 ## [0.8.6] - 2025-12-16
 
 ### Added
