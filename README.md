@@ -160,6 +160,9 @@ gist-cache-rs cache clear
 Customize default behavior with the config command:
 
 ```bash
+# Interactive configuration (Recommended)
+gist-cache-rs config setting
+
 # Set default interpreter (simple)
 gist-cache-rs config set defaults.interpreter python3
 
@@ -240,6 +243,7 @@ just lint
 # Or manually:
 # cargo uninstall gist-cache-rs
 # rm -rf ~/.cache/gist-cache/
+# rm -rf ~/.config/gist-cache/
 ```
 
 **Windows:**
@@ -249,6 +253,7 @@ just lint
 # Or manually:
 # cargo uninstall gist-cache-rs
 # Remove-Item -Recurse -Force "$env:LOCALAPPDATA\gist-cache"
+# Remove-Item -Recurse -Force "$env:APPDATA\gist-cache"
 ```
 
 ## Contributing

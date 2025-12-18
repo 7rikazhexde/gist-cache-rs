@@ -306,7 +306,7 @@ After installation, restart your shell or reload the configuration file to test 
 ```bash
 $ gist-cache-rs [Tab]
 -h           -V           --help       --version
-update       run          cache        completions  help
+update       run          cache        config       completions  help
 ```
 
 **Complete options:**
@@ -354,7 +354,7 @@ Options:
 
 ```powershell
 PS> gist-cache-rs [Tab]
-# Cycles through: update, run, cache, completions, help, -h, --help, -V, --version
+# Cycles through: update, run, cache, config, completions, help, -h, --help, -V, --version
 ```
 
 **Complete options:**

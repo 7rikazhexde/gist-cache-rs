@@ -78,8 +78,19 @@ cd gist-cache-rs
 3. 🔨 Release build
 4. 📦 Select installation method
 5. ⚙️ Perform installation
-6. 🔄 Initial cache creation
-7. ⌨️ Alias setup (optional)
+6. ⚙️ Configuration file setup (optional - v0.8.7+)
+   - Interactive interpreter selection for each file extension
+   - Python (.py): uv or python3
+   - Ruby (.rb): ruby
+   - JavaScript (.js): node
+   - TypeScript (.ts): ts-node, deno, or bun
+   - Shell (.sh): bash, sh, or zsh
+   - PHP (.php): php
+   - Perl (.pl): perl
+   - PowerShell (.ps1): pwsh
+   - Fallback (*): bash, python3, or sh
+7. 🔄 Initial cache creation
+8. ⌨️ Alias setup (optional)
 
 #### Windows
 
@@ -97,7 +108,18 @@ cd gist-cache-rs
 1. ✅ Prerequisite check (Rust, GitHub CLI)
 2. 🔨 Release build
 3. 📦 Perform cargo install
-4. 🔄 Initial cache creation (optional)
+4. ⚙️ Configuration file setup (optional - v0.8.7+)
+   - Interactive interpreter selection for each file extension
+   - Python (.py): uv or python3
+   - Ruby (.rb): ruby
+   - JavaScript (.js): node
+   - TypeScript (.ts): ts-node, deno, or bun
+   - Shell (.sh): bash, sh, or zsh
+   - PHP (.php): php
+   - Perl (.pl): perl
+   - PowerShell (.ps1): pwsh
+   - Fallback (*): bash, python3, or sh
+5. 🔄 Initial cache creation (optional)
 
 **Installation location:**
 
@@ -107,8 +129,8 @@ cd gist-cache-rs
 ### Method 2: cargo install (All platforms)
 
 ```bash
-car go build --release
-car go install --path .
+cargo build --release
+cargo install --path .
 ```
 
 **Installation location:**
@@ -138,7 +160,7 @@ Cargo's bin directory is automatically added to PATH. If not set:
 ### Method 3: System directory
 
 ```bash
-car go build --release
+cargo build --release
 sudo cp target/release/gist-cache-rs /usr/local/bin/
 ```
 
@@ -148,7 +170,7 @@ sudo cp target/release/gist-cache-rs /usr/local/bin/
 ### Method 4: User directory
 
 ```bash
-car go build --release
+cargo build --release
 mkdir -p ~/bin
 cp target/release/gist-cache-rs ~/bin/
 ```
@@ -166,7 +188,7 @@ source ~/.bashrc
 ### Method 5: Symbolic link (for developers)
 
 ```bash
-car go build --release
+cargo build --release
 
 # Link to /usr/local/bin (requires sudo)
 sudo ln -sf "$(pwd)/target/release/gist-cache-rs" /usr/local/bin/gist-cache-rs
@@ -180,7 +202,40 @@ ln -sf "$(pwd)/target/release/gist-cache-rs" ~/bin/gist-cache-rs
 
 ## Post-Installation Setup
 
-### 1. Initial Cache Creation
+### 1. Configuration Setup (Recommended)
+
+If you didn't set up configuration during installation, you can configure it anytime:
+
+**Interactive Setup (Recommended):**
+
+```bash
+# Use interactive configuration with cursor-based UI
+gist-cache-rs config setting
+```
+
+This will guide you through:
+
+- Selecting interpreters for each file extension (.py, .rb, .js, .ts, .sh, .php, .pl, .ps1)
+- Setting fallback interpreter for unknown extensions (*)
+- Configuring execution settings (confirm_before_run)
+- Setting cache retention period
+
+**Manual Configuration:**
+
+```bash
+# Set interpreter for Python files
+gist-cache-rs config set defaults.interpreter.py python3
+
+# Set fallback interpreter
+gist-cache-rs config set defaults.interpreter."*" bash
+
+# View configuration
+gist-cache-rs config show
+```
+
+For more details, see the [Configuration Guide](configuration.md).
+
+### 2. Initial Cache Creation
 
 ```bash
 gist-cache-rs update
@@ -192,7 +247,7 @@ Detailed display:
 gist-cache-rs update --verbose
 ```
 
-### 2. Alias Setting (Optional)
+### 3. Alias Setting (Optional)
 
 #### Automatic setting (when using setup.sh)
 
@@ -301,11 +356,11 @@ chmod +x ~/bin/gist-cache-rs
 rustup update
 
 # Update dependencies
-car go update
+cargo update
 
 # Clean build
-car go clean
-car go build --release
+cargo clean
+cargo build --release
 ```
 
 ### GitHub CLI authentication error
@@ -389,7 +444,7 @@ Interactively select:
 
 ```bash
 # If installed with cargo
-car go uninstall gist-cache-rs
+cargo uninstall gist-cache-rs
 
 # If installed in system directory
 sudo rm /usr/local/bin/gist-cache-rs
@@ -399,6 +454,9 @@ rm ~/bin/gist-cache-rs
 
 # Delete cache directory
 rm -rf ~/.cache/gist-cache/
+
+# Delete config directory
+rm -rf ~/.config/gist-cache/
 
 # Remove aliases (delete relevant lines from ~/.bashrc or ~/.zshrc)
 # Example:
@@ -410,10 +468,13 @@ rm -rf ~/.cache/gist-cache/
 
 ```powershell
 # If installed with cargo
-car go uninstall gist-cache-rs
+cargo uninstall gist-cache-rs
 
 # Delete cache directory
 Remove-Item -Recurse -Force "$env:LOCALAPPDATA\gist-cache"
+
+# Delete config directory
+Remove-Item -Recurse -Force "$env:APPDATA\gist-cache"
 ```
 
 ## Next Steps

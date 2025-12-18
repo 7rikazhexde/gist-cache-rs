@@ -65,6 +65,8 @@ pub enum ConfigCommands {
     Get(GetConfigArgs),
     /// Show all configuration values
     Show,
+    /// Interactive configuration setting
+    Setting,
     /// Edit configuration file in $EDITOR
     Edit,
     /// Reset configuration to defaults
@@ -1147,12 +1149,149 @@ pub fn handle_config_command(mut config: Config, args: ConfigArgs) -> Result<()>
             println!("{}", "✓ Configuration file edited".green());
         }
 
+        ConfigCommands::Setting => {
+            interactive_config_setting(&mut config)?;
+        }
+
         ConfigCommands::Reset => {
             config.reset_config()?;
 
             println!("{}", "✓ Configuration reset to defaults".green());
         }
     }
+
+    Ok(())
+}
+
+fn interactive_config_setting(config: &mut Config) -> Result<()> {
+    use crate::config::{SUPPORTED_EXTENSIONS, get_valid_interpreters_for_extension};
+    use colored::Colorize;
+    use dialoguer::{Confirm, Input, Select};
+
+    println!("{}", "Interactive Configuration Setting".bold().cyan());
+    println!();
+    println!("Configure interpreters for each file extension and other settings.");
+    println!();
+
+    // Configure interpreters for each extension
+    for extension in SUPPORTED_EXTENSIONS.iter() {
+        let interpreters = get_valid_interpreters_for_extension(extension);
+
+        if interpreters.is_empty() {
+            continue;
+        }
+
+        let extension_display = if *extension == "*" {
+            "* (fallback/default)".to_string()
+        } else {
+            format!(".{}", extension)
+        };
+
+        println!(
+            "{}",
+            format!("Select interpreter for {}", extension_display).bold()
+        );
+
+        // Get current value if exists
+        let current_value = config.get_config_value(&format!("defaults.interpreter.{}", extension));
+        let default_index = if let Some(ref current) = current_value {
+            interpreters.iter().position(|&i| i == current).unwrap_or(0)
+        } else {
+            0
+        };
+
+        let selection = Select::new()
+            .with_prompt(format!("  Interpreter for {}", extension_display))
+            .items(interpreters)
+            .default(default_index)
+            .interact()
+            .map_err(|e| GistCacheError::Config(format!("Failed to get user input: {}", e)))?;
+
+        let selected_interpreter = interpreters[selection];
+
+        // Set the configuration
+        config.set_config_value(
+            &format!("defaults.interpreter.{}", extension),
+            selected_interpreter,
+        )?;
+
+        println!(
+            "  {} Set {}: {}",
+            "✓".green(),
+            extension_display,
+            selected_interpreter.yellow()
+        );
+        println!();
+    }
+
+    // Configure confirm_before_run
+    println!("{}", "Execution Settings".bold());
+
+    let current_confirm = config
+        .user_config
+        .execution
+        .as_ref()
+        .and_then(|e| e.confirm_before_run)
+        .unwrap_or(false);
+
+    let confirm_before_run = Confirm::new()
+        .with_prompt("  Confirm before running scripts?")
+        .default(current_confirm)
+        .interact()
+        .map_err(|e| GistCacheError::Config(format!("Failed to get user input: {}", e)))?;
+
+    config.set_config_value(
+        "execution.confirm_before_run",
+        &confirm_before_run.to_string(),
+    )?;
+    println!(
+        "  {} Set confirm_before_run: {}",
+        "✓".green(),
+        confirm_before_run.to_string().yellow()
+    );
+    println!();
+
+    // Configure retention_days
+    println!("{}", "Cache Settings".bold());
+
+    let current_retention = config
+        .user_config
+        .cache
+        .as_ref()
+        .and_then(|c| c.retention_days)
+        .unwrap_or(30);
+
+    let retention_days: u32 = Input::new()
+        .with_prompt("  Cache retention days (1-365)")
+        .default(current_retention)
+        .validate_with(|input: &u32| -> std::result::Result<(), &str> {
+            if *input >= 1 && *input <= 365 {
+                Ok(())
+            } else {
+                Err("Value must be between 1 and 365")
+            }
+        })
+        .interact_text()
+        .map_err(|e| GistCacheError::Config(format!("Failed to get user input: {}", e)))?;
+
+    config.set_config_value("cache.retention_days", &retention_days.to_string())?;
+    println!(
+        "  {} Set retention_days: {}",
+        "✓".green(),
+        retention_days.to_string().yellow()
+    );
+    println!();
+
+    // Save configuration
+    config.save_user_config()?;
+
+    println!();
+    println!("{}", "✓ Configuration saved successfully!".green().bold());
+    println!();
+    println!(
+        "{}",
+        format!("Config file: {}", config.config_file.display()).dimmed()
+    );
 
     Ok(())
 }
