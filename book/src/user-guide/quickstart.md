@@ -106,6 +106,20 @@ gist-cache-rs run data_analysis.py python3 input.csv --output result.json
 
 Set up your preferences with the config command:
 
+### Method 1: Interactive Setup (Recommended - v0.8.7+)
+
+```bash
+# Interactive configuration with cursor-based UI
+gist-cache-rs config setting
+
+# Follow the prompts to:
+# - Select interpreters for each file extension
+# - Configure execution settings
+# - Set cache retention period
+```
+
+### Method 2: Manual Commands
+
 ```bash
 # Set default interpreter (saves time)
 gist-cache-rs config set defaults.interpreter python3
@@ -139,6 +153,9 @@ gcrsr backup bash    # Execute Gist
 ### Configuration Management
 
 ```bash
+# Interactive configuration setup (recommended)
+gist-cache-rs config setting
+
 # Set configuration values
 gist-cache-rs config set defaults.interpreter python3
 gist-cache-rs config set execution.confirm_before_run true

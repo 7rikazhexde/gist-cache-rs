@@ -72,20 +72,27 @@ show_usage() {
 $ gist-cache-rs run -p create
 Multiple Gists found:
 
- 1. A script to create 100 folders with sequential numbers (start number to end number) in a specified path. #bash | create_folders.sh
- 2. Create GitHub Gist with CLI | create_gist.sh
- 3. Create multiple directories | create_dirs.sh
- 4. Create backup archive | create_backup.sh
- 5. Create project template | create_template.sh
- 6. Create Docker container | create_container.sh
- 7. Create test data | create_testdata.py
-
-Select a number (1-7): 1
+? Select a Gist
+  > A script to create 100 folders with sequential numbers (start number to end number) in a specified path. #bash | create_folders.sh
+    Create GitHub Gist with CLI | create_gist.sh
+    Create multiple directories | create_dirs.sh
+    Create backup archive | create_backup.sh
+    Create project template | create_template.sh
+    Create Docker container | create_container.sh
+    Create test data | create_testdata.py
+  [↑↓ to move, enter to select, type to filter]
 
 Description: A script to create 100 folders with sequential numbers (start number to end number) in a specified path. #bash
 Files: create_folders.sh
 # ... (content displayed)
 ```
+
+**Key Points:**
+
+- 🖱️ Use **arrow keys** (↑↓) to navigate between options
+- ⌨️ Press **Enter** to select the highlighted item
+- 🔍 **Type** to filter the list in real-time
+- ❌ Press **Esc** or **Ctrl+C** to cancel
 
 #### Execute in interactive mode
 
@@ -149,10 +156,10 @@ Processing completed.
 $ gist-cache-rs run -p '#pep723'
 Multiple Gists found:
 
- 1. data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv | data_analysis.py
- 2. uv_test.py - UV temporary installation test #python #pandas #numpy #uv #pep723 | uv_test.py
-
-Select a number (1-2): 1
+? Select a Gist
+  > data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv | data_analysis.py
+    uv_test.py - UV temporary installation test #python #pandas #numpy #uv #pep723 | uv_test.py
+  [↑↓ to move, enter to select]
 
 Description: data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv
 Files: data_analysis.py
@@ -214,10 +221,10 @@ if __name__ == "__main__":
 $ gist-cache-rs run 723 uv sample/input.csv
 Multiple Gists found:
 
- 1. data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv | data_analysis.py
- 2. uv_test.py - UV temporary installation test #python #pandas #numpy #uv #pep723 | uv_test.py
-
-Select a number (1-2): 1
+? Select a Gist
+  > data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv | data_analysis.py
+    uv_test.py - UV temporary installation test #python #pandas #numpy #uv #pep723 | uv_test.py
+  [↑↓ to move, enter to select]
 
 Description: data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv
 Files: data_analysis.py
@@ -604,6 +611,53 @@ Executing: utility.sh (bash)
 ---
 
 ## Configuration Examples
+
+### Example: Interactive Configuration Setup (Recommended)
+
+**New in v0.8.7**: Use the interactive configuration command to set up all settings at once:
+
+```bash
+$ gist-cache-rs config setting
+Interactive Configuration Setting
+
+Configure interpreters for each file extension and other settings.
+
+Select interpreter for .py
+? Interpreter for .py
+  > uv
+    python3
+  [↑↓ to move, enter to select]
+
+✓ Set .py: uv
+
+Select interpreter for .rb
+? Interpreter for .rb
+  > ruby
+  [↑↓ to move, enter to select]
+
+✓ Set .rb: ruby
+
+# ... (continues for all extensions)
+
+Execution Settings
+? Confirm before running scripts? (Y/n): n
+✓ Set confirm_before_run: false
+
+Cache Settings
+? Cache retention days (1-365) [30]: 60
+✓ Set retention_days: 60
+
+✓ Configuration saved successfully!
+
+Config file: /home/user/.config/gist-cache/config.toml
+```
+
+**Key Points:**
+
+- 🎯 **Interactive UI**: Configure all settings with cursor navigation
+- 🔍 **Current values shown**: Existing settings appear as defaults
+- ✅ **Validation**: Invalid values are rejected before saving
+- 💾 **Auto-save**: All settings saved automatically when complete
 
 ### Example: Set Default Interpreter
 
