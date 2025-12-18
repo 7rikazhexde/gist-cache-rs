@@ -79,6 +79,16 @@ cd gist-cache-rs
 4. 📦 Select installation method
 5. ⚙️ Perform installation
 6. ⚙️ Configuration file setup (optional - v0.8.7+)
+   - Interactive interpreter selection for each file extension
+   - Python (.py): uv or python3
+   - Ruby (.rb): ruby
+   - JavaScript (.js): node
+   - TypeScript (.ts): ts-node, deno, or bun
+   - Shell (.sh): bash, sh, or zsh
+   - PHP (.php): php
+   - Perl (.pl): perl
+   - PowerShell (.ps1): pwsh
+   - Fallback (*): bash, python3, or sh
 7. 🔄 Initial cache creation
 8. ⌨️ Alias setup (optional)
 
@@ -99,6 +109,16 @@ cd gist-cache-rs
 2. 🔨 Release build
 3. 📦 Perform cargo install
 4. ⚙️ Configuration file setup (optional - v0.8.7+)
+   - Interactive interpreter selection for each file extension
+   - Python (.py): uv or python3
+   - Ruby (.rb): ruby
+   - JavaScript (.js): node
+   - TypeScript (.ts): ts-node, deno, or bun
+   - Shell (.sh): bash, sh, or zsh
+   - PHP (.php): php
+   - Perl (.pl): perl
+   - PowerShell (.ps1): pwsh
+   - Fallback (*): bash, python3, or sh
 5. 🔄 Initial cache creation (optional)
 
 **Installation location:**
@@ -182,7 +202,40 @@ ln -sf "$(pwd)/target/release/gist-cache-rs" ~/bin/gist-cache-rs
 
 ## Post-Installation Setup
 
-### 1. Initial Cache Creation
+### 1. Configuration Setup (Recommended)
+
+If you didn't set up configuration during installation, you can configure it anytime:
+
+**Interactive Setup (Recommended):**
+
+```bash
+# Use interactive configuration with cursor-based UI
+gist-cache-rs config setting
+```
+
+This will guide you through:
+
+- Selecting interpreters for each file extension (.py, .rb, .js, .ts, .sh, .php, .pl, .ps1)
+- Setting fallback interpreter for unknown extensions (*)
+- Configuring execution settings (confirm_before_run)
+- Setting cache retention period
+
+**Manual Configuration:**
+
+```bash
+# Set interpreter for Python files
+gist-cache-rs config set defaults.interpreter.py python3
+
+# Set fallback interpreter
+gist-cache-rs config set defaults.interpreter."*" bash
+
+# View configuration
+gist-cache-rs config show
+```
+
+For more details, see the [Configuration Guide](configuration.md).
+
+### 2. Initial Cache Creation
 
 ```bash
 gist-cache-rs update
@@ -194,7 +247,7 @@ Detailed display:
 gist-cache-rs update --verbose
 ```
 
-### 2. Alias Setting (Optional)
+### 3. Alias Setting (Optional)
 
 #### Automatic setting (when using setup.sh)
 
