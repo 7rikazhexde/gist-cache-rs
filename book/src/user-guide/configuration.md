@@ -119,6 +119,59 @@ gist-cache-rs config set cache.retention_days 30
 
 ## Configuration Commands
 
+### Interactive Configuration Setting
+
+**New in v0.8.7**: Configure all settings interactively using a cursor-based menu:
+
+```bash
+gist-cache-rs config setting
+```
+
+This command provides an interactive interface to configure all settings with visual selection:
+
+- **Interpreter selection**: Choose interpreters for each file extension using cursor keys
+- **Execution settings**: Toggle `confirm_before_run` with Yes/No prompt
+- **Cache settings**: Set retention days with validation (1-365)
+- **Current values**: Shows current configuration values as defaults
+- **Validation**: Prevents invalid values before saving
+
+**Example flow:**
+
+```
+Interactive Configuration Setting
+
+Configure interpreters for each file extension and other settings.
+
+Select interpreter for .py
+  Interpreter for .py
+  > uv
+    python3
+
+✓ Set .py: uv
+
+Select interpreter for .rb
+  Interpreter for .rb
+  > ruby
+
+✓ Set .rb: ruby
+
+...
+
+Execution Settings
+  Confirm before running scripts? (Y/n): n
+✓ Set confirm_before_run: false
+
+Cache Settings
+  Cache retention days (1-365) [30]: 60
+✓ Set retention_days: 60
+
+✓ Configuration saved successfully!
+
+Config file: /home/user/.config/gist-cache/config.toml
+```
+
+This is the recommended way to configure `gist-cache-rs`, especially for first-time setup or when you want to review all available options.
+
 ### Set a Configuration Value
 
 ```bash
@@ -254,6 +307,20 @@ gist-cache-rs run data-analysis
 
 For mixed-language projects, configure different interpreters for different file types:
 
+#### Method 1: Interactive (Recommended)
+
+```bash
+# Use interactive configuration (v0.8.7+)
+gist-cache-rs config setting
+
+# Follow the prompts to select interpreters for each extension
+# - Use arrow keys to navigate
+# - Press Enter to confirm selection
+# - All settings are validated before saving
+```
+
+#### Method 2: Manual CLI commands
+
 ```bash
 # Configure interpreters for different languages
 gist-cache-rs config set defaults.interpreter.py python3
@@ -264,7 +331,11 @@ gist-cache-rs config set defaults.interpreter."*" bash
 
 # View your configuration
 gist-cache-rs config show
+```
 
+**Result:**
+
+```bash
 # Now scripts automatically use the right interpreter
 gist-cache-rs run data-script      # .py file → uses python3
 gist-cache-rs run deploy-script    # .rb file → uses ruby
@@ -328,17 +399,20 @@ This is particularly useful for:
 
 ## Tips
 
-1. **Start with safe defaults**: Enable `confirm_before_run` when you're new to the tool
-2. **Use per-extension configuration**: Set up interpreters for each file type you commonly use
-3. **Set a wildcard fallback**: Configure `defaults.interpreter."*"` to handle unknown file types
-4. **Leverage shebang detection**: Scripts with shebangs automatically use the correct interpreter
-5. **Regular cleanup**: Set an appropriate `retention_days` value to keep your cache clean
-6. **Check before reset**: Use `config show` before `config reset` to review your settings
-7. **Edit directly for complex changes**: Use `config edit` to modify multiple settings at once
-8. **Override when needed**: Command-line arguments always take precedence over configuration
+1. **Use interactive setup first**: Run `config setting` for first-time configuration (v0.8.7+)
+2. **Start with safe defaults**: Enable `confirm_before_run` when you're new to the tool
+3. **Use per-extension configuration**: Set up interpreters for each file type you commonly use
+4. **Set a wildcard fallback**: Configure `defaults.interpreter."*"` to handle unknown file types
+5. **Leverage shebang detection**: Scripts with shebangs automatically use the correct interpreter
+6. **Regular cleanup**: Set an appropriate `retention_days` value to keep your cache clean
+7. **Check before reset**: Use `config show` before `config reset` to review your settings
+8. **Interactive vs. Manual**: Use `config setting` for guided setup, `config set` for quick changes
+9. **Edit directly for complex changes**: Use `config edit` to modify multiple settings at once
+10. **Override when needed**: Command-line arguments always take precedence over configuration
 
 ## Related Commands
 
+- `gist-cache-rs config setting` - Interactive configuration (v0.8.7+)
 - `gist-cache-rs config --help` - Show config command help
 - `gist-cache-rs cache clean --help` - Cache cleanup options
 - `gist-cache-rs run --help` - Script execution options

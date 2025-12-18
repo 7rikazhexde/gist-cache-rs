@@ -3,6 +3,28 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+/// Supported file extensions for interpreter configuration
+pub const SUPPORTED_EXTENSIONS: &[&str] = &["py", "rb", "js", "ts", "sh", "php", "pl", "ps1", "*"];
+
+/// Get valid interpreters for a specific extension
+pub fn get_valid_interpreters_for_extension(extension: &str) -> &'static [&'static str] {
+    match extension {
+        "py" => &["uv", "python3"],
+        "rb" => &["ruby"],
+        "js" => &["node"],
+        "ts" => &["ts-node", "deno", "bun"],
+        "sh" => &["bash", "sh", "zsh", "fish"],
+        "php" => &["php"],
+        "pl" => &["perl"],
+        "ps1" => &["pwsh"],
+        "*" => &[
+            "bash", "sh", "zsh", "fish", "python3", "uv", "ruby", "node", "ts-node", "deno", "bun",
+            "php", "perl", "pwsh", "make",
+        ],
+        _ => &[],
+    }
+}
+
 /// Interpreter setting that can be either a single string (legacy) or a map of extensions
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
