@@ -94,6 +94,9 @@ Supported shells: Bash, Zsh, Fish, PowerShell
 Full configuration management with CLI commands:
 
 ```bash
+# Interactive configuration (Recommended)
+gist-cache-rs config setting
+
 # View current configuration
 gist-cache-rs config show
 
