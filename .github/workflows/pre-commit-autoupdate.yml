@@ -49,7 +49,7 @@ jobs:
 
       - name: Install Just
         if: steps.check_changes.outputs.changed == 'true'
-        uses: extractions/setup-just@v2
+        uses: extractions/setup-just@v3
 
       - name: Test updated hooks
         if: steps.check_changes.outputs.changed == 'true'
