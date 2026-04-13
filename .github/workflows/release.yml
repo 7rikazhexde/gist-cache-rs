@@ -103,7 +103,7 @@ jobs:
           find artifacts -type f -exec mv {} . \;
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && 'test-release' || github.ref_name }}
           name: ${{ github.event_name == 'workflow_dispatch' && '[TEST] Workflow Test Release' || format('Release {0}', github.ref_name) }}
