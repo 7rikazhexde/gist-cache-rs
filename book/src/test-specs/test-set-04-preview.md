@@ -32,25 +32,26 @@ To confirm that the gist-cache-rs preview function (`-p`/`--preview`) works corr
 **Steps**:
 
 1. Search with `-p` option: `gist-cache-rs run -p hello bash`
-2. Select one from multiple candidates (e.g., number 7).
+2. Move the highlight to one of the candidates with `↑`/`↓` (e.g., the 7th item) and press `Enter`.
 3. Check displayed content.
 
 **Expected Result**:
 
-- Multiple Gists are displayed in a numbered list.
-- After selecting a number, the following are displayed:
+- Multiple Gists are displayed in an arrow-key-navigable list.
+- After pressing `Enter` on a highlighted item, the following are displayed:
   - Description
   - Files
   - `=== Gist Content ===` section
   - `--- Filename ---` header
-  - File content (source code)
+  - File content (source code), syntax-highlighted
 - Script is not executed (no version information or argument display).
 
 **Verification Items**:
 
 - Preview mode launches correctly.
-- Gist content is displayed correctly.
+- Gist content is displayed correctly with syntax highlighting.
 - Exits without executing.
+- (Optional) Pressing `Space` on a highlighted item before `Enter` opens the same content in an in-picker preview viewer, without exiting the list.
 
 ---
 
