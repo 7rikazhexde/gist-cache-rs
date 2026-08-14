@@ -322,7 +322,7 @@ pub fn run_gist(config: Config, args: RunArgs) -> Result<()> {
         );
         results[0]
     } else {
-        search::select_from_results(&results)?
+        search::select_from_results(&results, &config.contents_dir)?
     };
 
     let mut script_args = args.script_args;
