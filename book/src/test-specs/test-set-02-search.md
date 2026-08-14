@@ -34,7 +34,7 @@ To confirm that the gist-cache-rs search functionality operates correctly as des
 
 1. Search by keyword "hello": `gist-cache-rs run hello bash`
 2. Check search results.
-3. If multiple candidates are displayed, select a number and execute.
+3. If multiple candidates are displayed, highlight one with `↑`/`↓` and press `Enter` to execute.
 
 **Expected Result**:
 
@@ -135,7 +135,7 @@ To confirm that the gist-cache-rs search functionality operates correctly as des
 
 ### TC5: Selection from Multiple Candidates
 
-**Objective**: Confirm that the UI for selecting by number from multiple search results works correctly.
+**Objective**: Confirm that the interactive picker for selecting from multiple search results works correctly.
 
 **Prerequisites**:
 
@@ -144,22 +144,24 @@ To confirm that the gist-cache-rs search functionality operates correctly as des
 **Steps**:
 
 1. Search with a keyword that hits multiple results: `gist-cache-rs run hello bash`
-2. Check the displayed candidate list.
-3. Select a number (e.g., enter 4 and press Enter).
+2. Check the displayed candidate list (description/filename, deduplicated and truncated to fit the terminal).
+3. Move the highlight with `↑`/`↓` (e.g., down to the 4th item) and press `Enter`.
 4. Confirm that the selected Gist is executed.
 
 **Expected Result**:
 
-- Multiple Gists are displayed in a numbered list.
-- Description and filename of each Gist are displayed.
-- "Select a number (1-N):" prompt is displayed.
-- Gist corresponding to the entered number is executed.
+- Multiple Gists are displayed in a scrollable, arrow-key-navigable list running in the terminal's alternate screen buffer.
+- Description and filename of each Gist are displayed (long entries truncated by default; `Tab` toggles full display).
+- A footer shows the current position (`[n/total]`) and full/short state.
+- Gist corresponding to the highlighted item is executed after `Enter`.
 
 **Verification Items**:
 
-- Numbered list is displayed correctly.
-- Entering a valid number executes the corresponding Gist.
-- Error handling for invalid numbers (0, out of range, string, etc.).
+- List is displayed correctly and scrolls to keep the selection visible when there are more results than fit on screen.
+- `↑`/`↓` moves the highlight; `Enter` executes the highlighted Gist.
+- `Tab` toggles full/short item display.
+- `Space` opens a syntax-highlighted content preview of the highlighted Gist without leaving the list.
+- `/` filters the list (regex supported, falls back to literal substring matching); `Esc` clears the filter or cancels the picker.
 
 ---
 

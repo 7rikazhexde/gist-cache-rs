@@ -145,7 +145,7 @@ src/
    - Command-line argument → Shebang → User config → Filename heuristics → Content analysis → Fallback
 5. **Flexible Configuration**: Extension-based interpreter mapping with wildcard fallback support
 6. **Shell Completions**: Auto-generated completions for Bash, Zsh, Fish, PowerShell
-7. **Interactive UI**: Progress bars, spinners, and arrow-key navigation using `indicatif` and `dialoguer`
+7. **Interactive UI**: Progress bars/spinners (`indicatif`), configuration prompts (`dialoguer`), and a custom `console`-based Gist picker (alternate-screen buffer, `/` regex filter, `Space` syntax-highlighted preview with its own `/` search)
 8. **Platform-Specific Paths**: Conditional compilation for Unix/Windows compatibility
 
 ## Important Notes
@@ -154,7 +154,7 @@ src/
 - Cache path overridable via `GIST_CACHE_DIR` environment variable (for testing)
 - Config path also follows `GIST_CACHE_DIR` override for testing isolation
 - Tests use `MockGitHubClient` for isolation
-- Current test count: 148 tests
+- Current test count: 185 tests
 - Configuration stored in platform-specific locations:
   - Unix: `~/.config/gist-cache/config.toml`
   - Windows: `%APPDATA%\gist-cache\config.toml`
@@ -203,12 +203,13 @@ GitHub Actions automatically builds releases for:
 
 - Core: tokio, serde, anyhow, thiserror
 - CLI: clap (v4.5), clap_complete (v4.5), colored (v3.0)
-- UI: dialoguer (v0.12), indicatif (v0.18)
-- Utils: chrono (v0.4), dirs (v6.0), toml (v0.9), tokei (v13.0)
+- UI: dialoguer (v0.12), indicatif (v0.18), console (v0.16)
+- Search/preview: fancy-regex (v0.16), syntect (v5.3), two-face (v0.5)
+- Utils: chrono (v0.4), dirs (v6.0), toml (v1.0), tokei (v14.0)
 
 **Development**:
 
-- Testing: mockall (v0.14), assert_cmd (v2.0), predicates (v3.1), serial_test (v3.0)
+- Testing: mockall (v0.15), assert_cmd (v2.0), predicates (v3.1), serial_test (v4.0)
 - Utils: tempfile (v3.8)
 
 For detailed information, always refer to the [full documentation](https://7rikazhexde.github.io/gist-cache-rs/).

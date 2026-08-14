@@ -72,27 +72,31 @@ show_usage() {
 $ gist-cache-rs run -p create
 Multiple Gists found:
 
-? Select a Gist
-  > A script to create 100 folders with sequential numbers (start number to end number) in a specified path. #bash | create_folders.sh
-    Create GitHub Gist with CLI | create_gist.sh
-    Create multiple directories | create_dirs.sh
-    Create backup archive | create_backup.sh
-    Create project template | create_template.sh
-    Create Docker container | create_container.sh
-    Create test data | create_testdata.py
-  [↑↓ to move, enter to select, type to filter]
+? Select a Gist (↑/↓ move, Space preview, Tab full/short, / filter, Enter select, Esc cancel)
+Filter: (press / to narrow results)
+❯ A script to create 100 folders with sequential numbers (start number to end number) in a spe...
+  Create GitHub Gist with CLI - create_gist.sh
+  Create multiple directories - create_dirs.sh
+  Create backup archive - create_backup.sh
+  Create project template - create_template.sh
+  Create Docker container - create_container.sh
+  Create test data - create_testdata.py
+  [1/7] (Tab: short)
+✔ Select a Gist · A script to create 100 folders with sequential numbers (start number to end number) in a specified path. #bash - create_folders.sh
 
 Description: A script to create 100 folders with sequential numbers (start number to end number) in a specified path. #bash
 Files: create_folders.sh
-# ... (content displayed)
+# ... (content displayed, syntax-highlighted)
 ```
 
 **Key Points:**
 
 - 🖱️ Use **arrow keys** (↑↓) to navigate between options
 - ⌨️ Press **Enter** to select the highlighted item
-- 🔍 **Type** to filter the list in real-time
-- ❌ Press **Esc** or **Ctrl+C** to cancel
+- 📏 Press **Tab** to toggle between the truncated and full item text (long entries are shortened by default)
+- 👁️ Press **Space** to open a full-screen, syntax-highlighted preview of the highlighted Gist without leaving the list
+- 🔍 Press **/** to filter the list live (regex supported, falls back to a literal substring match)
+- ❌ Press **Esc** to clear an active filter, or to cancel the picker if no filter is active (**Ctrl+C** always cancels)
 
 #### Execute in interactive mode
 
@@ -156,10 +160,12 @@ Processing completed.
 $ gist-cache-rs run -p '#pep723'
 Multiple Gists found:
 
-? Select a Gist
-  > data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv | data_analysis.py
-    uv_test.py - UV temporary installation test #python #pandas #numpy #uv #pep723 | uv_test.py
-  [↑↓ to move, enter to select]
+? Select a Gist (↑/↓ move, Space preview, Tab full/short, / filter, Enter select, Esc cancel)
+Filter: (press / to narrow results)
+❯ data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv
+  uv_test.py - UV temporary installation test #python #pandas #numpy #uv #pep723
+  [1/2] (Tab: short)
+✔ Select a Gist · data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv
 
 Description: data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv
 Files: data_analysis.py
@@ -221,10 +227,12 @@ if __name__ == "__main__":
 $ gist-cache-rs run 723 uv sample/input.csv
 Multiple Gists found:
 
-? Select a Gist
-  > data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv | data_analysis.py
-    uv_test.py - UV temporary installation test #python #pandas #numpy #uv #pep723 | uv_test.py
-  [↑↓ to move, enter to select]
+? Select a Gist (↑/↓ move, Space preview, Tab full/short, / filter, Enter select, Esc cancel)
+Filter: (press / to narrow results)
+❯ data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv
+  uv_test.py - UV temporary installation test #python #pandas #numpy #uv #pep723
+  [1/2] (Tab: short)
+✔ Select a Gist · data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv
 
 Description: data_analysis.py - Pandas/NumPy usage example #python #pandas #numpy #uv #pep723 #csv
 Files: data_analysis.py

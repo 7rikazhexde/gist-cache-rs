@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Interactive Gist Selection and Preview Overhaul** (Closes #74)
+  - Selection list items are now deduplicated (no more repeated filename when it's already part of the description) and truncated to a readable width, with `Tab` to toggle full/short display
+  - `Space` opens an in-picker, syntax-highlighted content preview without leaving the list — no re-selection/re-fetch needed to look again
+  - Preview viewer shows line numbers and a cursor indicator, scrolls with `↑`/`↓`/`PageUp`/`PageDown`/`Home`/`End`, and keeps the description and current file's header pinned at the top while the body scrolls
+  - `/` filters the selection list (regex supported, falls back to literal substring matching for invalid patterns)
+  - `/` inside the preview viewer searches the file content, jumping to matches; `n`/`N` repeat the search forward/backward
+  - `--preview` output is now syntax-highlighted
+  - The picker now runs inside the terminal's alternate screen buffer, so it never leaves redraw artifacts in the shell's scrollback
+
 ## [0.8.7] - 2025-12-18
 
 ### Added

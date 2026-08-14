@@ -2,6 +2,7 @@ use crate::cache::ContentCache;
 use crate::cache::types::GistInfo;
 use crate::config::Config;
 use crate::error::{GistCacheError, Result};
+use crate::execution::highlight::highlight_content;
 use crate::github::GitHubApi;
 use colored::Colorize;
 use std::fs;
@@ -97,6 +98,8 @@ impl ScriptRunner {
     fn preview_content(&self) -> Result<()> {
         println!("{}", "=== Gist Content ===".cyan().bold());
 
+        let colorize = console::Term::stdout().features().colors_supported();
+
         for file in &self.gist.files {
             println!("\n{}", format!("--- {} ---", file.filename).yellow().bold());
 
@@ -117,7 +120,11 @@ impl ScriptRunner {
                 GitHubApi::new().fetch_gist_content(&self.gist.id, &file.filename)?
             };
 
-            println!("{}", content);
+            if colorize {
+                println!("{}", highlight_content(&file.filename, &content));
+            } else {
+                println!("{}", content);
+            }
         }
 
         Ok(())

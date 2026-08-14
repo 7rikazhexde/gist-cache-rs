@@ -1,5 +1,6 @@
 use crate::cache::types::GistInfo;
 use crate::error::{GistCacheError, Result};
+use std::path::Path;
 
 #[derive(Debug, Clone)]
 pub enum SearchMode {
@@ -98,9 +99,10 @@ impl SearchQuery {
     }
 }
 
-pub fn select_from_results<'a>(results: &[&'a GistInfo]) -> Result<&'a GistInfo> {
-    use dialoguer::{Select, theme::ColorfulTheme};
-
+pub fn select_from_results<'a>(
+    results: &[&'a GistInfo],
+    contents_dir: &Path,
+) -> Result<&'a GistInfo> {
     if results.is_empty() {
         return Err(GistCacheError::NoSearchResults("".to_string()));
     }
@@ -109,28 +111,9 @@ pub fn select_from_results<'a>(results: &[&'a GistInfo]) -> Result<&'a GistInfo>
         return Ok(results[0]);
     }
 
-    let default_desc = "No description".to_string();
-
-    // Create display items: "description - files"
-    let items: Vec<String> = results
-        .iter()
-        .map(|gist| {
-            let desc = gist.description.as_ref().unwrap_or(&default_desc);
-            let files: Vec<_> = gist.files.iter().map(|f| f.filename.as_str()).collect();
-            format!("{} - {}", desc, files.join(", "))
-        })
-        .collect();
-
     println!("\nMultiple Gists found:\n");
 
-    let selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Select a Gist")
-        .items(&items)
-        .default(0)
-        .interact_opt()
-        .map_err(|e| GistCacheError::Io(std::io::Error::other(e)))?;
-
-    match selection {
+    match crate::search::interactive::select(results, contents_dir)? {
         Some(index) => Ok(results[index]),
         None => Err(GistCacheError::InvalidSelection),
     }
@@ -269,7 +252,7 @@ mod tests {
     #[test]
     fn test_select_from_empty_results() {
         let results: Vec<&GistInfo> = vec![];
-        let error = select_from_results(&results).unwrap_err();
+        let error = select_from_results(&results, Path::new("/tmp/contents")).unwrap_err();
         assert!(matches!(error, GistCacheError::NoSearchResults(_)));
     }
 
@@ -277,7 +260,7 @@ mod tests {
     fn test_select_from_single_result() {
         let gist = create_test_gist("abc123", Some("Test"), vec!["file.rs"]);
         let results = vec![&gist];
-        let selected = select_from_results(&results).unwrap();
+        let selected = select_from_results(&results, Path::new("/tmp/contents")).unwrap();
         assert_eq!(selected.id, "abc123");
     }
 
