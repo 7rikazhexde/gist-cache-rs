@@ -4,8 +4,8 @@
 
 gist-cache-rs's test strategy is structured in a three-layer architecture: unit tests, integration tests, and E2E tests.
 
-**Current Coverage**: 68.95% (533/773 lines)
-**Number of Automated Tests**: 153 (Unit 120 + Integration 33)
+**Current Coverage**: 68.95% (533/773 lines) — not re-measured in this update, see note below
+**Number of Automated Tests**: 251 (Unit 190 + Integration 61)
 **Manual E2E Tests**: 26 cases
 
 ---
@@ -14,10 +14,10 @@ gist-cache-rs's test strategy is structured in a three-layer architecture: unit 
 
 | Test Type | Count | Location | Execution Method |
 | :---------- | :---- | :------------------------ | :--------------------- |
-| **Unit Tests** | 120 | `src/` within `#[cfg(test)]` | `cargo test` (auto) |
-| **Integration Tests** | 33 | `tests/` directory | `cargo test` (auto) |
+| **Unit Tests** | 190 | `src/` within `#[cfg(test)]` | `cargo test` (auto) |
+| **Integration Tests** | 61 | `tests/` directory | `cargo test` (auto) |
 | **E2E Tests** | 26 cases | `docs/tests/` | Manual execution |
-| **Total** | **153** | - | - |
+| **Total** | **251** | - | - |
 
 **Principles of the Test Pyramid**:
 
@@ -68,7 +68,7 @@ cargo tarpaulin --out Html --output-dir coverage
 
 ## Test Configuration
 
-### 1. Unit Tests (120)
+### 1. Unit Tests (190)
 
 **Location**: `src/` within `#[cfg(test)]` module
 
@@ -76,11 +76,11 @@ cargo tarpaulin --out Html --output-dir coverage
 
 - Data structures and serialization (`cache/types.rs`)
 - Cache management logic (`cache/content.rs`, `cache/update.rs`)
-- Search logic (`search/query.rs`)
-- CLI argument processing (`cli.rs`)
-- Configuration management (`config.rs`)
+- Search logic (`search/query.rs`) and interactive picker logic (`search/interactive.rs`)
+- CLI argument processing and interpreter detection (`cli.rs`)
+- Configuration management, incl. extension-based interpreter mapping (`config.rs`)
 - Error handling (`error.rs`)
-- Basic functionality of the execution runner (`execution/runner.rs`)
+- Basic functionality of the execution runner (`execution/runner.rs`) and syntax highlighting (`execution/highlight.rs`)
 - GitHub API mock (`github/client.rs`)
 
 **Features**:
@@ -88,38 +88,42 @@ cargo tarpaulin --out Html --output-dir coverage
 - Fast execution (no external dependencies)
 - Excludes GitHub API dependencies with MockGitHubClient
 - Automatable in CI/CD
+- 5 tests in `github/api.rs` are `#[ignore]` (require a real, authenticated `gh` CLI)
 
-### 2. Integration Tests (33)
+### 2. Integration Tests (61)
 
 **Location**: `tests/` directory
 
-#### 2.1 CLI Tests (`tests/cli_tests.rs`) - 15
+#### 2.1 CLI Tests (`tests/cli_tests.rs`) - 33 (32 on Windows)
 
 - Verification of command-line argument processing
-- Subcommand operation verification (`update`, `run`, `cache`)
-- Error case verification (authentication errors, no cache, etc.)
-- Flag combination verification (`--preview`, `--force`, `--filename`, etc.)
+- Subcommand operation verification (`update`, `run`, `cache`, `config`, `completions`)
+- Error case verification (authentication errors, no cache, invalid input, etc.)
+- Flag combination verification (`--preview`, `--force`, `--filename`, `--description`, `--id`, etc.)
+- Shell completion generation for all 4 shells, incl. a bash subcommand-completion regression test (`#[cfg(unix)]` only, so it does not compile on Windows)
 
-#### 2.2 Interpreter Integration Tests (`tests/integration_test.rs`) - 12
+#### 2.2 Interpreter Integration Tests (`tests/integration_test.rs`) - 16
 
 - Bash, Python, Node.js execution tests
 - TypeScript (ts-node, deno, bun) execution tests
 - Ruby, Perl, PHP execution tests
+- PowerShell execution, argument passing, preview mode, and failure tests
 - Argument passing, error handling
 - Preview mode operation verification
 
-#### 2.3 Runner Tests (`tests/runner_test.rs`) - 6
+#### 2.3 Runner Tests (`tests/runner_test.rs`) - 12
 
 - Detailed verification of script execution logic
 - Cache creation operation verification
 - Download mode operation verification
 - Force file-based execution verification
 - Multi-file Gist selection logic
+- PowerShell-specific variants of the above (cache creation, download mode, force execution, multi-file selection, preview+download, empty arguments)
 
 **Features**:
 
 - Verifies actual process execution
-- Unix environment only (`#[cfg_attr]` controlled)
+- Each test is either Unix-only or Windows-only via `#[cfg_attr(not(all(unix, not(target_os = "windows"))), ignore)]` (bash-based tests) or the PowerShell equivalent — the non-matching half is `#[ignore]`d at runtime on a given OS, not removed from the count
 - Automatically skipped if interpreter is not installed
 
 ### 3. E2E Tests (26 cases, manual)
@@ -220,7 +224,7 @@ cargo install cargo-tarpaulin
 
 ---
 
-**Last Updated**: 2025-11-06
+**Last Updated**: 2026-08-20 (test counts only; coverage % below is carried over from 2025-11-06 and has not been re-measured — see [Test Inventory](./TEST_INVENTORY.md) for the same caveat)
 **Current Coverage**: 68.95%
-**Number of Automated Tests**: 153
+**Number of Automated Tests**: 251
 **Covered Lines**: 533/773 lines
