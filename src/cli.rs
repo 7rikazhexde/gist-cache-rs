@@ -1000,7 +1000,34 @@ pub fn generate_completions(shell: Shell) -> Result<()> {
         Shell::PowerShell => CompletionShell::PowerShell,
     };
 
-    generate(completion_shell, &mut cmd, bin_name, &mut io::stdout());
+    if matches!(shell, Shell::Bash) {
+        // clap_complete's bash generator disagrees with itself when `bin_name`
+        // contains hyphens: the per-word state machine tracks the current
+        // subcommand under one label scheme, but the final `case` dispatch
+        // block builds its labels under a different one, so they never match.
+        // Completion after any subcommand (e.g. `gist-cache-rs run <TAB>`)
+        // then silently returns nothing, even though top-level completion
+        // works. This appears in clap_complete 4.6.9 (not 4.5.61, which this
+        // project's Cargo.lock pins) but `cargo install` without `--locked`
+        // ignores Cargo.lock and can resolve it anyway, so this workaround
+        // stays regardless of which clap_complete version ends up in use.
+        // Generating with a hyphen-free bin_name keeps both label schemes
+        // consistent; we restore the real command name afterward in the
+        // trailing `complete -F ... <name>` registration line, which is the
+        // only place the literal invoked command name actually matters.
+        let underscore_bin_name = bin_name.replace('-', "_");
+        let mut buf = Vec::new();
+        generate(completion_shell, &mut cmd, &underscore_bin_name, &mut buf);
+        let script = String::from_utf8(buf).expect("completion script is valid UTF-8");
+        let fixed = script.replace(
+            &format!("default {underscore_bin_name}\n"),
+            &format!("default {bin_name}\n"),
+        );
+        use std::io::Write;
+        io::stdout().write_all(fixed.as_bytes())?;
+    } else {
+        generate(completion_shell, &mut cmd, bin_name, &mut io::stdout());
+    }
     Ok(())
 }
 

@@ -236,7 +236,7 @@ impl<C: GitHubClient> CacheUpdater<C> {
                 let mut merged: Vec<GistInfo> = gist_map.into_values().collect();
 
                 // Sort by updated_at descending (most recent first)
-                merged.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+                merged.sort_by_key(|g| std::cmp::Reverse(g.updated_at));
 
                 let total_count = merged.len();
                 let new = total_count - old_count;
@@ -272,7 +272,7 @@ impl<C: GitHubClient> CacheUpdater<C> {
             let mut gists: Vec<GistInfo> = fetched_gists.into_iter().map(GistInfo::from).collect();
 
             // Sort by updated_at descending
-            gists.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+            gists.sort_by_key(|g| std::cmp::Reverse(g.updated_at));
 
             let count = gists.len();
             println!("{}", format!("New/Updated: {} items", count).green());
