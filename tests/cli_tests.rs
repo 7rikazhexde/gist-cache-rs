@@ -361,6 +361,67 @@ fn test_completions_zsh_contains_commands() {
     assert!(stdout.contains("update") || stdout.contains("run") || stdout.contains("cache"));
 }
 
+// Regression test: clap_complete's bash generator can disagree with itself
+// when `bin_name` contains hyphens ("gist-cache-rs") - the per-word state
+// machine that tracks the current subcommand uses one label scheme, while
+// the final `case` dispatch block builds its labels under a different one,
+// so they never match. That leaves top-level completion working while
+// completion after any subcommand (e.g. `gist-cache-rs run <TAB>`) silently
+// returns nothing. This sources the actually-generated script and invokes
+// its completion function exactly as bash's `complete -F` machinery would,
+// to confirm every subcommand still returns candidates.
+#[cfg(unix)]
+#[test]
+fn test_completions_bash_subcommand_completion_not_empty() {
+    use std::io::Write as _;
+    use std::process::Command as StdCommand;
+
+    let mut cmd = Command::cargo_bin("gist-cache-rs").unwrap();
+    let output = cmd.arg("completions").arg("bash").output().unwrap();
+    let script = String::from_utf8_lossy(&output.stdout);
+
+    let complete_line = script
+        .lines()
+        .find(|line| {
+            let line = line.trim();
+            line.starts_with("complete -F") && line.ends_with("gist-cache-rs")
+        })
+        .expect("expected a `complete -F ... gist-cache-rs` registration line");
+    let func_name = complete_line
+        .split_whitespace()
+        .nth(2)
+        .expect("expected a function name after `complete -F`");
+
+    let mut script_file = tempfile::NamedTempFile::new().unwrap();
+    script_file.write_all(script.as_bytes()).unwrap();
+
+    for subcommand in ["run", "cache", "config", "update"] {
+        let probe = format!(
+            r#"
+            source '{path}'
+            COMP_WORDS=(gist-cache-rs {subcommand} "")
+            COMP_CWORD=2
+            {func_name} "gist-cache-rs" "" "{subcommand}"
+            printf '%s\n' "${{COMPREPLY[@]}}"
+            "#,
+            path = script_file.path().display(),
+        );
+
+        let result = StdCommand::new("bash")
+            .arg("-c")
+            .arg(&probe)
+            .output()
+            .expect("failed to run bash");
+        let candidates = String::from_utf8_lossy(&result.stdout);
+
+        assert!(
+            !candidates.trim().is_empty(),
+            "expected completion candidates after `gist-cache-rs {subcommand} <TAB>`, got none.\nstderr: {}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+    }
+}
+
 #[test]
 fn test_update_with_progress_display() {
     let _temp = setup_test_env();
