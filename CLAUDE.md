@@ -10,7 +10,7 @@ For comprehensive documentation, see the [Architecture & Design](https://7rikazh
 
 **gist-cache-rs** is a Rust CLI tool for efficiently caching, searching, and executing GitHub Gists. It offers fast incremental updates, multi-language script execution support, and content caching capabilities.
 
-**Current Version**: 0.8.6
+**Current Version**: 0.9.1
 **Rust Edition**: 2024
 **Minimum Rust Version**: 1.85
 **Supported Platforms**: Linux, macOS, Windows 10 or later

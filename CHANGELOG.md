@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-08-20
+
+### Fixed
+
+- Bash completion returning empty results after any subcommand (e.g. `gist-cache-rs run <TAB>`)
+  - Caused by clap_complete's bash generator disagreeing with itself when `bin_name` contains hyphens: the per-word state machine and the final `case` dispatch block built labels under different schemes, so completion after any subcommand silently returned nothing (Closes #77)
+
+### Changed
+
+- Updated `fancy-regex` requirement from 0.16 to 0.19 (#76)
+
+### Docs
+
+- Synced automated test counts in the developer guide (`testing.md`, `test-inventory.md`) with current `cargo test` results (153 → 251 tests), and documented two previously-undocumented modules (`search/interactive.rs`, `execution/highlight.rs`); coverage percentages are flagged as stale pending re-measurement
+
 ## [0.9.0] - 2026-08-15
 
 ### Added
